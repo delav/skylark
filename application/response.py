@@ -49,7 +49,7 @@ def response_exception_handler(exc, context):
     response = exception_handler(exc, context)
     field, message = '', ''
     code, msg = 10000, 'Unexpected error'
-    # print("response:", response.data)
+    # print('response:', response.data)
     result = response.data
     for index, value in enumerate(result):
         if index == 0:
@@ -65,7 +65,7 @@ def response_exception_handler(exc, context):
                 else:
                     field = key
                     message = value[0]
-    err_info = {"field": field, "message": message}
+    err_info = {'field': field, 'message': message}
     for key in err_info:
         if key == 'field':
             field = err_info[key]

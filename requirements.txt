@@ -2,3 +2,4 @@ Django==3.2.13
 loguru==0.6.0
 djangorestframework==3.13.1
 PyMySQL==1.0.2
+Pillow==9.1.1

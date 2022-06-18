@@ -4,8 +4,7 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from application import JsonResponse
-from .models import User
-from .serializers import LoginSerializer, RegisterSerializer
+from application.user.serializers import LoginSerializer, RegisterSerializer
 from application.group.models import Group
 from loguru import logger
 from datetime import datetime
@@ -30,7 +29,7 @@ class UserViewSets(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
             save_id = transaction.savepoint()
             try:
                 user = serializer.save()
-                group_id = request.data.get("group_id")
+                group_id = request.data.get('group_id')
                 if group_id:
                     group = Group.objects.get(id=group_id)
                     user.groups.add(group)

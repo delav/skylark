@@ -9,13 +9,20 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+import os
+import sys
 from pathlib import Path
 from loguru import logger
 from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# log setting
+server_log_file_path = os.path.join(BASE_DIR, "logs/server.log")
+error_log_file_path = os.path.join(BASE_DIR, "logs/error.log")
+logger.add(server_log_file_path, rotation="50 MB", encoding="utf-8", level="INFO")
+logger.add(error_log_file_path, rotation="50 MB", encoding="utf-8", level="ERROR")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -40,7 +47,17 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'application',
+    'application.user.apps.UserConfig',
+    'application.group.apps.GroupConfig',
+    'application.case_tag.apps.CaseTagConfig',
+    'application.keyword_group.apps.KeywordGroupConfig',
+    'application.lib_keyword.apps.LibKeywordConfig',
+    'application.project.apps.ProjectConfig',
+    'application.suite_dir.apps.SuiteDirConfig',
+    'application.test_suite.apps.TestSuiteConfig',
+    'application.test_case.apps.TestCaseConfig',
+    'application.case_entity.apps.CaseEntityConfig',
+    'application.user_keyword.apps.UserKeywordConfig',
 ]
 
 MIDDLEWARE = [
@@ -146,6 +163,8 @@ AES_KEY = "20220427@)@@)$@&"
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+MEDIA_PATH = os.path.join(BASE_DIR, 'static/media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
