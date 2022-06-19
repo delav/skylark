@@ -58,6 +58,8 @@ INSTALLED_APPS = [
     'application.test_case.apps.TestCaseConfig',
     'application.case_entity.apps.CaseEntityConfig',
     'application.user_keyword.apps.UserKeywordConfig',
+    'application.setup_teardown.apps.SetupTeardownConfig',
+    'application.variable.apps.VariableConfig',
 ]
 
 MIDDLEWARE = [
