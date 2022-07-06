@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.hashers import make_password, check_password
-from application.utils.common.crypter import ecb_decrypt
+from application.infra.common.crypter import ecb_decrypt
 from application.user.models import User
 from application import ValidationException
 

@@ -49,16 +49,16 @@ INSTALLED_APPS = [
     'corsheaders',
     'application.user.apps.UserConfig',
     'application.group.apps.GroupConfig',
-    'application.case_tag.apps.CaseTagConfig',
-    'application.keyword_group.apps.KeywordGroupConfig',
-    'application.lib_keyword.apps.LibKeywordConfig',
+    'application.casetag.apps.CaseTagConfig',
+    'application.keywordgroup.apps.KeywordGroupConfig',
+    'application.libkeyword.apps.LibKeywordConfig',
     'application.project.apps.ProjectConfig',
-    'application.suite_dir.apps.SuiteDirConfig',
-    'application.test_suite.apps.TestSuiteConfig',
-    'application.test_case.apps.TestCaseConfig',
-    'application.case_entity.apps.CaseEntityConfig',
-    'application.user_keyword.apps.UserKeywordConfig',
-    'application.setup_teardown.apps.SetupTeardownConfig',
+    'application.suitedir.apps.SuiteDirConfig',
+    'application.testsuite.apps.TestSuiteConfig',
+    'application.testcase.apps.TestCaseConfig',
+    'application.caseentity.apps.CaseEntityConfig',
+    'application.userkeyword.apps.UserKeywordConfig',
+    'application.setupteardown.apps.SetupTeardownConfig',
     'application.variable.apps.VariableConfig',
 ]
 
@@ -114,7 +114,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    'EXCEPTION_HANDLER': 'application.response.response_exception_handler',
+    'EXCEPTION_HANDLER': 'application.infra.exception.interceptor.response_exc_handler',
 }
 
 SIMPLE_JWT = {
