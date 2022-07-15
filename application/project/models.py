@@ -8,8 +8,8 @@ from application.user.models import User
 class Project(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='主键')
     project_name = models.CharField(unique=True, max_length=255, help_text='项目名称')
-    create_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间', help_text='创建时间')
-    update_at = models.DateTimeField(auto_now=True, verbose_name='更新时间', help_text='更新时间')
+    create_at = models.DateTimeField(auto_now_add=True,  help_text='创建时间')
+    update_at = models.DateTimeField(auto_now=True, help_text='更新时间')
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, related_name='user', help_text='创建用户')
 
     class Meta:

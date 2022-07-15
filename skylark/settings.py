@@ -60,6 +60,8 @@ INSTALLED_APPS = [
     'application.userkeyword.apps.UserKeywordConfig',
     'application.setupteardown.apps.SetupTeardownConfig',
     'application.variable.apps.VariableConfig',
+    'application.builder.apps.BuilderConfig',
+    'application.buildcase.apps.BuildCaseConfig'
 ]
 
 MIDDLEWARE = [
