@@ -1,4 +1,4 @@
-from .base import BaseBuilder
+from application.infra.parser.builder.basebuilder import BaseBuilder
 from application.variable.models import Variable
 from application.suitedir.models import SuiteDir
 

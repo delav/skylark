@@ -1,6 +1,6 @@
 from rest_framework.views import exception_handler
 from rest_framework.status import HTTP_500_INTERNAL_SERVER_ERROR
-from application import JsonResponse
+from application.infra.response import JsonResponse
 
 
 def response_exc_handler(exc, context):

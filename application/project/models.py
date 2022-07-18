@@ -1,19 +1,20 @@
 from django.db import models
-from datetime import datetime
 from application.user.models import User
 
 # Create your models here.
 
 
 class Project(models.Model):
-    id = models.BigAutoField(primary_key=True, help_text='主键')
-    project_name = models.CharField(unique=True, max_length=255, help_text='项目名称')
-    create_at = models.DateTimeField(auto_now_add=True,  help_text='创建时间')
-    update_at = models.DateTimeField(auto_now=True, help_text='更新时间')
-    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, related_name='user', help_text='创建用户')
+    id = models.BigAutoField(primary_key=True, help_text='primary key id')
+    project_name = models.CharField(unique=True, max_length=255, help_text='project name')
+    create_at = models.DateTimeField(auto_now_add=True,  help_text='create time')
+    update_at = models.DateTimeField(auto_now=True, help_text='update time')
+    create_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL,
+                                  related_name='user', help_text='create user')
+    deleted = models.BooleanField(default=1, help_text='if deleted')
 
     class Meta:
-        verbose_name = '项目表'
+        verbose_name = 'project'
         verbose_name_plural = verbose_name
         db_table = 'project'
         ordering = ['create_at']

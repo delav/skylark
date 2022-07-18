@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from application import ValidationException
+from application.infra.exception import ValidationException
 from .models import Group
 
 

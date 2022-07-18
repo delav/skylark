@@ -6,16 +6,19 @@ from application.suitedir.models import SuiteDir
 
 
 class TestSuite(models.Model):
-    id = models.BigAutoField(primary_key=True, help_text='主键')
-    suite_name = models.CharField(max_length=255, help_text='套件名称')
-    create_at = models.DateTimeField(auto_now_add=True, help_text='创建时间')
-    update_at = models.DateTimeField(auto_now=True, help_text='更新时间')
-    suite_dir = models.ForeignKey(SuiteDir, null=True, related_name='suites', on_delete=models.CASCADE, help_text='关联目录')
-    suite_type = models.IntegerField(default=0, choices=((0, 'robot'), (1, 'resource'), (2, 'file')), help_text='套件类型')
-    deleted = models.BooleanField(default=1, help_text='是否已删除')
+    id = models.BigAutoField(primary_key=True, help_text='primary key id')
+    suite_name = models.CharField(max_length=255, help_text='test suite name')
+    create_at = models.DateTimeField(auto_now_add=True, help_text='create time')
+    update_at = models.DateTimeField(auto_now=True, help_text='update time')
+    suite_dir = models.ForeignKey(SuiteDir, null=True, related_name='suites', on_delete=models.CASCADE,
+                                  help_text='associated dir')
+    suite_type = models.IntegerField(default=0, choices=((0, 'robot'), (1, 'resource'), (2, 'file')),
+                                     help_text='test suite type')
+    timeout = models.CharField(default=None, max_length=255, help_text='all case run timeout')
+    deleted = models.BooleanField(default=1, help_text='if deleted')
 
     class Meta:
-        verbose_name = '测试套件表'
+        verbose_name = 'test suite'
         verbose_name_plural = verbose_name
         db_table = 'test_suite'
         ordering = ['create_at']

@@ -1,5 +1,5 @@
-from .base import BaseBuilder
-from .builders import SetTearBuilder
+from application.infra.parser.builder.basebuilder import BaseBuilder
+from application.infra.parser.builder.builders import SetTearBuilder
 from application.setupteardown.models import SetupTeardown
 
 

@@ -5,16 +5,16 @@ from application.builder.models import Builder
 
 
 class BuildCase(models.Model):
-    id = models.BigAutoField(primary_key=True, help_text='主键')
-    suite_name = models.CharField(max_length=255, help_text='测试套件名称')
-    case_id = models.IntegerField(help_text='用例ID')
-    case_name = models.CharField(max_length=255, help_text='用例名称')
-    start_time = models.DateTimeField(null=True, blank=True, help_text='开始时间')
-    end_time = models.DateTimeField(null=True, blank=True, help_text='执行时间')
-    status = models.IntegerField(default=-1, help_text='执行结果.-1:未执行,0:失败,1:成功')
-    builder = models.ForeignKey(Builder, on_delete=models.CASCADE, help_text='构建编号')
+    id = models.BigAutoField(primary_key=True, help_text='primary key id')
+    suite_name = models.CharField(max_length=255, help_text='test suite name')
+    case_id = models.IntegerField(help_text='test case id')
+    case_name = models.CharField(max_length=255, help_text='case name')
+    start_time = models.DateTimeField(null=True, blank=True, help_text='run start time')
+    end_time = models.DateTimeField(null=True, blank=True, help_text='run end time')
+    result = models.IntegerField(default=-1, help_text='result, -1:waiting,0:failure,1:success')
+    builder = models.ForeignKey(Builder, null=True, on_delete=models.CASCADE, help_text='build id')
 
     class Meta:
-        verbose_name = '构建用例表'
+        verbose_name = 'build case'
         verbose_name_plural = verbose_name
         db_table = 'buidl_case'

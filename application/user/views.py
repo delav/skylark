@@ -3,7 +3,7 @@ from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from application import JsonResponse
+from application.infra.response import JsonResponse
 from application.user.serializers import LoginSerializer, RegisterSerializer
 from application.group.models import Group
 from loguru import logger

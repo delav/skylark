@@ -7,7 +7,7 @@ from application.userkeyword.models import UserKeyword
 from application.infra.utils import KeywordManager, MANAGE_NAMES
 
 
-class SuiteContentReader(BaseBuilder):
+class CaseBuilder(BaseBuilder):
 
     def __init__(self):
         pass

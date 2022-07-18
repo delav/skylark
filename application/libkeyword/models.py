@@ -5,20 +5,20 @@ from application.keywordgroup.models import KeywordGroup
 
 
 class LibKeyword(models.Model):
-    id = models.BigAutoField(primary_key=True, help_text='主键')
-    name = models.CharField(max_length=255, unique=True, help_text='关键字名称')
-    create_at = models.DateTimeField(auto_now_add=True, help_text='创建时间')
-    update_at = models.DateTimeField(auto_now=True, help_text='更新时间')
-    ext_name = models.CharField(default=None, max_length=255, help_text='对外名称')
-    desc = models.TextField(default=None, blank=True, null=True, help_text='关键字描述')
-    group = models.ForeignKey(KeywordGroup, null=True, on_delete=models.CASCADE, help_text='所属分组')
-    input_arg = models.TextField(default=None, blank=True, null=True, help_text='输入参数')
-    input_desc = models.TextField(default=None, blank=True, null=True, help_text='输入参数说明')
-    out_arg = models.TextField(default=None, blank=True, null=True, help_text='输出参数')
-    out_desc = models.TextField(default=None, blank=True, null=True, help_text='输出参数说明')
-    image = models.ImageField(upload_to='media/%Y/%m/%d/', blank=True, null=True, help_text='展示图标')
+    id = models.BigAutoField(primary_key=True, help_text='primary key id')
+    name = models.CharField(max_length=255, unique=True, help_text='keyword name')
+    create_at = models.DateTimeField(auto_now_add=True, help_text='create time')
+    update_at = models.DateTimeField(auto_now=True, help_text='update time')
+    ext_name = models.CharField(default=None, max_length=255, help_text='external name')
+    desc = models.TextField(default=None, blank=True, null=True, help_text='keyword desc')
+    group = models.ForeignKey(KeywordGroup, null=True, on_delete=models.CASCADE, help_text='associated group')
+    input_arg = models.TextField(default=None, blank=True, null=True, help_text='input args')
+    input_desc = models.TextField(default=None, blank=True, null=True, help_text='input args desc')
+    out_arg = models.TextField(default=None, blank=True, null=True, help_text='output args')
+    out_desc = models.TextField(default=None, blank=True, null=True, help_text='output args desc')
+    image = models.ImageField(upload_to='media/%Y/%m/%d/', blank=True, null=True, help_text='keyword icon')
 
     class Meta:
-        verbose_name = '基础关键字表'
+        verbose_name = 'lib keyword'
         verbose_name_plural = verbose_name
         db_table = 'lib_keyword'

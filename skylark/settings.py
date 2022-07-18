@@ -61,7 +61,9 @@ INSTALLED_APPS = [
     'application.setupteardown.apps.SetupTeardownConfig',
     'application.variable.apps.VariableConfig',
     'application.builder.apps.BuilderConfig',
-    'application.buildcase.apps.BuildCaseConfig'
+    'application.buildcase.apps.BuildCaseConfig',
+    'application.environment.apps.EnvironmentConfig',
+    'application.casepriority.apps.CasePriorityConfig',
 ]
 
 MIDDLEWARE = [
@@ -116,7 +118,10 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    'EXCEPTION_HANDLER': 'application.infra.exception.interceptor.response_exc_handler',
+    'DEFAULT_PERMISSION_CLASSES': (
+        'application.infra.permission.LoginAuth',
+    ),
+    'EXCEPTION_HANDLER': 'application.infra.exception.response_exc_handler',
 }
 
 SIMPLE_JWT = {
