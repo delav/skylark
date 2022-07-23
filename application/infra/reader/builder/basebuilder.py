@@ -26,7 +26,7 @@ class BaseBuilder(object):
     @property
     def _variable_line(self):
         """
-        get the variable identification line
+        get the constant identification line
         :return: str
         """
         return '*** Variables ***' + self.linefeed

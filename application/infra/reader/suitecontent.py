@@ -1,5 +1,5 @@
-from application.infra.parser.builder.basebuilder import BaseBuilder
-from application.variable.models import Variable
+from application.infra.reader.builder.basebuilder import BaseBuilder
+from application.constant.models import Variable
 from application.suitedir.models import SuiteDir
 
 
@@ -76,3 +76,29 @@ class PublicResourceBuilder(BaseBuilder):
 
     def get_resource_content(self):
         pass
+
+
+class InitSuiteHeader(BaseBuilder):
+    def __init__(self, module_id, module_type):
+        super(InitSuiteHeader, self).__init__()
+        self.module_id = module_id
+        self.module_type = module_type
+
+    def get_setup_and_teardown(self):
+        st_queryset = SetupTeardown.objects.filter(
+            module_id=self.module_id,
+            module_type=self.module_type
+        )
+        if not st_queryset.exists():
+            return None
+        obj = st_queryset.first()
+        st_str = SetTearBuilder().get_from_object(obj)
+        return st_str
+
+    def get_variable(self):
+        var_queryset = Variable.objects.filter(
+            module_id=self.module_id,
+            module_type=self.module_type
+        )
+        var_strs = VariableBuilder().get_from_queryset(var_queryset)
+        return var_strs

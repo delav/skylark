@@ -1,6 +1,6 @@
 import os
 from django.conf import settings
-from application.infra.parser.builder import BaseBuilder
+from application.infra.reader.builder.basebuilder import BaseBuilder
 
 
 class LibraryBuilder(BaseBuilder):

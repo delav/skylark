@@ -1,4 +1,4 @@
-from application.infra.parser.builder import BaseBuilder
+from application.infra.reader.builder.basebuilder import BaseBuilder
 
 
 class VariableBuilder(BaseBuilder):
@@ -16,7 +16,7 @@ class VariableBuilder(BaseBuilder):
 
     def _variable_path(self):
         """
-        get the variable path for header
+        get the constant path for header
         :return: string
         """
         return self.special_sep.join(

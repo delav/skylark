@@ -1,8 +1,8 @@
 from loguru import logger
 from application.testsuite.models import TestSuite
-from application.variable.models import Variable
+from application.constant.models import Variable
 from application.setupteardown.models import SetupTeardown
-from .basebuilder import BaseBuilder
+from application.infra.reader.builder.basebuilder import BaseBuilder
 
 
 class InitSuiteHeader(BaseBuilder):

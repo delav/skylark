@@ -1,14 +1,13 @@
-from application.infra.parser.builder.basebuilder import BaseBuilder
-from application.infra.parser.builder.builders import SetTearBuilder
+from application.infra.reader.builder import SetTearBuilder
 from application.setupteardown.models import SetupTeardown
 
 
-class InitDiConfig(BaseBuilder):
+class DirConfigure(object):
 
     def __init__(self, module_id, module_type):
-        super(InitDiConfig, self).__init__()
         self.module_id = module_id
         self.module_type = module_type
+        self.st_builder = SetTearBuilder()
 
     def get_setup_and_teardown(self):
         st_queryset = SetupTeardown.objects.filter(
@@ -18,11 +17,11 @@ class InitDiConfig(BaseBuilder):
         if not st_queryset.exists():
             return None
         obj = st_queryset.first()
-        st_str = SetTearBuilder().get_from_object(obj)
+        st_str = self.st_builder.get_from_object(obj)
         return st_str
 
     def get(self):
         ctx = self.get_setup_and_teardown()
         if ctx:
-            return self._setting_line + self.get_setup_and_teardown()
+            return self.st_builder._setting_line + ctx
         return None

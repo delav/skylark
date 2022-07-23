@@ -59,7 +59,7 @@ INSTALLED_APPS = [
     'application.caseentity.apps.CaseEntityConfig',
     'application.userkeyword.apps.UserKeywordConfig',
     'application.setupteardown.apps.SetupTeardownConfig',
-    'application.variable.apps.VariableConfig',
+    'application.constant.apps.ConstantConfig',
     'application.builder.apps.BuilderConfig',
     'application.buildcase.apps.BuildCaseConfig',
     'application.environment.apps.EnvironmentConfig',

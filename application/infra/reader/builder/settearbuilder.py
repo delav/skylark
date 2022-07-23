@@ -1,4 +1,4 @@
-from application.infra.parser.builder import BaseBuilder
+from application.infra.reader.builder.basebuilder import BaseBuilder
 
 
 class SetTearBuilder(BaseBuilder):
