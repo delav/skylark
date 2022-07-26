@@ -16,7 +16,7 @@ class BaseBuilder(object):
         return self.large_sep.join(args).replace('\\', '/') + self.linefeed
 
     @property
-    def _setting_line(self):
+    def _settings_line(self):
         """
         get the setting identification line
         :return: str
@@ -24,9 +24,9 @@ class BaseBuilder(object):
         return '*** Settings ***' + self.linefeed
 
     @property
-    def _variable_line(self):
+    def _variables_line(self):
         """
-        get the constant identification line
+        get the variable identification line
         :return: str
         """
         return '*** Variables ***' + self.linefeed
@@ -40,7 +40,7 @@ class BaseBuilder(object):
         return '*** Keywords ***' + self.linefeed
 
     @property
-    def _testcase_line(self):
+    def _testcases_line(self):
         """
         get the testcase identification line
         :return:

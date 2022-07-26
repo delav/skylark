@@ -59,11 +59,12 @@ INSTALLED_APPS = [
     'application.caseentity.apps.CaseEntityConfig',
     'application.userkeyword.apps.UserKeywordConfig',
     'application.setupteardown.apps.SetupTeardownConfig',
-    'application.constant.apps.ConstantConfig',
+    'application.variable.apps.VariableConfig',
     'application.builder.apps.BuilderConfig',
     'application.buildcase.apps.BuildCaseConfig',
     'application.environment.apps.EnvironmentConfig',
     'application.casepriority.apps.CasePriorityConfig',
+    'application.pythonlib.apps.PythonlibConfig',
 ]
 
 MIDDLEWARE = [
@@ -177,4 +178,6 @@ MEDIA_PATH = os.path.join(BASE_DIR, 'static/media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
+
+LIB_URL = '/library/'
 

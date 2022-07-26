@@ -1,13 +1,14 @@
 from application.infra.reader.builder.basebuilder import BaseBuilder
+from application.variable.models import Variable
 
 
 class ScalarBuilder(BaseBuilder):
     """
     suite scalar
     """
-
-    def __init__(self):
-        super(ScalarBuilder, self).__init__()
+    def __init__(self, module_id, module_type):
+        self.module_id = module_id
+        self.module_type = module_type
 
     def _splice_key_value(self, key, value):
         """
@@ -18,12 +19,16 @@ class ScalarBuilder(BaseBuilder):
         """
         return key + self.small_sep + value + self.linefeed
 
-    def get_from_queryset(self, queryset):
+    def variable_info(self):
         """
-        get suite scalar from suite queryset
+        get suite scalar by moduleId and moduleType
         :return: string
         """
         scalar_content = ''
+        queryset = Variable.objects.filter(
+            module_id=self.module_id,
+            module_type=self.module_type
+        )
         if not queryset.exists():
             return ''
         for obj in queryset.iterator():

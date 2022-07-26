@@ -1,13 +1,14 @@
 from application.infra.reader.builder.basebuilder import BaseBuilder
+from application.setupteardown.models import SetupTeardown
 
 
 class SetTearBuilder(BaseBuilder):
     """
     gsuite or dir or project setup/teardown
     """
-
-    def __init__(self):
-        super(SetTearBuilder, self).__init__()
+    def __init__(self, module_id, module_type):
+        self.module_id = module_id
+        self.module_type = module_type
 
     @staticmethod
     def _clear_spaces(value):
@@ -54,14 +55,17 @@ class SetTearBuilder(BaseBuilder):
             module_setup_str = self._splice_settear(prefix, *module_setup_list)
         return module_setup_str
 
-    def get_from_object(self, st_obj):
+    def setting_info(self):
         """
         get setup/teardown info for header from obj
-        :param st_obj: obj
         :return: string
         """
         setup_teardown_str = ''
         try:
+            st_obj = SetupTeardown.objects.get(
+                module_id=self.module_id,
+                module_type=self.module_type
+            )
             module_setup = self._clear_spaces(st_obj.module_setup)
             module_teardown = self._clear_spaces(st_obj.module_teardown)
             test_setup = self._clear_spaces(st_obj.test_setup)

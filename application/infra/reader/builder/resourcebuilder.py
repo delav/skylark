@@ -1,37 +1,99 @@
 from application.infra.reader.builder.basebuilder import BaseBuilder
+from application.infra.reader.builder import CaseBuilder
+from application.infra.reader.builder import LibraryBuilder
+from application.infra.reader.builder import ScalarBuilder
+from application.suitedir.models import SuiteDir
 
 
 class ResourceBuilder(BaseBuilder):
-    """
-    customize resource(keyword/case)
-    """
-
-    def __init__(self, project_name):
-        super(ResourceBuilder, self).__init__()
+    def __init__(self, project_id, project_name):
+        self.project_id = project_id
         self.project_name = project_name
+        self.setting_str = ''
+        self.data_map = self._handle_data()
 
-    def _splice_resource(self, *args):
+    def _splice_resource(self, res_path):
         """
         splice to robot resource string
         :return: string
         """
-        variable_path = self.special_sep.join(self.project_name, args)
-        return self._splice_str('Resource', variable_path)
+        return self._splice_str('Resource', res_path)
 
-    def get_from_queryset(self, queryset):
-        """
-        get customize resource from dir queryset
-        :param queryset: dir obj queryset
-        :return: string
-        """
-        customize_resource = ''
-        if queryset.exists():
-            return customize_resource
-        dir_obj = queryset.first()
-        dir_name = dir_obj.dir_name
-        suites = dir_obj.suites.all()
-        for suite_item in suites.iterator():
-            resource_name = suite_item.suite_name
-            resource_path = self._splice_resource(dir_name, resource_name)
-            customize_resource += resource_path
-        return customize_resource
+    def setting_info(self):
+        return self.setting_str
+
+    def resource_map(self):
+        return self.data_map
+
+    def _handle_data(self):
+        data_map = {}
+        resource_builder = BaseResource(self.project_name)
+        resource_queryset = SuiteDir.objects.filter(
+            project_id=self.project_id,
+            dir_type=1,
+            parent_dir=None
+        )
+        if resource_queryset.exists():
+            data = self._handle_dir(resource_queryset)
+            for parent_path, suite_obj in data.items():
+                path = resource_builder.resource_path(parent_path, suite_obj)
+                text = resource_builder.resource_text(suite_obj)
+                data_map[path] = text
+                self.setting_str += self._splice_resource(path)
+        return data_map
+
+    def _handle_dir(self, obj_iterator, result=None):
+        if result is None:
+            result = {}
+        for obj in obj_iterator:
+            if obj.children is None:
+                result.append(obj)
+            else:
+                return self._handle_dir(obj.children, result)
+        return {}
+
+
+class BaseResource(BaseBuilder):
+    """
+    customize resource(keyword/case)
+    """
+    def __init__(self, project_name):
+        self.project_name = project_name
+
+    def _get_resource_settings(self):
+        settings_str = ''
+        settings_str += self._settings_line
+        library_str = LibraryBuilder().setting_info()
+        if library_str:
+            settings_str += library_str
+        settings_str += self.linefeed
+        return settings_str
+
+    def _get_resource_variables(self, suite_obj):
+        module_type = 2
+        variables_str = ''
+        scalar_str = ScalarBuilder(suite_obj.id, module_type).variable_info()
+        if scalar_str:
+            variables_str += scalar_str
+        variables_str += self.linefeed
+        return variables_str
+
+    def _get_resource_keywords(self, suite_obj):
+        keywords_str = ''
+        keywords_str += self._keywords_line
+        case_str = CaseBuilder().get_case_by_suite(suite_obj)
+        if case_str:
+            keywords_str += case_str
+        keywords_str += self.linefeed
+        return keywords_str
+
+    def resource_path(self, suite_path, suite_obj):
+        resource_name = suite_obj.suite_name
+        return self.special_sep.join([suite_path, resource_name])
+
+    def resource_text(self, suite_obj):
+        text = ''
+        text += self._get_resource_settings()
+        text += self._get_resource_variables(suite_obj)
+        text += self._get_resource_keywords(suite_obj)
+        return text

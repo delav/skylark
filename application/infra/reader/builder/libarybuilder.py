@@ -1,6 +1,7 @@
 import os
 from django.conf import settings
 from application.infra.reader.builder.basebuilder import BaseBuilder
+from application.pythonlib.models import PythonLib
 
 
 class LibraryBuilder(BaseBuilder):
@@ -9,9 +10,16 @@ class LibraryBuilder(BaseBuilder):
     """
 
     def __init__(self):
-        super(LibraryBuilder, self).__init__()
         self.builtin_lib_list = settings.BUILTIN_LIB
         self.customize_path = settings.BASE_DIR + settings.LIB_URL
+
+    def _handle_customize_path(self, file_name):
+        if not file_name.endswith('.py'):
+            file_name += '.py'
+        full_path = os.path.join(self.customize_path, file_name)
+        if not os.path.isfile(full_path):
+            return ''
+        return full_path
 
     def _splice_library_str(self, *args):
         """
@@ -32,18 +40,17 @@ class LibraryBuilder(BaseBuilder):
             builtin_lib_str += self._splice_library_str(b_lib)
         return builtin_lib_str
 
-    def _get_customize_library(self):
-        """
-        get user customized python library
-        :return: customize library str
-        """
-        customize_lib_str = ''
-        lib_file = os.listdir(self.customize_path)
-        for f in lib_file:
-            if f.endswith('.py'):
-                full_path = os.path.join(self.customize_path, f)
-                customize_lib_str += self._splice_library_str(full_path)
-        return customize_lib_str
+    def setting_info(self):
+        lib_str = ''
+        lib_queryset = PythonLib.objects.all()
+        if not lib_queryset.exists():
+            return lib_str
+        for obj in lib_queryset.iterator():
+            path = ''
+            if obj.lib_type == 1:
+                path = obj.lib_name
+            elif obj.lib_type == 2:
+                path = self._handle_customize_path(obj.lib_name)
+            lib_str += self._splice_library_str(path)
+        return lib_str
 
-    def get_library_info(self):
-        return self._get_builtin_library() + self._get_customize_library()

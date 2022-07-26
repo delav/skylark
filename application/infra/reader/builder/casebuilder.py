@@ -1,4 +1,3 @@
-from loguru import logger
 from application.infra.reader.builder.basebuilder import BaseBuilder
 from application.caseentity.models import CaseEntity
 from application.testcase.models import TestCase
@@ -8,9 +7,6 @@ from application.infra.utils import KeywordManager, MANAGE_NAMES
 
 
 class CaseBuilder(BaseBuilder):
-
-    def __init__(self):
-        super(CaseBuilder, self).__init__()
 
     @staticmethod
     def _is_null(value):
@@ -58,20 +54,26 @@ class CaseBuilder(BaseBuilder):
         case_content += self.linefeed
         return case_content
 
-    def get_case_content(self, *ids):
+    def _handle_case_queryset(self, case_queryset):
         content = ''
-        cases = TestCase.objects.filter(id__in=ids, deleted=False).values(
-                'id', 'case_name', 'inputs', 'outputs'
-            )
-        for case_item in cases.iterator():
+        for case_item in case_queryset.iterator():
             case_content = self._handle_case_content(case_item)
             content += case_content + self.linefeed
         return content
 
+    def get_case_by_ids(self, *ids):
+        cases = TestCase.objects.filter(id__in=ids, deleted=False).values(
+                'id', 'case_name', 'inputs', 'outputs'
+            )
+        return self._handle_case_queryset(cases)
+
+    def get_case_by_suite(self, suite):
+        cases = suite.cases
+        return self._handle_case_queryset(cases)
+
 
 class EntityBuilder(BaseBuilder):
     def __init__(self, entity_dict):
-        super(EntityBuilder, self).__init__()
         self.entity = entity_dict
 
     @staticmethod
@@ -108,7 +110,6 @@ class EntityBuilder(BaseBuilder):
 
 class KeywordBuilder(BaseBuilder):
     def __init__(self, entity):
-        super(KeywordBuilder, self).__init__()
         self.entity = entity
 
     @property

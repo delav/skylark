@@ -1,70 +1,16 @@
-from loguru import logger
-from application.testsuite.models import TestSuite
-from application.constant.models import Variable
-from application.setupteardown.models import SetupTeardown
 from application.infra.reader.builder.basebuilder import BaseBuilder
+from application.infra.reader.builder import *
+from application.testsuite.models import TestSuite
+from application.suitedir.models import SuiteDir
+from application.variable.models import Variable
+from application.setupteardown.models import SetupTeardown
 
 
-class InitSuiteHeader(BaseBuilder):
-    def __init__(self, module_id, module_type):
-        super(InitSuiteHeader, self).__init__()
-        self.module_id = module_id
-        self.module_type = module_type
-
-    def get_setup_and_teardown(self):
-        st_queryset = SetupTeardown.objects.filter(
-            module_id=self.module_id,
-            module_type=self.module_type
-        )
-        if not st_queryset.exists():
-            return None
-        obj = st_queryset.first()
-        st_str = SetTearBuilder().get_from_object(obj)
-        return st_str
-
-    def get_variable(self):
-        var_queryset = Variable.objects.filter(
-            module_id=self.module_id,
-            module_type=self.module_type
-        )
-        var_strs = VariableBuilder().get_from_queryset(var_queryset)
-        return var_strs
-
-
-class InitResourceHeader(BaseBuilder):
-    def __init__(self, module_id, module_type):
-        super(InitResourceHeader, self).__init__()
-        self.module_id = module_id
-        self.module_type = module_type
-
-
-class SuiteHeaderBuilder(BaseBuilder):
-
-    def __init__(self, project_id, project_name, module_id, module_type):
-        self.module_id = module_id
-        self.module_type = module_type
-        self.project_id = project_id
+class SuiteReader(BaseBuilder):
+    def __init__(self, project_name, module_id, module_type):
         self.project_name = project_name
-
-    def get_setup_and_teardown(self):
-        st_queryset = SetupTeardown.objects.filter(
-            module_id=self.module_id,
-            module_type=self.module_type
-        )
-        if not st_queryset.exists():
-            return None
-        obj = st_queryset.first()
-        st_str = SetTearBuilder().get_from_object(obj)
-        return st_str
-
-    # def get_resource_path(self):
-    #     rb = ResourceBuilder(self.project_id, self.project_name)
-    #     common_resource = rb.get_common_resource()
-    #     customize_resource = rb.get_customize_resource()
-    #     return common_resource + customize_resource
-
-    def get_variables(self):
-        pass
+        self.module_id = module_id
+        self.module_type = module_type
 
     def add_suite_head_info(self, suite_id, suite_file, project_path):
         install_list = []
@@ -79,7 +25,6 @@ class SuiteHeaderBuilder(BaseBuilder):
             f.writelines(install_list)
             f.write(self.linefeed)
             f.flush()
-        logger.info('测试套件文件头写入完成')
 
     def add_resource_head_info(self, suite_file, project_path):
         install_list = []
@@ -94,7 +39,6 @@ class SuiteHeaderBuilder(BaseBuilder):
             f.writelines(install_list)
             f.write(self.linefeed)
             f.flush()
-        logger.info('源文件头写入完成')
 
     def add_init_file_info(self, dir_id, init_file, d_type, project_path):
         install_list = []
@@ -109,7 +53,6 @@ class SuiteHeaderBuilder(BaseBuilder):
             f.writelines(install_list)
             f.write(self.linefeed)
             f.flush()
-        logger.info('测试套件文件头写入完成')
 
     def add_suite_variables(self, suite_id, suite_file):
         var_list = []
@@ -126,4 +69,36 @@ class SuiteHeaderBuilder(BaseBuilder):
             f.writelines(var_list)
             f.write(self.linefeed)
             f.flush()
-        logger.info('测试套件变量写入完成')
+
+
+class SuiteHeader(BaseBuilder):
+    def __init__(self, project_name, module_id, module_type):
+        self.project_name = project_name
+        self.module_id = module_id
+        self.module_type = module_type
+
+    def get_setup_and_teardown(self):
+        st_queryset = SetupTeardown.objects.filter(
+            module_id=self.module_id,
+            module_type=self.module_type
+        )
+        if not st_queryset.exists():
+            return None
+        st_str = SetTearBuilder().get_from_queryset(st_queryset)
+        return st_str
+
+    def get_suite_variables(self):
+        var_queryset = Variable.objects.filter(
+            module_id=self.module_id,
+            module_type=self.module_type
+        )
+        if not var_queryset.exists():
+            return None
+        var_str = VariableBuilder(self.project_name).get_from_queryset(var_queryset)
+        return var_str
+
+    def get_library_info(self):
+        return LibraryBuilder().get_path()
+
+    def get_resource_info(self):
+        pass
