@@ -1,11 +1,12 @@
 from application.infra.reader.builder.basebuilder import BaseBuilder
+from application.infra.reader.basereader import BaseReader
 from application.infra.reader.builder import CaseBuilder
 from application.infra.reader.builder import LibraryBuilder
 from application.infra.reader.builder import ScalarBuilder
 from application.suitedir.models import SuiteDir
 
 
-class ResourceBuilder(BaseBuilder):
+class MultiResource(BaseReader):
     def __init__(self, project_id, project_name):
         self.project_id = project_id
         self.project_name = project_name
@@ -22,7 +23,7 @@ class ResourceBuilder(BaseBuilder):
     def setting_info(self):
         return self.setting_str
 
-    def resource_map(self):
+    def resources_map(self):
         return self.data_map
 
     def _handle_data(self):
@@ -37,7 +38,15 @@ class ResourceBuilder(BaseBuilder):
             data = self._handle_dir(resource_queryset)
             for parent_path, suite_obj in data.items():
                 path = resource_builder.resource_path(parent_path, suite_obj)
-                text = resource_builder.resource_text(suite_obj)
+
+                text = ''
+                text += self._settings_line
+                text += resource_builder.get_resource_settings()
+                text += self._variables_line
+                text += resource_builder.get_resource_variables(suite_obj)
+                text += self._keywords_line
+                text += resource_builder.get_resource_keywords(suite_obj)
+
                 data_map[path] = text
                 self.setting_str += self._splice_resource(path)
         return data_map
@@ -60,16 +69,15 @@ class BaseResource(BaseBuilder):
     def __init__(self, project_name):
         self.project_name = project_name
 
-    def _get_resource_settings(self):
+    def get_resource_settings(self):
         settings_str = ''
-        settings_str += self._settings_line
         library_str = LibraryBuilder().setting_info()
         if library_str:
             settings_str += library_str
         settings_str += self.linefeed
         return settings_str
 
-    def _get_resource_variables(self, suite_obj):
+    def get_resource_variables(self, suite_obj):
         module_type = 2
         variables_str = ''
         scalar_str = ScalarBuilder(suite_obj.id, module_type).variable_info()
@@ -78,9 +86,8 @@ class BaseResource(BaseBuilder):
         variables_str += self.linefeed
         return variables_str
 
-    def _get_resource_keywords(self, suite_obj):
+    def get_resource_keywords(self, suite_obj):
         keywords_str = ''
-        keywords_str += self._keywords_line
         case_str = CaseBuilder().get_case_by_suite(suite_obj)
         if case_str:
             keywords_str += case_str
@@ -91,9 +98,3 @@ class BaseResource(BaseBuilder):
         resource_name = suite_obj.suite_name
         return self.special_sep.join([suite_path, resource_name])
 
-    def resource_text(self, suite_obj):
-        text = ''
-        text += self._get_resource_settings()
-        text += self._get_resource_variables(suite_obj)
-        text += self._get_resource_keywords(suite_obj)
-        return text
