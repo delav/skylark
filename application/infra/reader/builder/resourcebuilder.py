@@ -54,12 +54,12 @@ class MultiResource(BaseReader):
     def _handle_dir(self, obj_iterator, result=None):
         if result is None:
             result = {}
-        for obj in obj_iterator:
+        for obj in obj_iterator.iterator():
             if obj.children is None:
-                result.append(obj)
+                pass
             else:
                 return self._handle_dir(obj.children, result)
-        return {}
+        return result
 
 
 class BaseResource(BaseBuilder):

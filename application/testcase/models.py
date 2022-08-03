@@ -1,4 +1,5 @@
 from django.db import models
+from application.user.models import User
 from application.testsuite.models import TestSuite
 from application.casetag.models import CaseTag
 from application.casepriority.models import CasePriority
@@ -12,6 +13,7 @@ class TestCase(models.Model):
     case_desc = models.TextField(default=None, blank=True, null=True, help_text='test case desc')
     create_at = models.DateTimeField(auto_now_add=True, help_text='create time')
     update_at = models.DateTimeField(auto_now=True, help_text='update time')
+    update_by = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING, help_text='last update user')
     case_pri = models.ForeignKey(CasePriority, related_name='pri', null=True, on_delete=models.SET_NULL,
                                  help_text='test case priority')
     case_tag = models.ManyToManyField(CaseTag, related_name='tags', blank=True, help_text='test case tags')

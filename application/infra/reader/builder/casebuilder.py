@@ -8,15 +8,11 @@ from application.infra.utils import KeywordManager, MANAGE_NAMES
 
 class CaseBuilder(BaseBuilder):
 
-    @staticmethod
-    def _is_null(value):
-        return value is None and value == ''
-
     def _splice_case_arg(self, key, *args):
         return self.small_sep + self.small_sep.join([key, *args])
 
     def _add_inout(self, key, value):
-        if self._is_null(value):
+        if not value:
             return ''
         if '|' in value:
             cci_var = value.split('|')
@@ -61,8 +57,10 @@ class CaseBuilder(BaseBuilder):
             content += case_content + self.linefeed
         return content
 
-    def get_case_by_ids(self, *ids):
-        cases = TestCase.objects.filter(id__in=ids, deleted=False).values(
+    def get_case_by_ids(self, ids: list):
+        if not ids:
+            return ''
+        cases = TestCase.objects.filter(id__in=ids).values(
                 'id', 'case_name', 'inputs', 'outputs'
             )
         return self._handle_case_queryset(cases)
@@ -76,16 +74,12 @@ class EntityBuilder(BaseBuilder):
     def __init__(self, entity_dict):
         self.entity = entity_dict
 
-    @staticmethod
-    def _is_not_null(value):
-        return value is not None and value != ''
-
     def get_entity(self):
         entity_line = ''
         # start with four space
         entity_line += self.small_sep
         # handler with output parameter
-        if self._is_not_null(self.entity['output_parm']):
+        if self.entity['output_parm']:
             if self.special_sep in self.entity['output_parm']:
                 cco_var = self.entity['output_parm'].split(self.special_sep)
                 out_var = self.small_sep.join(cco_var) + self.small_sep
@@ -96,7 +90,7 @@ class EntityBuilder(BaseBuilder):
         keyword_name = KeywordBuilder(self.entity).get_keyword_info()
         entity_line += keyword_name + self.small_sep
         # handler with input parameter
-        if self._is_not_null(self.entity['input_parm']):
+        if self.entity['input_parm']:
             if self.special_sep in self.entity['input_parm']:
                 cci_var = self.entity['input_parm'].split(self.special_sep)
                 in_var = self.small_sep.join(cci_var)

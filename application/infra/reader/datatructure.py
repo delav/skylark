@@ -14,3 +14,6 @@ class DataStructure(object):
     def parser(self, reader):
         data = reader.read()
         self.map.update(data)
+
+    def data(self):
+        return self.map

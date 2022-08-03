@@ -19,15 +19,6 @@ class SetTearBuilder(BaseBuilder):
         """
         return value.replace(' ', '')
 
-    @staticmethod
-    def _is_not_null(value):
-        """
-        if the value is not null
-        :param value: obj
-        :return: bool
-        """
-        return value is not None and value != ''
-
     def _splice_settear(self, key, *args):
         """
         splice the setup/teardown for header
@@ -45,7 +36,7 @@ class SetTearBuilder(BaseBuilder):
         :return: string
         """
         module_setup_str = ''
-        if self._is_not_null(step_str):
+        if step_str:
             if '|' in step_str:
                 module_setup_list = step_str.split('|')
                 if 'AND' in module_setup_list:

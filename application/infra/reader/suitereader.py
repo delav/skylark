@@ -1,6 +1,5 @@
 from application.infra.reader.basereader import BaseReader
 from application.infra.reader.builder import *
-from application.testsuite.models import TestSuite
 from application.variable.models import Variable
 from application.setupteardown.models import SetupTeardown
 
