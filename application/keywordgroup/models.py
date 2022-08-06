@@ -6,6 +6,7 @@ from django.db import models
 class KeywordGroup(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
     group_name = models.CharField(unique=True, max_length=255, help_text='keyword group name')
+    image = models.ImageField(default='media/icons/group', blank=True, null=True, help_text='icon')
     
     class Meta:
         verbose_name = 'keyword group'

@@ -12,7 +12,7 @@ class UserKeyword(models.Model):
     create_at = models.DateTimeField(default=datetime.now, help_text='create time')
     update_at = models.DateTimeField(default=datetime.now, help_text='update time')
     group = models.ForeignKey(KeywordGroup, null=True, on_delete=models.CASCADE, help_text='associated group')
-    image = models.ImageField(default='media/%Y/%m/%d/', blank=True, null=True, help_text='icon')
+    image = models.ImageField(default='media/icons/keyword/user.svg', blank=True, null=True, help_text='icon')
     test_case = models.ForeignKey(TestCase, null=True, on_delete=models.CASCADE, related_name='tcs',
                                   help_text='associated test case')
     project = models.ForeignKey(Project, null=True, on_delete=models.CASCADE, related_name='uks',

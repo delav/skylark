@@ -10,14 +10,20 @@ class ScalarBuilder(BaseBuilder):
         self.module_id = module_id
         self.module_type = module_type
 
-    def _splice_key_value(self, key, value):
+    def _splice_key_value(self, key, value, vt):
         """
         splice key and value to string
         :param key: scalar name
         :param value: scalar value
         :return: string
         """
-        return key + self.small_sep + value + self.linefeed
+        # list or dict
+        if vt == 1 or vt == 2:
+            value_list = value.split(self.special_sep)
+            value_text = self.small_sep.join(value_list)
+        else:
+            value_text = value
+        return key + self.large_sep + value_text + self.linefeed
 
     def variable_info(self):
         """
@@ -31,6 +37,8 @@ class ScalarBuilder(BaseBuilder):
         )
         if not queryset.exists():
             return ''
-        for obj in queryset.iterator():
-            scalar_content += self._splice_key_value(obj.name, obj.value)
+        for item in queryset.iterator():
+            scalar_content += self._splice_key_value(
+                item.name, item.value, item.value_type
+            )
         return scalar_content

@@ -6,6 +6,20 @@ from application.user.models import User
 from application.infra.exception import ValidationException
 
 
+class UserAdminSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = '__all__'
+
+
+class UserNormalSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email')
+
+
 class LoginSerializer(TokenObtainPairSerializer):
 
     class Meta:

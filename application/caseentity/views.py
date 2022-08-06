@@ -6,7 +6,7 @@ from django.db import transaction
 from application.infra.response import JsonResponse
 from application.testcase.models import TestCase
 from application.caseentity.models import CaseEntity
-from application.caseentity.serializers import CaseEntitySerializers
+from application.caseentity.serializers import CaseEntitySerializers, CaseEntityListSerializers
 from application.libkeyword.models import LibKeyword
 from application.userkeyword.models import UserKeyword
 
@@ -20,35 +20,29 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
         params = request.query_params
         case_id = params.get('case_id')
         entity_queryset = CaseEntity.objects.filter(test_case_id=case_id).order_by('seq_number')
-        result = []
-        for entity in entity_queryset.iterator():
-            serializer = self.get_serializer(entity)
-            entity_dict = serializer.data
-            del entity_dict["case"]
-            if entity_dict["keyword"] is None:
-                entity_dict["keyword"] = entity_dict["user_keyword"]
-            del entity_dict["user_keyword"]
-            result.append(entity_dict)
+        result = CaseEntityListSerializers(entity_queryset, many=True)
         return JsonResponse(data=result)
 
     def create(self, request, *args, **kwargs):
         logger.info('update test case entities')
-        case_id = request.data.get('case_id')
-        entity_list = request.data.get('entity_list')
-        test_case = TestCase.objects.filter(id=case_id)
-        if not test_case.exists():
-            logger.error(f'case id not exit: {case_id}')
-            return JsonResponse(code=4000025, msg='case not exit')
+        serializer = CaseEntityListSerializers(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        case_id = serializer.data.get('case_id')
+        entity_list = serializer.data.get('entity_list')
 
         with transaction.atomic():
             save_id = transaction.savepoint()
             try:
+                test_case = TestCase.objects.get(id=case_id)
+                test_case.update_by = request.user
+                test_case.save()
                 # delete old case entities
-                old_entities = CaseEntity.objects.filter(case_id=case_id)
+                old_entities = test_case.entity.all()
                 old_entities.delete()
                 # save new case entities
-                keyword_list = self.handler_keywords(case_id, entity_list)
-                CaseEntity.objects.bulk_update(keyword_list)
+                keyword_list = self.validate_keywords(case_id, entity_list)
+                CaseEntity.objects.bulk_create(keyword_list)
                 logger.info(f'update case entities successful: {case_id}')
             except Exception as e:
                 logger.error(f'update case entities failed: {case_id}, {e}')
@@ -60,24 +54,15 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
                 transaction.savepoint_commit(save_id)
         return JsonResponse(msg='update case entities successful')
 
-    def handler_keyword(self, case_id, entity_list):
-        update_list = []
-        create_list = []
-        for entity in entity_list:
-            if 'id' in entity:
-                update_list.append(entity)
-            else:
-                create_list.append(entity)
-
-    def handler_keywords(self, case_id, entity_list):
+    def validate_keywords(self, case_id, entity_list):
         result_list = []
         for entity in entity_list:
             entity['test_case_id'] = case_id
-            keyword_id = entity.pop('keyword')
-            lib_keyword_queryset = LibKeyword.objects.filter(id=keyword_id)
-            # lib keyword exists
-            if lib_keyword_queryset.exists():
-                lib_kw = lib_keyword_queryset.first()
+            keyword_id = entity['keyword_id']
+            keyword_type = entity['keyword_type']
+            if keyword_type == 1:
+                lib_kw = LibKeyword.objects.get(id=keyword_id)
+                # lib keyword exists
                 if lib_kw.input_arg is None and entity['input_parm'] is not None:
                     logger.error(f'[{lib_kw.ext_name}] error keyword param type: expect {lib_kw.input_arg},'
                                  f'but get {entity["input_parm"]}')
@@ -87,17 +72,10 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
                                  f'but get {entity["input_parm"]}')
                     raise Exception
                 entity['lib_keyword_id'] = keyword_id
-            # lib keyword not exists, find the user keyword
+            elif keyword_type == 2:
+                UserKeyword.objects.get(id=keyword_id)
             else:
-                user_keyword_queryset = UserKeyword.objects.filter(id=keyword_id)
-                # user keyword exists
-                if user_keyword_queryset.exists():
-                    entity['user_keyword_id'] = keyword_id
-                # user keyword not exists, raise error
-                else:
-                    logger.error(f'keyword is not exists: {keyword_id}')
-                    raise Exception
-            serializer = self.get_serializer(data=entity)
-            serializer.is_valid(raise_exception=True)
-            result_list.append(serializer.validated_data)
+                logger.error(f'keyword is not exists: {keyword_id}')
+                raise Exception
+            result_list.append(CaseEntity(**entity))
         return result_list

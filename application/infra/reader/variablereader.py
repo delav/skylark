@@ -13,7 +13,7 @@ class VariableReader(BaseReader):
     def read(self):
         var_builder = VariableBuilder(self.project_name, self.module_id, self.module_type, self.env)
         path = var_builder.get_path()
-        text = var_builder.variable_text()
+        text = var_builder.get_text()
         if not text:
             return {}
         text = self._variables_line + text

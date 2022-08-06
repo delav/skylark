@@ -14,9 +14,9 @@ class LibKeyword(models.Model):
     group = models.ForeignKey(KeywordGroup, null=True, on_delete=models.CASCADE, help_text='associated group')
     input_arg = models.TextField(default=None, blank=True, null=True, help_text='input args')
     input_desc = models.TextField(default=None, blank=True, null=True, help_text='input args desc')
-    out_arg = models.TextField(default=None, blank=True, null=True, help_text='output args')
-    out_desc = models.TextField(default=None, blank=True, null=True, help_text='output args desc')
-    image = models.ImageField(upload_to='media/%Y/%m/%d/', blank=True, null=True, help_text='keyword icon')
+    output_arg = models.TextField(default=None, blank=True, null=True, help_text='output args')
+    output_desc = models.TextField(default=None, blank=True, null=True, help_text='output args desc')
+    image = models.ImageField(upload_to='media/icons/keyword', blank=True, null=True, help_text='keyword icon')
 
     class Meta:
         verbose_name = 'lib keyword'

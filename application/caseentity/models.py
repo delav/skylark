@@ -13,10 +13,13 @@ class CaseEntity(models.Model):
     seq_number = models.IntegerField(help_text='entity sequence number')
     test_case = models.ForeignKey(TestCase, null=True, related_name='entity', on_delete=models.CASCADE,
                                   help_text='associated case')
-    keyword = models.ForeignKey(LibKeyword, null=True, on_delete=models.CASCADE,
-                                help_text='associated lib keyword')
-    user_keyword = models.ForeignKey(UserKeyword, null=True, on_delete=models.CASCADE,
-                                     help_text='associated user keyword')
+    keyword_id = models.IntegerField(help_text='lib keyword or user keyword id')
+    keyword_type = models.IntegerField(default=1, choices=((1, 'lib_keyword'), (2, 'user_keyword')),
+                                       help_text='keyword type')
+    # keyword = models.ForeignKey(LibKeyword, null=True, on_delete=models.CASCADE,
+    #                             help_text='associated lib keyword')
+    # user_keyword = models.ForeignKey(UserKeyword, null=True, on_delete=models.CASCADE,
+    #                                  help_text='associated user keyword')
 
     class Meta:
         verbose_name = 'case entity'

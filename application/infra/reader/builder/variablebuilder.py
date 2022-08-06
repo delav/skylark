@@ -26,8 +26,20 @@ class VariableBuilder(BaseBuilder):
             [self.project_name, 'common', self._name, self.env, self._suffix]
         ) + self.linefeed
 
-    def get_path(self):
-        return self.constant_path
+    def _splice_key_value(self, key, value, vt):
+        """
+        splice key and value to string
+        :param key: variable name
+        :param value: variable value
+        :return: string
+        """
+        # list or dict
+        if vt == 1 or vt == 2:
+            value_list = value.split(self.special_sep)
+            value_text = self.small_sep.join(value_list)
+        else:
+            value_text = value
+        return key + self.small_sep + value_text + self.linefeed
 
     def setting_info(self):
         """
@@ -36,7 +48,10 @@ class VariableBuilder(BaseBuilder):
         """
         return self._splice_str('Resource', self.constant_path)
 
-    def variable_text(self):
+    def get_path(self):
+        return self.constant_path
+
+    def get_text(self):
         variable_str = ''
         var_queryset = Variable.objects.filter(
             env=self.env,
@@ -45,8 +60,10 @@ class VariableBuilder(BaseBuilder):
         )
         if not var_queryset.exists():
             return ''
-        for item in var_queryset:
-            variable_str += item.name + self.small_sep + item.value + self.linefeed
+        for item in var_queryset.iterator():
+            variable_str += self._splice_key_value(
+                item.name, item.value, item.value_type
+            )
         return variable_str
 
 

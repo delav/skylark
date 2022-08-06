@@ -6,4 +6,11 @@ class CaseEntitySerializers(serializers.ModelSerializer):
 
     class Meta:
         model = CaseEntity
-        fields = '__all__'
+        fields = ('id', 'input_parm', 'output_parm', 'seq_number', 'keyword_id', 'keyword_type')
+
+
+class CaseEntityListSerializers(serializers.ModelSerializer):
+
+    case_id = serializers.IntegerField(required=True, write_only=True)
+    entity_list = CaseEntitySerializers(many=True)
+

@@ -15,6 +15,7 @@ class Variable(models.Model):
                                      help_text='variable value type')
     env = models.ForeignKey(Environment, null=True, related_name='envs', on_delete=models.CASCADE,
                             help_text='associated environment')
+    seq_number = models.IntegerField(help_text='variable sequence number')
     remark = models.TextField(null=True, blank=True, help_text='remark')
 
     class Meta:
