@@ -1,63 +1,48 @@
-from rest_framework.views import exception_handler
+from loguru import logger
+from rest_framework.views import exception_handler as rest_handler
 from rest_framework.status import HTTP_500_INTERNAL_SERVER_ERROR
 from application.infra.response import JsonResponse
 
 
-def response_exc_handler(exc, context):
+def exception_handler(exc, context):
     """
     response interceptor,
     deal with the response exception
     """
-    response = exception_handler(exc, context)
-    field, message = '', ''
-    code, msg = 10000, 'Unexpected error'
-    # print('response:', response.data)
-    result = response.data
-    for index, value in enumerate(result):
-        if index == 0:
-            if isinstance(result, list):
-                message = result[0]
-            else:
-                key = value
-                value = result[key]
-
-                if isinstance(value, str):
-                    field = key
-                    message = value
-                else:
-                    field = key
-                    message = value[0]
-    err_info = {'field': field, 'message': message}
-    for key in err_info:
-        if key == 'field':
-            field = err_info[key]
-        if key == 'message':
-            msg = err_info[key]
-            code = err_info[key].__dict__['code']
-    if field != '':
-        try:
-            code = exception_desc[code][0]
-            msg = exception_desc[code][1]
-        except (KeyError,):
-            code = 99999
+    response = rest_handler(exc, context)
+    logger.error(f'error detail: {response.data}', )
     if response is None:
         return JsonResponse(
-            code=50000, msg='Internal server error',
-            status=HTTP_500_INTERNAL_SERVER_ERROR, exception=True)
-
-    else:
-        return JsonResponse(
-            code=code, msg=msg,
-            status=response.status_code, exception=True
-        )
-
-
-exception_desc = {
-    'blank': (1000070, '该参数不能为空'),
-    'required': (1000080, '缺少参数'),
-    'invalid': (1000010, '非法参数'),
-    'unique': (1000020, '该对象已存在，不能重复创建'),
-    'not_authenticated': (1000030, '请先登录再进行操作'),
-    'permission_denied': (1000040, '没有权限'),
-    'token_not_valid': (1000050, '登录信息已过期')
-}
+            code=99999,
+            msg='System Error',
+            status=HTTP_500_INTERNAL_SERVER_ERROR)
+    if response.status_code == 400:
+        response = JsonResponse(
+            code=40000,
+            msg='400_Bad Request',
+            status=response.status_code)
+    elif response.status_code == 401:
+        response = JsonResponse(
+            code=40100, msg='401_UNAUTHORIZED',
+            status=response.status_code)
+    elif response.status_code == 403:
+        response = JsonResponse(
+            code=40300,
+            msg='403_FORBIDDEN',
+            status=response.status_code)
+    elif response.status_code == 404:
+        response = JsonResponse(
+            code=40400,
+            msg='404_Not Found',
+            status=response.status_code)
+    elif response.status_code == 405:
+        response = JsonResponse(
+            code=response.status_code,
+            msg='405_METHOD_NOT_ALLOWED',
+            status=response.status_code)
+    elif 500 <= response.status_code <= 599:
+        response = JsonResponse(
+            code=55555,
+            msg='INTERNAL_SERVER_ERROR',
+            status=response.status_code)
+    return response

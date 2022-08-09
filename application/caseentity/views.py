@@ -3,6 +3,7 @@ from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
 from django.db import transaction
+from django.core.exceptions import ValidationError
 from application.infra.response import JsonResponse
 from application.testcase.models import TestCase
 from application.caseentity.models import CaseEntity
@@ -19,8 +20,11 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
         logger.info('get test case entities by case id')
         params = request.query_params
         case_id = params.get('case_id')
-        entity_queryset = CaseEntity.objects.filter(test_case_id=case_id).order_by('seq_number')
-        result = CaseEntityListSerializers(entity_queryset, many=True)
+        try:
+            entity_queryset = CaseEntity.objects.filter(test_case_id=case_id).order_by('seq_number')
+        except ValidationError:
+            return JsonResponse(code=1000026, msg='request param error')
+        result = self.get_serializer(entity_queryset, many=True)
         return JsonResponse(data=result)
 
     def create(self, request, *args, **kwargs):

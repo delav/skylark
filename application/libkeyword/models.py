@@ -16,7 +16,8 @@ class LibKeyword(models.Model):
     input_desc = models.TextField(default=None, blank=True, null=True, help_text='input args desc')
     output_arg = models.TextField(default=None, blank=True, null=True, help_text='output args')
     output_desc = models.TextField(default=None, blank=True, null=True, help_text='output args desc')
-    image = models.ImageField(upload_to='media/icons/keyword', blank=True, null=True, help_text='keyword icon')
+    image = models.ImageField(default='media/icons/keyword/default.png', upload_to='media/icons/keyword',
+                              blank=True, null=True, help_text='keyword icon')
 
     class Meta:
         verbose_name = 'lib keyword'

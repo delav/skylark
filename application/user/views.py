@@ -70,7 +70,7 @@ class AdminUserViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
             except Exception as e:
                 logger.error(f'register failed: {e}')
                 transaction.savepoint_rollback(save_id)
-                return JsonResponse(code=100001, msg='register fail')
+                return JsonResponse(code=10010, msg='register fail')
             else:
                 transaction.savepoint_commit(save_id)
         data = self.get_serializer(user)
@@ -87,18 +87,20 @@ class AdminUserViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         update_data = request.data
         try:
             instance = self.get_object()
-        except User.DoesNotExist:
-            return JsonResponse(code=100002, msg='user not found')
+        except (Exception,) as e:
+            logger.error(f'update user info error: {e}')
+            return JsonResponse(code=10011, msg='user not found')
         serializer = self.get_serializer(instance, data=update_data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return JsonResponse(data=serializer.data)
 
     def destroy(self, request, *args, **kwargs):
-        logger.info('delete user')
+        logger.info(f'delete user: {kwargs.get("pk")}')
         try:
             instance = self.get_object()
-        except User.DoesNotExist:
-            return JsonResponse(code=100004, msg='delete user failed')
+        except (Exception,) as e:
+            logger.error(f'delete user error: {e}')
+            return JsonResponse(code=10012, msg='delete user failed')
         self.perform_destroy(instance)
         return JsonResponse(msg=instance.id)

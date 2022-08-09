@@ -20,13 +20,15 @@ from application.user.views import NoAuthUserViewSets, AdminUserViewSets, Normal
 from application.group.views import GroupViewSets
 from application.libkeyword.views import LibKeywordViewSets
 from application.userkeyword.views import UserKeywordViewSets
+from application.testcase.views import TestCaseViewSets
 
 router = routers.SimpleRouter(trailing_slash=False)
 router.register('user/info', NormalUserViewSets, basename='user_info')
-router.register('user/curd', AdminUserViewSets, basename='user')
+router.register('user/admin', AdminUserViewSets, basename='user')
 router.register('user/group', GroupViewSets, basename='group')
 router.register('keyword/lib-keyword', LibKeywordViewSets, basename='lib_keyword')
 router.register('keyword/user-keyword', UserKeywordViewSets, basename='user_keyword')
+router.register('test-case', TestCaseViewSets, basename='test_case')
 
 urlpatterns = [
     url(r'^api/', include(router.urls)),

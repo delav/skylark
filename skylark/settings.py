@@ -122,7 +122,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'application.infra.permission.LoginAuth',
     ),
-    'EXCEPTION_HANDLER': 'application.infra.exception.response_exc_handler',
+    'DATETIME_FORMAT': '%Y-%m-%d %H:%M:%S',
+    'EXCEPTION_HANDLER': 'application.infra.exception.exception_handler',
 }
 
 SIMPLE_JWT = {
@@ -174,7 +175,7 @@ AES_KEY = "20220427@)@@)$@&"
 
 STATIC_URL = '/static/'
 
-MEDIA_PATH = os.path.join(BASE_DIR, 'static/media')
+MEDIA_URL = os.path.join(BASE_DIR, 'static/media/')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

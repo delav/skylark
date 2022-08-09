@@ -1,3 +1,2 @@
-
-from .interceptor import response_exc_handler
+from .interceptor import exception_handler
 from .validator import ValidationException
