@@ -1,6 +1,6 @@
 import os
 from django.conf import settings
-from application.infra.reader.builder.basebuilder import BaseBuilder
+from application.common.reader.builder.basebuilder import BaseBuilder
 from application.pythonlib.models import PythonLib
 
 

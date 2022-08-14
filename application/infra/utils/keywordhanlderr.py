@@ -1,6 +1,6 @@
 import copy
 from loguru import logger
-from application.infra.reader.builder.basebuilder import BaseBuilder
+from application.common.reader.builder.basebuilder import BaseBuilder
 from application.libkeyword.models import LibKeyword
 
 MANAGE_NAMES = {

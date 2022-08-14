@@ -127,7 +127,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'AUTH_HEADER_TYPES': ('Bearer',),
     'USER_ID_FIELD': 'id',
@@ -180,5 +180,19 @@ MEDIA_URL = os.path.join(BASE_DIR, 'static/media/')
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
+# model data type. 0: test case, 1: resource(user keyword), 2: text/other file
+MODEL_TYPE = (
+    (0, 'TestCase'),
+    (1, 'Resource'),
+    (2, 'HelpFile'),
+)
+
+# Python keyword directory
 LIB_URL = '/library/'
+
+# Default copy project
+PROJECT_MODULE = 'SKYLARK'
+
+# Tree default node data
+NODE = {'id': 1, 'pId': 0, 'name': 'DEFAULT', 'desc': None, 'type': 0, 'open': True, 'nocheck': False}
 

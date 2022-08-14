@@ -10,7 +10,7 @@ class UserAdminSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ('id', 'email', 'username', 'is_superuser', 'is_staff', 'is_active', 'date_joined', 'group_id')
 
 
 class UserNormalSerializer(serializers.ModelSerializer):
@@ -24,7 +24,7 @@ class LoginSerializer(TokenObtainPairSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'password')
+        fields = ('email', 'password')
 
     @classmethod
     def get_token(cls, user):
@@ -44,10 +44,10 @@ class LoginSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         try:
             raw_password = ecb_decrypt(attrs['password'])
-            user = User.objects.get(username=attrs['username'])
+            user = User.objects.get(email=attrs['email'])
             assert check_password(raw_password, user.password)
         except (Exception,):
-            raise ValidationException(detail='用户名或密码错误', code=3000030)
+            raise ValidationException(detail='邮箱或密码错误', code=10031)
         refresh = self.get_token(user)
 
         data = {'user': user, 'token': str(refresh.access_token), 'refresh': str(refresh)}
@@ -104,22 +104,22 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         user = User.objects.filter(email=value)
         if user.exists():
-            raise ValidationException(detail='邮箱已注册', code=3000021)
+            raise ValidationException(detail='邮箱已注册', code=10032)
         return value
 
     def validate_username(self, value):
         user = User.objects.filter(username=value)
         if user.exists():
-            raise ValidationException(detail='用户名已注册', code=3000022)
+            raise ValidationException(detail='用户名已注册', code=10033)
         return value
 
     def validate(self, attrs):
         if attrs.get('password') != attrs.get('confirm_password'):
-            raise ValidationException(detail='密码与确认密码不一致', code=3000020)
+            raise ValidationException(detail='密码与确认密码不一致', code=10034)
         try:
             raw_password = ecb_decrypt(attrs['password'])
             attrs['password'] = make_password(raw_password)
         except (Exception,):
-            raise ValidationException(detail='密码不合法', code=3000023)
+            raise ValidationException(detail='密码不合法', code=10035)
         del attrs['confirm_password']
         return attrs

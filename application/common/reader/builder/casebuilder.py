@@ -1,4 +1,4 @@
-from application.infra.reader.builder.basebuilder import BaseBuilder
+from application.common.reader.builder.basebuilder import BaseBuilder
 from application.caseentity.models import CaseEntity
 from application.testcase.models import TestCase
 from application.libkeyword.models import LibKeyword
@@ -78,7 +78,7 @@ class EntityBuilder(BaseBuilder):
         entity_line = ''
         # start with four space
         entity_line += self.small_sep
-        # handler with output parameter
+        # replicator with output parameter
         if self.entity['output_parm']:
             if self.special_sep in self.entity['output_parm']:
                 cco_var = self.entity['output_parm'].split(self.special_sep)
@@ -86,10 +86,10 @@ class EntityBuilder(BaseBuilder):
             else:
                 out_var = self.entity['output_parm'] + self.small_sep
             entity_line += out_var
-        # handler with keyword name
+        # replicator with keyword name
         keyword_name = KeywordBuilder(self.entity).get_keyword_info()
         entity_line += keyword_name + self.small_sep
-        # handler with input parameter
+        # replicator with input parameter
         if self.entity['input_parm']:
             if self.special_sep in self.entity['input_parm']:
                 cci_var = self.entity['input_parm'].split(self.special_sep)

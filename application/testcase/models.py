@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from application.user.models import User
 from application.testsuite.models import TestSuite
 from application.casetag.models import CaseTag
@@ -19,8 +20,7 @@ class TestCase(models.Model):
     case_tag = models.ManyToManyField(CaseTag, related_name='tags', blank=True, help_text='test case tags')
     test_suite = models.ForeignKey(TestSuite, related_name='cases', null=True, on_delete=models.CASCADE,
                                    help_text='associated test suite')
-    case_type = models.IntegerField(default=0, choices=((0, 'T0'), (1, 'T1')),
-                                    help_text='case type, 0: normal test case; 1:use customize keyword')
+    case_type = models.IntegerField(default=0, choices=settings.MODEL_TYPE, help_text='case type')
     inputs = models.TextField(default=None, blank=True, null=True, help_text='input args for keyword')
     outputs = models.TextField(default=None, blank=True, null=True, help_text='output args for keyword')
     timeout = models.CharField(default=None, max_length=255, blank=True, null=True, help_text='case timeout')
@@ -30,5 +30,5 @@ class TestCase(models.Model):
         verbose_name = 'test case'
         verbose_name_plural = verbose_name
         db_table = 'test_case'
-        ordering = ['create_at']
+        ordering = ['case_name']
         unique_together = ['case_name', 'test_suite']

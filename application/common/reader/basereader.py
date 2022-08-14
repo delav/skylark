@@ -1,4 +1,4 @@
-from application.infra.reader.builder.basebuilder import BaseBuilder
+from application.common.reader.builder.basebuilder import BaseBuilder
 
 
 class BaseReader(BaseBuilder):

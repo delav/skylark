@@ -20,7 +20,11 @@ from application.user.views import NoAuthUserViewSets, AdminUserViewSets, Normal
 from application.group.views import GroupViewSets
 from application.libkeyword.views import LibKeywordViewSets
 from application.userkeyword.views import UserKeywordViewSets
+from application.caseentity.views import CaseEntityViewSets
 from application.testcase.views import TestCaseViewSets
+from application.testsuite.views import TestSuiteViewSets
+from application.suitedir.views import SuiteDirViewSets
+from application.project.views import ProjectViewSets
 
 router = routers.SimpleRouter(trailing_slash=False)
 router.register('user/info', NormalUserViewSets, basename='user_info')
@@ -28,7 +32,11 @@ router.register('user/admin', AdminUserViewSets, basename='user')
 router.register('user/group', GroupViewSets, basename='group')
 router.register('keyword/lib-keyword', LibKeywordViewSets, basename='lib_keyword')
 router.register('keyword/user-keyword', UserKeywordViewSets, basename='user_keyword')
+router.register('case-entity', CaseEntityViewSets, basename='case_entity')
 router.register('test-case', TestCaseViewSets, basename='test_case')
+router.register('test-suite', TestSuiteViewSets, basename='test_suite')
+router.register('suite-dir', SuiteDirViewSets, basename='suite_dir')
+router.register('project', ProjectViewSets, basename='project')
 
 urlpatterns = [
     url(r'^api/', include(router.urls)),

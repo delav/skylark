@@ -1,7 +1,7 @@
-from application.infra.reader.builder import SetTearBuilder
+from application.common.reader.builder import SetTearBuilder
 from application.setupteardown.models import SetupTeardown
 from application.suitedir.models import SuiteDir
-from application.infra.reader.basereader import BaseReader
+from application.common.reader.basereader import BaseReader
 
 
 class DirInitReader(BaseReader):

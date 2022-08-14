@@ -3,7 +3,6 @@ from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
 from django.db import transaction
-from django.core.exceptions import ValidationError
 from application.infra.response import JsonResponse
 from application.testcase.models import TestCase
 from application.caseentity.models import CaseEntity
@@ -15,15 +14,15 @@ from application.userkeyword.models import UserKeyword
 class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = CaseEntity.objects.all()
     serializer_class = CaseEntitySerializers
-    
+
     def list(self, request, *args, **kwargs):
-        logger.info('get test case entities by case id')
-        params = request.query_params
-        case_id = params.get('case_id')
+        logger.info(f'get test case entities by case id: {request.query_params}')
         try:
+            case_id = request.query_params.get('case_id')
             entity_queryset = CaseEntity.objects.filter(test_case_id=case_id).order_by('seq_number')
-        except ValidationError:
-            return JsonResponse(code=1000026, msg='request param error')
+        except (Exception,) as e:
+            logger.error(f'get entities failed: {e}')
+            return JsonResponse(code=10026, msg='get entities failed')
         result = self.get_serializer(entity_queryset, many=True)
         return JsonResponse(data=result)
 
@@ -53,7 +52,7 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
                 # rollback database
                 transaction.savepoint_rollback(save_id)
                 logger.info("rollback database successful")
-                return JsonResponse(code=4000026, msg='update case entities failed')
+                return JsonResponse(code=10025, msg='update case entities failed')
             else:
                 transaction.savepoint_commit(save_id)
         return JsonResponse(msg='update case entities successful')

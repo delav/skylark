@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from application.project.models import Project
 
 # Create your models here.
@@ -14,13 +15,12 @@ class SuiteDir(models.Model):
                                 help_text='associated project')
     parent_dir = models.ForeignKey('self', related_name='children', null=True, on_delete=models.CASCADE,
                                    help_text='parent dir')
-    dir_type = models.IntegerField(default=0, choices=((0, 'robot'), (1, 'resource'), (2, 'file')),
-                                   help_text='dir type')
+    dir_type = models.IntegerField(default=0, choices=settings.MODEL_TYPE, help_text='dir type')
     deleted = models.BooleanField(default=1, help_text='if deleted')
 
     class Meta:
         verbose_name = 'suite dir'
         verbose_name_plural = verbose_name
         db_table = 'suite_dir'
-        ordering = ['create_at']
+        ordering = ['dir_name']
         unique_together = [('project', 'parent_dir', 'dir_name')]

@@ -1,5 +1,5 @@
-from application.infra.reader.builder import VariableBuilder
-from application.infra.reader.basereader import BaseReader
+from application.common.reader.builder import VariableBuilder
+from application.common.reader.basereader import BaseReader
 
 
 class VariableReader(BaseReader):

@@ -1,8 +1,8 @@
-from application.infra.reader.builder.basebuilder import BaseBuilder
-from application.infra.reader.basereader import BaseReader
-from application.infra.reader.builder import CaseBuilder
-from application.infra.reader.builder import LibraryBuilder
-from application.infra.reader.builder import ScalarBuilder
+from application.common.reader.builder.basebuilder import BaseBuilder
+from application.common.reader.basereader import BaseReader
+from application.common.reader.builder import CaseBuilder
+from application.common.reader.builder import LibraryBuilder
+from application.common.reader.builder import ScalarBuilder
 from application.suitedir.models import SuiteDir
 
 

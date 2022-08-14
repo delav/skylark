@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from application.project.models import Project
 from application.suitedir.models import SuiteDir
 
@@ -12,8 +13,7 @@ class TestSuite(models.Model):
     update_at = models.DateTimeField(auto_now=True, help_text='update time')
     suite_dir = models.ForeignKey(SuiteDir, null=True, related_name='suites', on_delete=models.CASCADE,
                                   help_text='associated dir')
-    suite_type = models.IntegerField(default=0, choices=((0, 'robot'), (1, 'resource'), (2, 'file')),
-                                     help_text='test suite type')
+    suite_type = models.IntegerField(default=0, choices=settings.MODEL_TYPE, help_text='test suite type')
     timeout = models.CharField(default=None, max_length=255, help_text='all case run timeout')
     deleted = models.BooleanField(default=1, help_text='if deleted')
 
@@ -21,5 +21,5 @@ class TestSuite(models.Model):
         verbose_name = 'test suite'
         verbose_name_plural = verbose_name
         db_table = 'test_suite'
-        ordering = ['create_at']
+        ordering = ['suite_name']
         unique_together = ['suite_name', 'suite_dir']
