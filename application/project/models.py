@@ -11,7 +11,7 @@ class Project(models.Model):
     update_at = models.DateTimeField(auto_now=True, help_text='update time')
     create_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL,
                                   related_name='user', help_text='create user')
-    deleted = models.BooleanField(default=1, help_text='if deleted')
+    deleted = models.BooleanField(default=0, help_text='if deleted')
 
     class Meta:
         verbose_name = 'project'

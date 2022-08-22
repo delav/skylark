@@ -15,7 +15,7 @@ class TestSuite(models.Model):
                                   help_text='associated dir')
     suite_type = models.IntegerField(default=0, choices=settings.MODEL_TYPE, help_text='test suite type')
     timeout = models.CharField(default=None, max_length=255, help_text='all case run timeout')
-    deleted = models.BooleanField(default=1, help_text='if deleted')
+    deleted = models.BooleanField(default=0, help_text='if deleted')
 
     class Meta:
         verbose_name = 'test suite'

@@ -3,8 +3,7 @@ from application.project.models import Project
 
 
 class ProjectSerializers(serializers.ModelSerializer):
-
-    copy_id = serializers.IntegerField(write_only=True, required=False)
+    create_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Project

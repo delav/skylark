@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.db.models import Q
 from django.contrib.auth.hashers import make_password, check_password
 from application.infra.common import ecb_decrypt
 from application.user.models import User
@@ -13,18 +14,14 @@ class UserAdminSerializer(serializers.ModelSerializer):
         fields = ('id', 'email', 'username', 'is_superuser', 'is_staff', 'is_active', 'date_joined', 'group_id')
 
 
-class UserNormalSerializer(serializers.ModelSerializer):
+class UserSerializer(TokenObtainPairSerializer, serializers.ModelSerializer):
+
+    password = serializers.CharField(write_only=True)
+    email = serializers.EmailField(read_only=True)
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email')
-
-
-class LoginSerializer(TokenObtainPairSerializer):
-
-    class Meta:
-        model = User
-        fields = ('email', 'password')
+        fields = ('id', 'username', 'password', 'email')
 
     @classmethod
     def get_token(cls, user):
@@ -37,17 +34,18 @@ class LoginSerializer(TokenObtainPairSerializer):
         :return: token
         """
         token = super().get_token(user)
-        # 添加个人信息
+        # add user extra info
         # token['name'] = user.username
         return token
 
     def validate(self, attrs):
         try:
+            username = attrs['username']
             raw_password = ecb_decrypt(attrs['password'])
-            user = User.objects.get(email=attrs['email'])
+            user = User.objects.get(Q(username=username) | Q(email=username))
             assert check_password(raw_password, user.password)
         except (Exception,):
-            raise ValidationException(detail='邮箱或密码错误', code=10031)
+            raise ValidationException(detail='Incorrect username or password', code=10031)
         refresh = self.get_token(user)
 
         data = {'user': user, 'token': str(refresh.access_token), 'refresh': str(refresh)}
@@ -55,14 +53,8 @@ class LoginSerializer(TokenObtainPairSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    confirm_password = serializers.CharField(label='确认密码', help_text='确认密码',
-                                             min_length=6, max_length=64,
-                                             write_only=True,
-                                             error_messages={
-                                                 'min_length': '仅允许6~64个字符的确认密码',
-                                                 'max_length': '仅允许6~64个字符的确认密码',
-                                             })
-    group_id = serializers.IntegerField(required=False, read_only=True, help_text='所属组ID')
+
+    group_id = serializers.IntegerField(required=False, read_only=True)
 
     class Meta:
         model = User
@@ -70,33 +62,27 @@ class RegisterSerializer(serializers.ModelSerializer):
                   'is_staff', 'is_active', 'date_joined', 'group_id')
         extra_kwargs = {
             'username': {
-                'label': '用户名',
-                'help_text': '用户名',
                 'min_length': 3,
                 'max_length': 24,
                 'error_messages': {
-                    'min_length': '仅允许3-24个字符的用户名',
-                    'max_length': '仅允许3-24个字符的用户名',
+                    'min_length': 'Only allow usernames of 3-24 characters',
+                    'max_length': 'Only allow usernames of 3-24 characters',
                 }
             },
             'password': {
-                'label': '密码',
-                'help_text': '密码',
                 'write_only': True,
                 'min_length': 6,
                 'max_length': 64,
                 'error_messages': {
-                    'min_length': '仅允许6-64个字符的密码',
-                    'max_length': '仅允许6-64个字符的密码',
+                    'min_length': 'Only allow usernames of 6-64 password',
+                    'max_length': 'Only allow usernames of 6-64 password',
                 }
             },
             'email': {
-                'label': '邮箱',
-                'help_text': '邮箱',
                 'max_length': 64,
                 'error_messages': {
-                    'invalid': '邮箱地址不合法',
-                    'max_length': '不能大于64个字符的邮箱',
+                    'invalid': 'Invalid email address',
+                    'max_length': 'email not allow greater than 64 characters',
                 }
             }
         }
@@ -104,22 +90,22 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         user = User.objects.filter(email=value)
         if user.exists():
-            raise ValidationException(detail='邮箱已注册', code=10032)
+            raise ValidationException(detail='Email has been registered', code=10032)
         return value
 
     def validate_username(self, value):
         user = User.objects.filter(username=value)
         if user.exists():
-            raise ValidationException(detail='用户名已注册', code=10033)
+            raise ValidationException(detail='Username already exists', code=10033)
         return value
 
     def validate(self, attrs):
         if attrs.get('password') != attrs.get('confirm_password'):
-            raise ValidationException(detail='密码与确认密码不一致', code=10034)
+            raise ValidationException(detail='Confirm password error', code=10034)
         try:
             raw_password = ecb_decrypt(attrs['password'])
             attrs['password'] = make_password(raw_password)
         except (Exception,):
-            raise ValidationException(detail='密码不合法', code=10035)
+            raise ValidationException(detail='Please check your password', code=10035)
         del attrs['confirm_password']
         return attrs

@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 from application.infra.response import JsonResponse
 from application.user.models import User
-from application.user.serializers import LoginSerializer, RegisterSerializer, UserAdminSerializer, UserNormalSerializer
+from application.user.serializers import UserSerializer, RegisterSerializer, UserAdminSerializer
 from application.group.models import Group
 from application.infra.common import PagePagination
 
@@ -18,7 +18,7 @@ class NoAuthUserViewSets(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
 
     @action(methods=['post'], detail=False)
     def login(self, request, *args, **kwargs):
-        serializer = LoginSerializer(data=request.data)
+        serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data.pop('user')
         user.last_login = datetime.now()
@@ -54,7 +54,7 @@ class NoAuthUserViewSets(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
 
 class NormalUserViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()
-    serializer_class = UserNormalSerializer
+    serializer_class = UserSerializer
 
     def retrieve(self, request, *args, **kwargs):
         logger.info('get current user info')

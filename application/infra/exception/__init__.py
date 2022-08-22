@@ -1,2 +1,4 @@
-from .interceptor import exception_handler
+from .detailerror import DetailError
 from .validator import ValidationException
+from .interceptor import exception_handler
+

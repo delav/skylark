@@ -24,7 +24,7 @@ class TestCase(models.Model):
     inputs = models.TextField(default=None, blank=True, null=True, help_text='input args for keyword')
     outputs = models.TextField(default=None, blank=True, null=True, help_text='output args for keyword')
     timeout = models.CharField(default=None, max_length=255, blank=True, null=True, help_text='case timeout')
-    deleted = models.BooleanField(default=1, help_text='if deleted')
+    deleted = models.BooleanField(default=0, help_text='if deleted')
 
     class Meta:
         verbose_name = 'test case'

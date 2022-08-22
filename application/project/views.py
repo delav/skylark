@@ -3,6 +3,8 @@ from django.conf import settings
 from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
+from application.user.models import User
+from application.group.models import Group
 from application.infra.common import PagePagination
 from application.infra.response import JsonResponse
 from application.project.models import Project
@@ -20,15 +22,22 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Ret
 
     def list(self, request, *args, **kwargs):
         logger.info('get project list by current user')
+        gps = Group.objects.filter(user=request.user)
+        gp_users = User.objects.none()
+        for gp in gps:
+            gp_users |= gp.user_set.all()
+        queryset = Project.objects.filter(create_by__in=gp_users)
+        data = self.paginate_queryset(queryset)
+        return JsonResponse(data=data)
 
     def create(self, request, *args, **kwargs):
         logger.info(f'create project: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = serializer.data
-        project_name = data.get('project_name')
         # test
-        project = Project(project_name=project_name, create_by=request.user).save()
+        project = self.perform_create(serializer)
+        # data = serializer.data
+        # project_name = data.get('project_name')
         # project_q = Project.objects.filter(project_name=project_name)
         # if project_q.exists():
         #     return JsonResponse(code=10050, data='project name had exists')
@@ -64,3 +73,13 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Ret
 
     def destroy(self, request, *args, **kwargs):
         logger.info(f'delete project: {kwargs.get("pk")}')
+
+    def perform_create(self, serializer):
+        return serializer.save()
+
+
+class AdminProjectViewSets(mixins.ListModelMixin, mixins.RetrieveModelMixin,
+                           mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializers
+    pagination_class = PagePagination
