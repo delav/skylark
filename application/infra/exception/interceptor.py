@@ -11,12 +11,12 @@ def exception_handler(exc, context):
     deal with the response exception
     """
     response = rest_handler(exc, context)
-    if response is None:
-        return JsonResponse(
-            code=99999,
-            msg='System Error',
-            status=HTTP_500_INTERNAL_SERVER_ERROR)
-    logger.error(f'error detail: {response.data}', )
+    # if response is None:
+    #     return JsonResponse(
+    #         code=99999,
+    #         msg='System Error',
+    #         status=HTTP_500_INTERNAL_SERVER_ERROR)
+    # logger.error(f'error detail: {response.data}', )
     if isinstance(response.data, list):
         if response.data and isinstance(response.data[0], DetailError):
             return JsonResponse(
@@ -30,7 +30,8 @@ def exception_handler(exc, context):
             status=response.status_code)
     elif response.status_code == 401:
         response = JsonResponse(
-            code=40100, msg='401_UNAUTHORIZED',
+            code=40100,
+            msg='401_UNAUTHORIZED',
             status=response.status_code)
     elif response.status_code == 403:
         response = JsonResponse(

@@ -54,7 +54,8 @@ class UserSerializer(TokenObtainPairSerializer, serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
 
-    group_id = serializers.IntegerField(required=False, read_only=True)
+    group_id = serializers.IntegerField(read_only=True)
+    confirm_password = serializers.CharField(allow_blank=False, write_only=True)
 
     class Meta:
         model = User

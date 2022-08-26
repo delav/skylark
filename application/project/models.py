@@ -6,7 +6,7 @@ from application.user.models import User
 
 class Project(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
-    project_name = models.CharField(unique=True, max_length=255, help_text='project name')
+    name = models.CharField(unique=True, max_length=255, help_text='project name')
     create_at = models.DateTimeField(auto_now_add=True,  help_text='create time')
     update_at = models.DateTimeField(auto_now=True, help_text='update time')
     create_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL,

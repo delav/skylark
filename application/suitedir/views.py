@@ -26,7 +26,7 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
         dirs = project.dirs.filter(parent_dir=None).order_by('dir_type')
         project_tree_list = []
         project_node = fill_node(
-            {'id': project.id, 'pId': 0, 'name': project.project_name, 'desc': 'p', 'type': 0}
+            {'id': project.id, 'pId': 0, 'name': project.name, 'desc': 'p', 'type': 0}
         )
         project_tree_list.append(project_node)
         for d in dirs.iterator():

@@ -14,10 +14,9 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = UserKeywordSerializers
 
     def list(self, request, *args, **kwargs):
-        params = request.query_params
-        project_id = params.get('project')
-        logger.info(f'get project user keyword: {project_id}')
+        logger.info(f'get project user keyword: {request.query_params}')
         try:
+            project_id = request.query_params.get('project')
             queryset = UserKeyword.objects.select_related('test_case').filter(project_id=project_id)
         except ValidationError:
             return JsonResponse(code=1000030, msg='request params error')

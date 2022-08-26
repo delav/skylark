@@ -23,20 +23,20 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
         except (Exception,) as e:
             logger.error(f'get entities failed: {e}')
             return JsonResponse(code=10026, msg='get entities failed')
-        result = self.get_serializer(entity_queryset, many=True)
-        return JsonResponse(data=result)
+        ser = self.get_serializer(entity_queryset, many=True)
+        return JsonResponse(data=ser.data)
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
-        logger.info('update test case entities')
+        logger.info(f'save test case entities: {request.data}')
         serializer = CaseEntityListSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         case_id = serializer.data.get('case_id')
         entity_list = serializer.data.get('entity_list')
 
-        with transaction.atomic():
-            save_id = transaction.savepoint()
-            try:
+        try:
+            with transaction.atomic():
                 test_case = TestCase.objects.get(id=case_id)
                 test_case.update_by = request.user
                 test_case.save()
@@ -46,15 +46,9 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
                 # save new case entities
                 keyword_list = self.validate_keywords(case_id, entity_list)
                 CaseEntity.objects.bulk_create(keyword_list)
-                logger.info(f'update case entities successful: {case_id}')
-            except Exception as e:
-                logger.error(f'update case entities failed: {case_id}, {e}')
-                # rollback database
-                transaction.savepoint_rollback(save_id)
-                logger.info("rollback database successful")
-                return JsonResponse(code=10025, msg='update case entities failed')
-            else:
-                transaction.savepoint_commit(save_id)
+        except Exception as e:
+            logger.error(f'update case entities failed: {case_id}, {e}')
+            return JsonResponse(code=10025, msg='update case entities failed')
         return JsonResponse(msg='update case entities successful')
 
     def validate_keywords(self, case_id, entity_list):

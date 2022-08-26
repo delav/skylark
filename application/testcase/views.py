@@ -34,30 +34,27 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
             case_tree_list.append(case_node)
         return JsonResponse(data=case_tree_list)
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         logger.info("create test case")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        with transaction.atomic():
-            save_id = transaction.savepoint()
-            try:
-                self.perform_create(serializer)
-                instance = serializer.data
-                case_id = instance.id
-                suite_id = instance.test_suite_id
-                suite = TestSuite.objects.select_related('suite_dir__project_id').get(id=suite_id)
-                project_id = suite.suite_dir.project_id
-                if instance.case_type == 1:
-                    UserKeyword.objects.create(case_id=case_id, project_id=project_id)
-            except Exception as e:
-                logger.error(f'create test case failed: {e}')
-                # rollback database
-                transaction.savepoint_rollback(save_id)
-                return JsonResponse(code=10040, msg='create test case failed')
-            else:
-                transaction.savepoint_commit(save_id)
-        new_case = self.get_serializer(instance)
-        return JsonResponse(data=new_case)
+        try:
+            with transaction.atomic():
+                ins = self.perform_create(serializer)
+                if ins.case_type == 1:
+                    case_id = ins.id
+                    suite_id = ins.test_suite_id
+                    suite = TestSuite.objects.select_related('suite_dir__project').get(id=suite_id)
+                    project_id = suite.suite_dir.project_id
+                    UserKeyword.objects.create(test_case_id=case_id, project_id=project_id)
+        except Exception as e:
+            logger.error(f'create test case failed: {e}')
+            return JsonResponse(code=10040, msg='create test case failed')
+        new_case_node = fill_node(
+            {'id': ins.id, 'pId': ins.test_suite_id, 'name': ins.case_name, 'desc': 'c', 'type': ins.case_type}
+        )
+        return JsonResponse(data=new_case_node)
 
     def retrieve(self, request, *args, **kwargs):
         pass
@@ -67,3 +64,6 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
 
     def destroy(self, request, *args, **kwargs):
         pass
+
+    def perform_create(self, serializer):
+        return serializer.save()

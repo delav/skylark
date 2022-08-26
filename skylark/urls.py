@@ -42,5 +42,6 @@ router.register('case-entity', CaseEntityViewSets, basename='case_entity')
 urlpatterns = [
     url(r'^api/', include(router.urls)),
     path(r'api/user/login', NoAuthUserViewSets.as_view({'post': 'login'})),
+    path(r'api/user/register', NoAuthUserViewSets.as_view({'post': 'register'})),
     path(r'api/user/reset', NoAuthUserViewSets.as_view({'post': 'reset'})),
 ]

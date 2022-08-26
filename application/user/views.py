@@ -16,6 +16,9 @@ from application.infra.common import PagePagination
 
 class NoAuthUserViewSets(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
 
+    queryset = User.objects.all()
+    serializer_class = RegisterSerializer
+
     @action(methods=['post'], detail=False)
     def login(self, request, *args, **kwargs):
         serializer = UserSerializer(data=request.data)
@@ -25,26 +28,23 @@ class NoAuthUserViewSets(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
         user.save()
         return JsonResponse(data=serializer.validated_data)
 
+    @transaction.atomic
     @action(methods=['post'], detail=False)
     def register(self, request, *args, **kwargs):
         logger.info(f'register user: {request.data}')
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        with transaction.atomic():
-            save_id = transaction.savepoint()
-            try:
+        try:
+            with transaction.atomic():
                 user = serializer.save()
                 group_id = request.data.get('group_id')
                 group = Group.objects.get(id=group_id)
                 user.groups.add(group)
-            except Exception as e:
-                logger.error(f'register failed: {e}')
-                transaction.savepoint_rollback(save_id)
-                return JsonResponse(code=10010, msg='register fail')
-            else:
-                transaction.savepoint_commit(save_id)
-        data = self.get_serializer(user)
-        return JsonResponse(data=data)
+        except Exception as e:
+            logger.error(f'register failed: {e}')
+            return JsonResponse(code=10010, msg='register fail')
+        ser = self.get_serializer(user)
+        return JsonResponse(data=ser.data)
 
     @action(methods=['post'], detail=False)
     def reset(self):
@@ -77,13 +77,13 @@ class AdminUserViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
     permission_classes = (IsAdminUser,)
     pagination_class = (PagePagination,)
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         logger.info(f'add user: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        with transaction.atomic():
-            save_id = transaction.savepoint()
-            try:
+        try:
+            with transaction.atomic():
                 data = serializer.data
                 username = data.get('email').split('@')[0]
                 user = User(username=username, email=data.get('email'),
@@ -91,12 +91,9 @@ class AdminUserViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
                 user.save()
                 group = Group.objects.get(id=data.get('group_id'))
                 user.groups.add(group)
-            except Exception as e:
-                logger.error(f'add user failed: {e}')
-                transaction.savepoint_rollback(save_id)
-                return JsonResponse(code=10010, msg='add user failed')
-            else:
-                transaction.savepoint_commit(save_id)
+        except Exception as e:
+            logger.error(f'add user failed: {e}')
+            return JsonResponse(code=10010, msg='add user failed')
         data = self.get_serializer(user)
         return JsonResponse(data=data)
 

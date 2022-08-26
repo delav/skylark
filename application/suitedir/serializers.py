@@ -4,7 +4,7 @@ from application.suitedir.models import SuiteDir
 
 class SuiteDirSerializers(serializers.ModelSerializer):
 
-    parent_dir_id = serializers.IntegerField()
+    parent_dir_id = serializers.IntegerField(allow_null=True)
     project_id = serializers.IntegerField()
 
     class Meta:

@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from application.project.models import Project
 
 # Create your models here.
@@ -24,3 +25,18 @@ class SuiteDir(models.Model):
         db_table = 'suite_dir'
         ordering = ['dir_name']
         unique_together = [('project', 'parent_dir', 'dir_name')]
+
+    def clean(self):
+        """
+        Checks that we do not create multiple suite dir with
+        no parent dir and the same project and dir name.
+        """
+        if self.parent_dir is None and SuiteDir.objects.filter(
+                project_id=self.project_id,
+                parent_dir_id=self.parent_dir_id,
+                dir_name=self.dir_name).exists():
+            raise ValidationError("Another Dir with name=%s and no parent already exists" % self.dir_name)
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        return super(SuiteDir, self).save(*args, **kwargs)

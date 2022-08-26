@@ -27,9 +27,11 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Ret
         for gp in gps:
             gp_users |= gp.user_set.all()
         queryset = Project.objects.filter(create_by__in=gp_users)
-        data = self.paginate_queryset(queryset)
-        return JsonResponse(data=data)
+        pg_queryset = self.paginate_queryset(queryset)
+        ser = self.get_serializer(pg_queryset, many=True)
+        return JsonResponse(data=ser.data)
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         logger.info(f'create project: {request.data}')
         serializer = self.get_serializer(data=request.data)
@@ -37,8 +39,8 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Ret
         # test
         project = self.perform_create(serializer)
         # data = serializer.data
-        # project_name = data.get('project_name')
-        # project_q = Project.objects.filter(project_name=project_name)
+        # project_name = data.get('name')
+        # project_q = Project.objects.filter(name=project_name)
         # if project_q.exists():
         #     return JsonResponse(code=10050, data='project name had exists')
         # try:
@@ -47,23 +49,20 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Ret
         #         copy_project = Project.objects.get(id=copy_pid)
         #     else:
         #         module_name = settings.PROJECT_MODULE_ID
-        #         copy_project = Project.objects.get(project_name=module_name)
+        #         copy_project = Project.objects.get(name=module_name)
         # except (Exception,) as e:
         #     logger.error(f'project module not exists: {e}')
         #     return JsonResponse(code=10051, data='create project failed')
-        # logger.info(f'copied project: {copy_project.project_name}')
-        # with transaction.atomic():
-        #     save_id = transaction.savepoint()
-        #     try:
+        # logger.info(f'copied project: {copy_project.name}')
+        # try:
+        #     with transaction.atomic():
         #         project = ProjectReplicator(copy_project, request.user).project_copy()
-        #     except Exception as e:
-        #         logger.error(f'create project error: {e}')
-        #         # database rollback
-        #         transaction.savepoint_rollback(save_id)
-        #         return JsonResponse(code=10080, msg='create project failed')
-        #     else:
-        #         transaction.savepoint_commit(save_id)
-        return JsonResponse(data={'project_id': project.id, 'project_name': project.project_name})
+        # except Exception as e:
+        #     logger.error(f'create project error: {e}')
+        #     # database rollback
+        #     transaction.savepoint_rollback(save_id)
+        #     return JsonResponse(code=10080, msg='create project failed')
+        return JsonResponse(data={'project_id': project.id, 'name': project.name})
 
     def retrieve(self, request, *args, **kwargs):
         pass

@@ -14,7 +14,7 @@ class TestSuite(models.Model):
     suite_dir = models.ForeignKey(SuiteDir, null=True, related_name='suites', on_delete=models.CASCADE,
                                   help_text='associated dir')
     suite_type = models.IntegerField(default=0, choices=settings.MODEL_TYPE, help_text='test suite type')
-    timeout = models.CharField(default=None, max_length=255, help_text='all case run timeout')
+    timeout = models.CharField(default=None, null=True, max_length=255, help_text='all case run timeout')
     deleted = models.BooleanField(default=0, help_text='if deleted')
 
     class Meta:
