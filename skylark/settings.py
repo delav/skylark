@@ -194,5 +194,5 @@ LIB_URL = '/library/'
 PROJECT_MODULE = 'SKYLARK'
 
 # Tree default node data
-NODE = {'id': 1, 'pId': 0, 'name': 'DEFAULT', 'desc': None, 'type': 0, 'open': True, 'nocheck': False}
+NODE = {'id': 1, 'pid': 0, 'name': 'DEFAULT', 'desc': None, 'type': 0, 'open': False, 'nocheck': False, 'isParent': True}
 

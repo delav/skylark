@@ -22,16 +22,16 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
             project = Project.objects.get(id=project_id)
         except (Exception,) as e:
             logger.error(f'get base dir info failed: {e}')
-            return JsonResponse(code=10052, msg='get base dir failed')
+            return JsonResponse(code=10070, msg='get base dir failed')
         dirs = project.dirs.filter(parent_dir=None).order_by('dir_type')
         project_tree_list = []
         project_node = fill_node(
-            {'id': project.id, 'pId': 0, 'name': project.name, 'desc': 'p', 'type': 0}
+            {'id': project.id, 'pid': 0, 'name': project.name, 'desc': 'p', 'type': None}
         )
         project_tree_list.append(project_node)
         for d in dirs.iterator():
             dir_node = fill_node(
-                {'id': d.id, 'pId': project.id, 'name': d.dir_name, 'desc': 'd', 'type': d.dir_type},
+                {'id': d.id, 'pid': project.id, 'name': d.dir_name, 'desc': 'd', 'type': d.dir_type},
             )
             project_tree_list.append(dir_node)
         return JsonResponse(data=project_tree_list)
@@ -44,14 +44,34 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
             self.perform_create(serializer)
         except (Exception,) as e:
             logger.error(f'save suite dir failed: {e}')
-            return JsonResponse(code=10060, msg='create suite dir failed')
-        return JsonResponse(data=serializer.data)
+            return JsonResponse(code=10071, msg='create suite dir failed')
+        node_data = fill_node(
+            {'id': serializer.data['id'], 'pid': serializer.data['parent_dir_id'],
+             'name': serializer.data['dir_name'], 'desc': 'd', 'type': serializer.data['dir_type']}
+        )
+        return JsonResponse(data=node_data)
 
     def retrieve(self, request, *args, **kwargs):
         pass
 
     def update(self, request, *args, **kwargs):
-        pass
+        logger.info(f'update suite dir: {request.data}')
+        try:
+            instance = self.get_object()
+        except (Exception,):
+            return JsonResponse(code=10072, msg='suite dir not found')
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        try:
+            self.perform_update(serializer)
+        except (Exception,) as e:
+            logger.error(f'update suite dir failed: {e}')
+            return JsonResponse(code=10073, msg='update suite dir failed')
+        node_data = fill_node(
+            {'id': serializer.data['id'], 'pid': serializer.data['parent_dir_id'],
+             'name': serializer.data['dir_name'], 'desc': 'd', 'type': serializer.data['dir_type']}
+        )
+        return JsonResponse(data=node_data)
 
     def destroy(self, request, *args, **kwargs):
         pass

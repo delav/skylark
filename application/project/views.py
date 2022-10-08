@@ -37,7 +37,7 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Ret
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         # test
-        project = self.perform_create(serializer)
+        self.perform_create(serializer)
         # data = serializer.data
         # project_name = data.get('name')
         # project_q = Project.objects.filter(name=project_name)

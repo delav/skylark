@@ -21,36 +21,29 @@ def exception_handler(exc, context):
         if response.data and isinstance(response.data[0], DetailError):
             return JsonResponse(
                 code=response.data[0].code,
-                msg=response.data[0].text,
-                status=response.status_code)
+                msg=response.data[0].text)
     if response.status_code == 400:
         response = JsonResponse(
             code=40000,
-            msg='400_Bad Request',
-            status=response.status_code)
+            msg='400_Bad Request')
     elif response.status_code == 401:
         response = JsonResponse(
             code=40100,
-            msg='401_UNAUTHORIZED',
-            status=response.status_code)
+            msg='401_UNAUTHORIZED')
     elif response.status_code == 403:
         response = JsonResponse(
             code=40300,
-            msg='403_FORBIDDEN',
-            status=response.status_code)
+            msg='403_FORBIDDEN')
     elif response.status_code == 404:
         response = JsonResponse(
             code=40400,
-            msg='404_Not Found',
-            status=response.status_code)
+            msg='404_Not Found')
     elif response.status_code == 405:
         response = JsonResponse(
             code=response.status_code,
-            msg='405_METHOD_NOT_ALLOWED',
-            status=response.status_code)
+            msg='405_METHOD_NOT_ALLOWED')
     elif 500 <= response.status_code <= 599:
         response = JsonResponse(
             code=55555,
-            msg='INTERNAL_SERVER_ERROR',
-            status=response.status_code)
+            msg='INTERNAL_SERVER_ERROR')
     return response

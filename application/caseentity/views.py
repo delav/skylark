@@ -22,7 +22,7 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
             entity_queryset = CaseEntity.objects.filter(test_case_id=case_id).order_by('seq_number')
         except (Exception,) as e:
             logger.error(f'get entities failed: {e}')
-            return JsonResponse(code=10026, msg='get entities failed')
+            return JsonResponse(code=10040, msg='get entities failed')
         ser = self.get_serializer(entity_queryset, many=True)
         return JsonResponse(data=ser.data)
 
@@ -48,7 +48,7 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
                 CaseEntity.objects.bulk_create(keyword_list)
         except Exception as e:
             logger.error(f'update case entities failed: {case_id}, {e}')
-            return JsonResponse(code=10025, msg='update case entities failed')
+            return JsonResponse(code=10041, msg='update case entities failed')
         return JsonResponse(msg='update case entities successful')
 
     def validate_keywords(self, case_id, entity_list):

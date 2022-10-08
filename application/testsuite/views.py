@@ -22,18 +22,18 @@ class TestSuiteViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixi
             dir_obj = SuiteDir.objects.get(id=dir_id)
         except (Exception,) as e:
             logger.error(f'get dir child info failed: {e}')
-            return JsonResponse(code=10061, msg='get dir child info failed')
+            return JsonResponse(code=10060, msg='get dir child info failed')
         child_dirs = dir_obj.children.all()
         dir_tree_list = []
         for d in child_dirs.iterator():
             dir_node = fill_node(
-                {'id': d.id, 'pId': dir_obj.project_id, 'name': d.dir_name, 'desc': 'd', 'type': d.dir_type}
+                {'id': d.id, 'pid': dir_obj.project_id, 'name': d.dir_name, 'desc': 'd', 'type': d.dir_type}
             )
             dir_tree_list.append(dir_node)
         child_suites = dir_obj.suites.all()
         for s in child_suites.iterator():
             suite_node = fill_node(
-                {'id': s.id, 'pId': dir_obj.project_id, 'name': s.suite_name, 'desc': 's', 'type': s.suite_type}
+                {'id': s.id, 'pid': dir_obj.project_id, 'name': s.suite_name, 'desc': 's', 'type': s.suite_type}
             )
             dir_tree_list.append(suite_node)
         return JsonResponse(data=dir_tree_list)
@@ -46,14 +46,34 @@ class TestSuiteViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixi
             self.perform_create(serializer)
         except (Exception,) as e:
             logger.error(f'save test suite failed: {e}')
-            return JsonResponse(code=10070, msg='create test suite failed')
-        return JsonResponse(data=serializer.data)
+            return JsonResponse(code=10061, msg='create test suite failed')
+        node_data = fill_node(
+            {'id': serializer.data['id'], 'pid': serializer.data['suite_dir_id'],
+             'name': serializer.data['suite_name'], 'desc': 'd', 'type': serializer.data['suite_type']}
+        )
+        return JsonResponse(data=node_data)
 
     def retrieve(self, request, *args, **kwargs):
         pass
 
     def update(self, request, *args, **kwargs):
-        pass
+        logger.info(f'update test suite: {request.data}')
+        try:
+            instance = self.get_object()
+        except (Exception,):
+            return JsonResponse(code=10062, msg='test suite not found')
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        try:
+            self.perform_update(serializer)
+        except (Exception,) as e:
+            logger.error(f'update test suite failed: {e}')
+            return JsonResponse(code=10063, msg='update test suite failed')
+        node_data = fill_node(
+            {'id': serializer.data['id'], 'pid': serializer.data['suite_dir_id'],
+             'name': serializer.data['suite_name'], 'desc': 'd', 'type': serializer.data['suite_type']}
+        )
+        return JsonResponse(data=node_data)
 
     def destroy(self, request, *args, **kwargs):
         pass
