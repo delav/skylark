@@ -42,7 +42,7 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Ret
         # project_name = data.get('name')
         # project_q = Project.objects.filter(name=project_name)
         # if project_q.exists():
-        #     return JsonResponse(code=10050, data='project name had exists')
+        #     return JsonResponse(code=10080, data='project name had exists')
         # try:
         #     if 'copy_pid' in data:
         #         copy_pid = data.get('copy_pid')
@@ -61,7 +61,7 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Ret
         #     logger.error(f'create project error: {e}')
         #     # database rollback
         #     transaction.savepoint_rollback(save_id)
-        #     return JsonResponse(code=10080, msg='create project failed')
+        #     return JsonResponse(code=10081, msg='create project failed')
         return JsonResponse(data={'project_id': project.id, 'name': project.name})
 
     def retrieve(self, request, *args, **kwargs):
@@ -72,9 +72,6 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Ret
 
     def destroy(self, request, *args, **kwargs):
         logger.info(f'delete project: {kwargs.get("pk")}')
-
-    def perform_create(self, serializer):
-        return serializer.save()
 
 
 class AdminProjectViewSets(mixins.ListModelMixin, mixins.RetrieveModelMixin,

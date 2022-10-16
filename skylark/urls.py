@@ -25,6 +25,8 @@ from application.testcase.views import TestCaseViewSets
 from application.testsuite.views import TestSuiteViewSets
 from application.suitedir.views import SuiteDirViewSets
 from application.project.views import ProjectViewSets
+from application.setupteardown.views import SetupTeardownViewSets
+from application.keywordgroup.views import KeywordGroupViewSets
 
 router = routers.SimpleRouter(trailing_slash=False)
 router.register('user/info', NormalUserViewSets, basename='user_info')
@@ -37,6 +39,8 @@ router.register('suite-dir', SuiteDirViewSets, basename='suite_dir')
 router.register('test-suite', TestSuiteViewSets, basename='test_suite')
 router.register('test-case', TestCaseViewSets, basename='test_case')
 router.register('case-entity', CaseEntityViewSets, basename='case_entity')
+router.register('setup-teardown', SetupTeardownViewSets, basename='setup_teardown')
+router.register('keyword-group', KeywordGroupViewSets, basename='keyword_group')
 
 
 urlpatterns = [

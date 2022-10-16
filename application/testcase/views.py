@@ -3,7 +3,6 @@ from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
 from application.infra.response import JsonResponse
-from application.caseentity.models import CaseEntity
 from application.testcase.models import TestCase
 from application.testcase.serializers import TestCaseSerializers
 from application.userkeyword.models import UserKeyword
@@ -85,20 +84,12 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
         )
         return JsonResponse(data=new_case_node)
 
-    @transaction.atomic
     def destroy(self, request, *args, **kwargs):
+        logger.info(f'delete test case: {kwargs.get("pk")}')
         try:
             instance = self.get_object()
         except (Exception,):
             return JsonResponse(code=10054, msg='test case not found')
-        try:
-            with transaction.atomic():
-                self.perform_destroy(instance)
-                CaseEntity.objects.filter(test_case_id=instance.id).delete()
-                if instance.case_type == 1:
-                    UserKeyword.objects.get(test_case_id=instance.id).delete()
-        except (Exception,) as e:
-            logger.error(f'delete test case failed: {e}')
-            return JsonResponse(code=10055, msg='delete test case failed')
+        self.perform_destroy(instance)
         return JsonResponse()
 

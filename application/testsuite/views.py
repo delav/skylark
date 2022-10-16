@@ -1,7 +1,10 @@
 from loguru import logger
+from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
 from application.infra.response import JsonResponse
+from application.caseentity.models import CaseEntity
+from application.testcase.models import TestCase
 from application.testsuite.models import TestSuite
 from application.testsuite.serializers import TestSuiteSerializers
 from application.suitedir.models import SuiteDir
@@ -75,5 +78,12 @@ class TestSuiteViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixi
         )
         return JsonResponse(data=node_data)
 
+    @transaction.atomic
     def destroy(self, request, *args, **kwargs):
-        pass
+        logger.info(f'delete test suite: {kwargs.get("pk")}')
+        try:
+            instance = self.get_object()
+        except (Exception,):
+            return JsonResponse(code=10064, msg='test suite not found')
+        self.perform_destroy(instance)
+        return JsonResponse()

@@ -74,4 +74,10 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
         return JsonResponse(data=node_data)
 
     def destroy(self, request, *args, **kwargs):
-        pass
+        logger.info(f'delete suite dir: {kwargs.get("pk")}')
+        try:
+            instance = self.get_object()
+        except (Exception,):
+            return JsonResponse(code=10074, msg='suite dir not found')
+        self.perform_destroy(instance)
+        return JsonResponse()
