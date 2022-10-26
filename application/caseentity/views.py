@@ -18,7 +18,7 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
     def list(self, request, *args, **kwargs):
         logger.info(f'get test case entities by case id: {request.query_params}')
         try:
-            case_id = request.query_params.get('case_id')
+            case_id = request.query_params.get('case')
             entity_queryset = CaseEntity.objects.filter(test_case_id=case_id).order_by('seq_number')
         except (Exception,) as e:
             logger.error(f'get entities failed: {e}')
@@ -53,22 +53,23 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
 
     def validate_keywords(self, case_id, entity_list):
         result_list = []
-        for entity in entity_list:
+        for i in range(len(entity_list)):
+            entity = entity_list[i]
+            entity['seq_number'] = i
             entity['test_case_id'] = case_id
             keyword_id = entity['keyword_id']
             keyword_type = entity['keyword_type']
             if keyword_type == 1:
                 lib_kw = LibKeyword.objects.get(id=keyword_id)
                 # lib keyword exists
-                if lib_kw.input_arg is None and entity['input_parm'] is not None:
+                if lib_kw.input_arg is None and entity['input_param'] is not None:
                     logger.error(f'[{lib_kw.ext_name}] error keyword param type: expect {lib_kw.input_arg},'
-                                 f'but get {entity["input_parm"]}')
+                                 f'but get {entity["input_param"]}')
                     raise Exception
-                if lib_kw.input_arg is not None and entity['input_parm'] is None:
+                if lib_kw.input_arg is not None and entity['input_param'] is None:
                     logger.error(f'[{lib_kw.ext_name}] error keyword param type: expect {lib_kw.input_arg},'
-                                 f'but get {entity["input_parm"]}')
+                                 f'but get {entity["input_param"]}')
                     raise Exception
-                entity['lib_keyword_id'] = keyword_id
             elif keyword_type == 2:
                 UserKeyword.objects.get(id=keyword_id)
             else:

@@ -11,5 +11,5 @@ class LibKeywordSerializers(serializers.ModelSerializer):
         model = LibKeyword
         fields = (
             'id', 'name', 'ext_name', 'desc', 'group_id',
-            'input_arg', 'input_desc', 'output_arg', 'output_desc', 'image'
+            'input_arg', 'input_desc', 'output_arg', 'output_desc', 'image', 'mark'
         )

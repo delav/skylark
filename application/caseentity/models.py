@@ -8,8 +8,8 @@ from application.userkeyword.models import UserKeyword
 
 class CaseEntity(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
-    input_parm = models.TextField(default=None, blank=True, null=True,  help_text='input parameters')
-    output_parm = models.TextField(default=None, blank=True, null=True, help_text='output parameters')
+    input_param = models.TextField(default=None, blank=True, null=True,  help_text='input parameters')
+    output_param = models.TextField(default=None, blank=True, null=True, help_text='output parameters')
     seq_number = models.IntegerField(help_text='entity sequence number')
     test_case = models.ForeignKey(TestCase, null=True, related_name='entity', on_delete=models.CASCADE,
                                   help_text='associated case')

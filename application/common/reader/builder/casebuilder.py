@@ -36,7 +36,7 @@ class CaseBuilder(BaseBuilder):
         case_content = case_name + self.linefeed
         case_content = self._add_case_input(case_content, case_item["inputs"])
         case_entity = CaseEntity.objects.filter(test_case_id=case_id).values(
-            'input_parm', 'output_parm', 'seq_number', 'keyword', 'user_keyword').order_by('seq_number')
+            'input_param', 'output_param', 'seq_number', 'keyword', 'user_keyword').order_by('seq_number')
         if not case_entity.exists():
             # case body is null, add blank line
             case_content += self.linefeed
@@ -79,23 +79,23 @@ class EntityBuilder(BaseBuilder):
         # start with four space
         entity_line += self.small_sep
         # replicator with output parameter
-        if self.entity['output_parm']:
-            if self.special_sep in self.entity['output_parm']:
-                cco_var = self.entity['output_parm'].split(self.special_sep)
+        if self.entity['output_param']:
+            if self.special_sep in self.entity['output_param']:
+                cco_var = self.entity['output_param'].split(self.special_sep)
                 out_var = self.small_sep.join(cco_var) + self.small_sep
             else:
-                out_var = self.entity['output_parm'] + self.small_sep
+                out_var = self.entity['output_param'] + self.small_sep
             entity_line += out_var
         # replicator with keyword name
         keyword_name = KeywordBuilder(self.entity).get_keyword_info()
         entity_line += keyword_name + self.small_sep
         # replicator with input parameter
-        if self.entity['input_parm']:
-            if self.special_sep in self.entity['input_parm']:
-                cci_var = self.entity['input_parm'].split(self.special_sep)
+        if self.entity['input_param']:
+            if self.special_sep in self.entity['input_param']:
+                cci_var = self.entity['input_param'].split(self.special_sep)
                 in_var = self.small_sep.join(cci_var)
             else:
-                in_var = self.entity['input_parm']
+                in_var = self.entity['input_param']
             entity_line += in_var
         # one line per entity
         entity_line += self.linefeed

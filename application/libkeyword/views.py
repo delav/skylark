@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAdminUser
 from application.infra.response import JsonResponse
 from application.libkeyword.models import LibKeyword
 from application.libkeyword.serializers import LibKeywordSerializers
+from application.keywordgroup.models import KeywordGroup
+from application.keywordgroup.serializers import KeywordGroup2Serializers
 
 # Create your views here.
 
@@ -16,6 +18,9 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
 
     def list(self, request, *args, **kwargs):
         logger.info('get all lib keywords')
+        # kgs_queryset = KeywordGroup.objects.all()
+        # serializers = KeywordGroup2Serializers(kgs_queryset, many=True)
+        # return JsonResponse(data=serializers.data)
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return JsonResponse(data=serializer.data)

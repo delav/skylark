@@ -11,13 +11,15 @@ class LibKeyword(models.Model):
     update_at = models.DateTimeField(auto_now=True, help_text='update time')
     ext_name = models.CharField(default=None, max_length=255, help_text='external name')
     desc = models.TextField(default=None, blank=True, null=True, help_text='keyword desc')
-    group = models.ForeignKey(KeywordGroup, null=True, on_delete=models.CASCADE, help_text='associated group')
+    group = models.ForeignKey(KeywordGroup, null=True, on_delete=models.CASCADE,
+                              related_name='keywords', help_text='associated group')
     input_arg = models.TextField(default=None, blank=True, null=True, help_text='input args')
     input_desc = models.TextField(default=None, blank=True, null=True, help_text='input args desc')
     output_arg = models.TextField(default=None, blank=True, null=True, help_text='output args')
     output_desc = models.TextField(default=None, blank=True, null=True, help_text='output args desc')
     image = models.ImageField(default='media/icons/keyword/default.png', upload_to='media/icons/keyword',
                               blank=True, null=True, help_text='keyword icon')
+    mark = models.CharField(default=None, null=True, max_length=255, help_text='keyword other mark')
 
     class Meta:
         verbose_name = 'lib keyword'

@@ -65,11 +65,11 @@ class KeywordManager(BaseBuilder):
         new_keyword = copy.deepcopy(self.keyword)
         try:
             new_keyword['name'] = 'FOR'
-            input_args = self.keyword['input_parm']
+            input_args = self.keyword['input_param']
             args_list = input_args.split(self.special_sep)
             args_list.insert(1, 'IN')
             new_input_args = self.special_sep.join(args_list)
-            new_keyword['input_parm'] = new_input_args
+            new_keyword['input_param'] = new_input_args
             self.keyword = new_keyword
         except Exception as e:
             logger.info('处理特殊关键字【for_list】异常: {}'.format(e))
@@ -79,11 +79,11 @@ class KeywordManager(BaseBuilder):
         new_keyword = copy.deepcopy(self.keyword)
         try:
             new_keyword['name'] = 'FOR'
-            input_args = self.keyword['input_parm']
+            input_args = self.keyword['input_param']
             args_list = input_args.split(self.special_sep)
             args_list.insert(2, 'IN')
             new_input_args = self.special_sep.join(args_list)
-            new_keyword['input_parm'] = new_input_args
+            new_keyword['input_param'] = new_input_args
             self.keyword = new_keyword
         except Exception as e:
             logger.info('处理特殊关键字【for_dict】异常: {}'.format(e))
@@ -92,13 +92,13 @@ class KeywordManager(BaseBuilder):
     def run_keyword_and_continue_on_failure(self):
         new_keyword = copy.deepcopy(self.keyword)
         try:
-            input_args = self.keyword['input_parm']
+            input_args = self.keyword['input_param']
             args_list = input_args.split(self.special_sep)
             alias = args_list[0]
             keyword = self.alias_key_dict[alias]
             args_list[0] = keyword
             new_input_args = self.special_sep.join(args_list)
-            new_keyword['input_parm'] = new_input_args
+            new_keyword['input_param'] = new_input_args
             self.keyword = new_keyword
         except Exception as e:
             logger.info('处理特殊关键字【run_keyword_and_continue_on_failure】异常: {}'.format(e))
@@ -107,7 +107,7 @@ class KeywordManager(BaseBuilder):
     def run_keyword_if(self):
         new_keyword = copy.deepcopy(self.keyword)
         try:
-            input_args = self.keyword['input_parm']
+            input_args = self.keyword['input_param']
             args_list = input_args.split(self.special_sep)
             for i in range(len(args_list)):
                 alias = args_list[i]
@@ -115,7 +115,7 @@ class KeywordManager(BaseBuilder):
                     keyword = self.alias_key_dict[alias]
                     args_list[i] = keyword
                     new_input_args = self.special_sep.join(args_list)
-                    new_keyword['input_parm'] = new_input_args
+                    new_keyword['input_param'] = new_input_args
                     self.keyword = new_keyword
         except Exception as e:
             logger.info('处理特殊关键字【run_keyword_if】异常: {}'.format(e))
