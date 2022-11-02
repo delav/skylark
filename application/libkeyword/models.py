@@ -13,10 +13,12 @@ class LibKeyword(models.Model):
     desc = models.TextField(default=None, blank=True, null=True, help_text='keyword desc')
     group = models.ForeignKey(KeywordGroup, null=True, on_delete=models.CASCADE,
                               related_name='keywords', help_text='associated group')
-    input_arg = models.TextField(default=None, blank=True, null=True, help_text='input args')
-    input_desc = models.TextField(default=None, blank=True, null=True, help_text='input args desc')
-    output_arg = models.TextField(default=None, blank=True, null=True, help_text='output args')
-    output_desc = models.TextField(default=None, blank=True, null=True, help_text='output args desc')
+    input_params = models.TextField(default=None, blank=True, null=True, help_text='input params')
+    input_desc = models.TextField(default=None, blank=True, null=True, help_text='input params desc')
+    output_params = models.TextField(default=None, blank=True, null=True, help_text='output params')
+    output_desc = models.TextField(default=None, blank=True, null=True, help_text='output params desc')
+    input_type = models.IntegerField(default=1, choices=((1, 'single'), (2, 'multi'), (3, 'list'), (4, 'dict')),
+                                     help_text='input arg type')
     image = models.ImageField(default='media/icons/keyword/default.png', upload_to='media/icons/keyword',
                               blank=True, null=True, help_text='keyword icon')
     mark = models.CharField(default=None, null=True, max_length=255, help_text='keyword other mark')
