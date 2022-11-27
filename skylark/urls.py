@@ -27,6 +27,8 @@ from application.suitedir.views import SuiteDirViewSets
 from application.project.views import ProjectViewSets
 from application.setupteardown.views import SetupTeardownViewSets
 from application.keywordgroup.views import KeywordGroupViewSets
+from application.environment.views import EnvironmentViewSets
+from application.variable.views import VariableViewSets
 
 router = routers.SimpleRouter(trailing_slash=False)
 router.register('user/info', NormalUserViewSets, basename='user_info')
@@ -41,6 +43,8 @@ router.register('test-case', TestCaseViewSets, basename='test_case')
 router.register('case-entity', CaseEntityViewSets, basename='case_entity')
 router.register('setup-teardown', SetupTeardownViewSets, basename='setup_teardown')
 router.register('keyword-group', KeywordGroupViewSets, basename='keyword_group')
+router.register('environment', EnvironmentViewSets, basename='environment')
+router.register('variable', VariableViewSets, basename='variable')
 
 
 urlpatterns = [

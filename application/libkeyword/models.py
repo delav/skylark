@@ -17,8 +17,8 @@ class LibKeyword(models.Model):
     input_desc = models.TextField(default=None, blank=True, null=True, help_text='input params desc')
     output_params = models.TextField(default=None, blank=True, null=True, help_text='output params')
     output_desc = models.TextField(default=None, blank=True, null=True, help_text='output params desc')
-    input_type = models.IntegerField(default=1, choices=((1, 'single'), (2, 'multi'), (3, 'list'), (4, 'dict')),
-                                     help_text='input arg type')
+    input_type = models.IntegerField(default=0, choices=(
+        (0, 'None'), (1, 'single'), (2, 'multi'), (3, 'list'), (4, 'dict')), help_text='input arg type')
     image = models.ImageField(default='media/icons/keyword/default.png', upload_to='media/icons/keyword',
                               blank=True, null=True, help_text='keyword icon')
     mark = models.CharField(default=None, null=True, max_length=255, help_text='keyword other mark')
