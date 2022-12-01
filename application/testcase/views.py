@@ -1,5 +1,6 @@
 from loguru import logger
 from django.db import transaction
+from django.conf import settings
 from rest_framework import mixins
 from rest_framework import viewsets
 from application.infra.response import JsonResponse
@@ -29,7 +30,9 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
         case_tree_list = []
         for c in test_cases.iterator():
             case_node = fill_node(
-                {'id': c.id, 'pid': suite_obj.id, 'name': c.case_name, 'desc': 'c', 'type': c.case_type}
+                {'id': c.id, 'pid': suite_obj.id, 'name': c.case_name,
+                 'desc': settings.NODE_DESC.get('TEST_CASE'), 'type': c.case_type
+                 }
             )
             case_tree_list.append(case_node)
         return JsonResponse(data=case_tree_list)
@@ -53,7 +56,8 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
             return JsonResponse(code=10051, msg='create test case failed')
         new_case_node = fill_node(
             {'id': case_id, 'pid': suite_id, 'name': serializer.data['case_name'],
-             'desc': 'c', 'type': serializer.data['case_type']}
+             'desc': settings.NODE_DESC.get('TEST_CASE'), 'type': serializer.data['case_type']
+             }
         )
         return JsonResponse(data=new_case_node)
 
@@ -80,7 +84,7 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
             return JsonResponse(code=10053, msg='create test case failed')
         new_case_node = fill_node(
             {'id': case_id, 'pid': serializer.data['test_suite_id'], 'name': serializer.data['case_name'],
-             'desc': 'c', 'type': serializer.data['case_type']}
+             'desc': settings.NODE_DESC.get('TEST_CASE'), 'type': serializer.data['case_type']}
         )
         return JsonResponse(data=new_case_node)
 

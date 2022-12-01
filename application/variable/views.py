@@ -20,7 +20,7 @@ class VariableViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
             module_type = request.query_params.get('mtp')
             variable_queryset = Variable.objects.filter(
                 module_id=module_id,
-                module_type=module_type)
+                module_type=module_type).order_by('name')
         except (Exception,) as e:
             logger.error(f'get variables failed: {e}')
             return JsonResponse(code=10501, msg='get variables failed')

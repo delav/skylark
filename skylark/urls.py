@@ -14,7 +14,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
+from django.conf import settings
 from django.conf.urls import include, url
+from django.views.static import serve
 from rest_framework import routers
 from application.user.views import NoAuthUserViewSets, AdminUserViewSets, NormalUserViewSets
 from application.group.views import GroupViewSets
@@ -49,6 +51,7 @@ router.register('variable', VariableViewSets, basename='variable')
 
 urlpatterns = [
     url(r'^api/', include(router.urls)),
+    url(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     path(r'api/user/login', NoAuthUserViewSets.as_view({'post': 'login'})),
     path(r'api/user/register', NoAuthUserViewSets.as_view({'post': 'register'})),
     path(r'api/user/reset', NoAuthUserViewSets.as_view({'post': 'reset'})),

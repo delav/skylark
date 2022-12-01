@@ -1,4 +1,5 @@
 from loguru import logger
+from django.conf import settings
 from rest_framework import mixins
 from rest_framework import viewsets
 from application.infra.response import JsonResponse
@@ -26,12 +27,16 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
         dirs = project.dirs.filter(parent_dir=None).order_by('dir_type')
         project_tree_list = []
         project_node = fill_node(
-            {'id': project.id, 'pid': 0, 'name': project.name, 'desc': 'p', 'type': None}
+            {'id': project.id, 'pid': 0, 'name': project.name,
+             'desc': settings.NODE_DESC.get('ROOT_PROJECT'), 'type': None
+             }
         )
         project_tree_list.append(project_node)
         for d in dirs.iterator():
             dir_node = fill_node(
-                {'id': d.id, 'pid': project.id, 'name': d.dir_name, 'desc': 'd', 'type': d.dir_type},
+                {'id': d.id, 'pid': project.id, 'name': d.dir_name,
+                 'desc': settings.NODE_DESC.get('SUITE_DIR'), 'type': d.dir_type
+                 }
             )
             project_tree_list.append(dir_node)
         return JsonResponse(data=project_tree_list)
@@ -46,8 +51,9 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
             logger.error(f'save suite dir failed: {e}')
             return JsonResponse(code=10071, msg='create suite dir failed')
         node_data = fill_node(
-            {'id': serializer.data['id'], 'pid': serializer.data['parent_dir_id'],
-             'name': serializer.data['dir_name'], 'desc': 'd', 'type': serializer.data['dir_type']}
+            {'id': serializer.data['id'], 'pid': serializer.data['parent_dir_id'], 'name': serializer.data['dir_name'],
+             'desc': settings.NODE_DESC.get('SUITE_DIR'), 'type': serializer.data['dir_type']
+             }
         )
         return JsonResponse(data=node_data)
 
@@ -68,8 +74,9 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
             logger.error(f'update suite dir failed: {e}')
             return JsonResponse(code=10073, msg='update suite dir failed')
         node_data = fill_node(
-            {'id': serializer.data['id'], 'pid': serializer.data['parent_dir_id'],
-             'name': serializer.data['dir_name'], 'desc': 'd', 'type': serializer.data['dir_type']}
+            {'id': serializer.data['id'], 'pid': serializer.data['parent_dir_id'], 'name': serializer.data['dir_name'],
+             'desc': settings.NODE_DESC.get('SUITE_DIR'), 'type': serializer.data['dir_type']
+             }
         )
         return JsonResponse(data=node_data)
 

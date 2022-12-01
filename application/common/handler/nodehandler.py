@@ -7,6 +7,6 @@ def fill_node(data: dict):
     node.update(data)
     if node['type'] != 0:
         node['nocheck'] = True
-    if node['desc'] == 'c':
+    if node['desc'] == settings.NODE_DESC.get('TEST_CASE'):
         node['isParent'] = False
     return node

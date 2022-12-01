@@ -175,7 +175,8 @@ AES_KEY = "20220427@)@@)$@&"
 
 STATIC_URL = '/static/'
 
-MEDIA_URL = os.path.join(BASE_DIR, 'static/media/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -195,4 +196,10 @@ PROJECT_MODULE = 'SKYLARK'
 
 # Tree default node data
 NODE = {'id': 1, 'pid': 0, 'name': 'DEFAULT', 'desc': None, 'type': 0, 'open': False, 'nocheck': False, 'isParent': True}
+NODE_DESC = {
+    'TEST_CASE': 'C',
+    'TEST_SUITE': 'S',
+    'SUITE_DIR': 'D',
+    'ROOT_PROJECT': 'P'
+}
 

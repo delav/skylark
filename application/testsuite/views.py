@@ -1,10 +1,9 @@
 from loguru import logger
 from django.db import transaction
+from django.conf import settings
 from rest_framework import mixins
 from rest_framework import viewsets
 from application.infra.response import JsonResponse
-from application.caseentity.models import CaseEntity
-from application.testcase.models import TestCase
 from application.testsuite.models import TestSuite
 from application.testsuite.serializers import TestSuiteSerializers
 from application.suitedir.models import SuiteDir
@@ -30,13 +29,17 @@ class TestSuiteViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixi
         dir_tree_list = []
         for d in child_dirs.iterator():
             dir_node = fill_node(
-                {'id': d.id, 'pid': dir_obj.project_id, 'name': d.dir_name, 'desc': 'd', 'type': d.dir_type}
+                {'id': d.id, 'pid': dir_obj.project_id, 'name': d.dir_name,
+                 'desc': settings.NODE_DESC.get('SUITE_DIR'), 'type': d.dir_type
+                 }
             )
             dir_tree_list.append(dir_node)
         child_suites = dir_obj.suites.all()
         for s in child_suites.iterator():
             suite_node = fill_node(
-                {'id': s.id, 'pid': dir_obj.project_id, 'name': s.suite_name, 'desc': 's', 'type': s.suite_type}
+                {'id': s.id, 'pid': dir_obj.project_id, 'name': s.suite_name,
+                 'desc': settings.NODE_DESC.get('TEST_SUITE'), 'type': s.suite_type
+                 }
             )
             dir_tree_list.append(suite_node)
         return JsonResponse(data=dir_tree_list)
@@ -51,8 +54,9 @@ class TestSuiteViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixi
             logger.error(f'save test suite failed: {e}')
             return JsonResponse(code=10061, msg='create test suite failed')
         node_data = fill_node(
-            {'id': serializer.data['id'], 'pid': serializer.data['suite_dir_id'],
-             'name': serializer.data['suite_name'], 'desc': 'd', 'type': serializer.data['suite_type']}
+            {'id': serializer.data['id'], 'pid': serializer.data['suite_dir_id'], 'name': serializer.data['suite_name'],
+             'desc': settings.NODE_DESC.get('TEST_SUITE'), 'type': serializer.data['suite_type']
+             }
         )
         return JsonResponse(data=node_data)
 
@@ -73,8 +77,9 @@ class TestSuiteViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixi
             logger.error(f'update test suite failed: {e}')
             return JsonResponse(code=10063, msg='update test suite failed')
         node_data = fill_node(
-            {'id': serializer.data['id'], 'pid': serializer.data['suite_dir_id'],
-             'name': serializer.data['suite_name'], 'desc': 'd', 'type': serializer.data['suite_type']}
+            {'id': serializer.data['id'], 'pid': serializer.data['suite_dir_id'], 'name': serializer.data['suite_name'],
+             'desc': settings.NODE_DESC.get('TEST_SUITE'), 'type': serializer.data['suite_type']
+             }
         )
         return JsonResponse(data=node_data)
 
