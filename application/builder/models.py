@@ -1,4 +1,4 @@
-import uuid
+from uuid import uuid1
 from django.db import models
 from application.user.models import User
 from application.project.models import Project
@@ -8,7 +8,7 @@ from application.project.models import Project
 
 class Builder(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
-    nonce = models.UUIDField(default=uuid.uuid1, unique=True, help_text='nonce uuid')
+    nonce = models.UUIDField(default=uuid1, help_text='nonce uuid')
     total_number = models.IntegerField(default=0, blank=True, help_text='total cases number')
     failed_number = models.IntegerField(default=0, blank=True, help_text='failure cases number')
     success_number = models.IntegerField(default=0, blank=True, help_text='successful cases number')

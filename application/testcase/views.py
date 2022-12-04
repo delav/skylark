@@ -1,6 +1,5 @@
 from loguru import logger
 from django.db import transaction
-from django.conf import settings
 from rest_framework import mixins
 from rest_framework import viewsets
 from application.infra.response import JsonResponse
@@ -8,7 +7,6 @@ from application.testcase.models import TestCase
 from application.testcase.serializers import TestCaseSerializers
 from application.userkeyword.models import UserKeyword
 from application.testsuite.models import TestSuite
-from application.common.handler import fill_node
 
 # Create your views here.
 
@@ -27,15 +25,10 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
             logger.error(f'get test case failed: {e}')
             return JsonResponse(code=10050, msg='get test case failed')
         test_cases = suite_obj.cases.all()
-        case_tree_list = []
-        for c in test_cases.iterator():
-            case_node = fill_node(
-                {'id': c.id, 'pid': suite_obj.id, 'name': c.case_name,
-                 'desc': settings.NODE_DESC.get('TEST_CASE'), 'type': c.case_type
-                 }
-            )
-            case_tree_list.append(case_node)
-        return JsonResponse(data=case_tree_list)
+        data_dict = {
+            'cases': self.get_serializer(test_cases, many=True).data
+        }
+        return JsonResponse(data=data_dict)
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -54,12 +47,7 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
         except Exception as e:
             logger.error(f'create test case failed: {e}')
             return JsonResponse(code=10051, msg='create test case failed')
-        new_case_node = fill_node(
-            {'id': case_id, 'pid': suite_id, 'name': serializer.data['case_name'],
-             'desc': settings.NODE_DESC.get('TEST_CASE'), 'type': serializer.data['case_type']
-             }
-        )
-        return JsonResponse(data=new_case_node)
+        return JsonResponse(data=serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
         pass
@@ -82,11 +70,7 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
         except Exception as e:
             logger.error(f'create test case failed: {e}')
             return JsonResponse(code=10053, msg='create test case failed')
-        new_case_node = fill_node(
-            {'id': case_id, 'pid': serializer.data['test_suite_id'], 'name': serializer.data['case_name'],
-             'desc': settings.NODE_DESC.get('TEST_CASE'), 'type': serializer.data['case_type']}
-        )
-        return JsonResponse(data=new_case_node)
+        return JsonResponse(data=serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         logger.info(f'delete test case: {kwargs.get("pk")}')

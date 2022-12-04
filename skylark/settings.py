@@ -194,12 +194,3 @@ LIB_URL = '/library/'
 # Default copy project
 PROJECT_MODULE = 'SKYLARK'
 
-# Tree default node data
-NODE = {'id': 1, 'pid': 0, 'name': 'DEFAULT', 'desc': None, 'type': 0, 'open': False, 'nocheck': False, 'isParent': True}
-NODE_DESC = {
-    'TEST_CASE': 'C',
-    'TEST_SUITE': 'S',
-    'SUITE_DIR': 'D',
-    'ROOT_PROJECT': 'P'
-}
-

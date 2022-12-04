@@ -1,12 +1,11 @@
 from loguru import logger
-from django.conf import settings
 from rest_framework import mixins
 from rest_framework import viewsets
 from application.infra.response import JsonResponse
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers
 from application.project.models import Project
-from application.common.handler import fill_node
+from application.project.serializers import ProjectSerializers
 
 # Create your views here.
 
@@ -25,21 +24,11 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
             logger.error(f'get base dir info failed: {e}')
             return JsonResponse(code=10070, msg='get base dir failed')
         dirs = project.dirs.filter(parent_dir=None).order_by('dir_type')
-        project_tree_list = []
-        project_node = fill_node(
-            {'id': project.id, 'pid': 0, 'name': project.name,
-             'desc': settings.NODE_DESC.get('ROOT_PROJECT'), 'type': None
-             }
-        )
-        project_tree_list.append(project_node)
-        for d in dirs.iterator():
-            dir_node = fill_node(
-                {'id': d.id, 'pid': project.id, 'name': d.dir_name,
-                 'desc': settings.NODE_DESC.get('SUITE_DIR'), 'type': d.dir_type
-                 }
-            )
-            project_tree_list.append(dir_node)
-        return JsonResponse(data=project_tree_list)
+        data_dict = {
+            'root': ProjectSerializers(project).data,
+            'dirs': self.get_serializer(dirs, many=True).data
+        }
+        return JsonResponse(data=data_dict)
 
     def create(self, request, *args, **kwargs):
         logger.info(f'create suite dir: {request.data}')
@@ -50,12 +39,7 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
         except (Exception,) as e:
             logger.error(f'save suite dir failed: {e}')
             return JsonResponse(code=10071, msg='create suite dir failed')
-        node_data = fill_node(
-            {'id': serializer.data['id'], 'pid': serializer.data['parent_dir_id'], 'name': serializer.data['dir_name'],
-             'desc': settings.NODE_DESC.get('SUITE_DIR'), 'type': serializer.data['dir_type']
-             }
-        )
-        return JsonResponse(data=node_data)
+        return JsonResponse(data=serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
         pass
@@ -73,12 +57,7 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
         except (Exception,) as e:
             logger.error(f'update suite dir failed: {e}')
             return JsonResponse(code=10073, msg='update suite dir failed')
-        node_data = fill_node(
-            {'id': serializer.data['id'], 'pid': serializer.data['parent_dir_id'], 'name': serializer.data['dir_name'],
-             'desc': settings.NODE_DESC.get('SUITE_DIR'), 'type': serializer.data['dir_type']
-             }
-        )
-        return JsonResponse(data=node_data)
+        return JsonResponse(data=serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         logger.info(f'delete suite dir: {kwargs.get("pk")}')
