@@ -1,1 +1,1 @@
-
+from .extradatahandler import get_model_extra_data

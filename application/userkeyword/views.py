@@ -24,9 +24,9 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
         for item in queryset.iterator():
             keyword_data = {
                 'id': item.id,
-                'name': item.test_case.case_name,
-                'ext_name': item.test_case.case_name,
-                'desc': item.test_case.case_desc,
+                'name': item.test_case.name,
+                'ext_name': item.test_case.name,
+                'desc': item.test_case.desc,
                 'group': item.group,
                 'input_arg': item.test_case.inputs,
                 'output_arg': item.case.outputs,

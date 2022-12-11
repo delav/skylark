@@ -21,7 +21,7 @@ class CaseReplicator(object):
         new_case.id = None
         new_case.test_suite = self.suite
         instance = new_case.save()
-        if case.case_type == 1:
+        if case.category == 1:
             user_keyword_case_id = instance.id
         case_entity = case.entity.all()
         entity_list = []

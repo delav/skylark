@@ -31,7 +31,7 @@ class CaseBuilder(BaseBuilder):
 
     def _handle_case_content(self, case_item):
         case_id = case_item['id']
-        case_name = case_item['case_name']
+        case_name = case_item['name']
         # case name
         case_content = case_name + self.linefeed
         case_content = self._add_case_input(case_content, case_item["inputs"])
@@ -61,7 +61,7 @@ class CaseBuilder(BaseBuilder):
         if not ids:
             return ''
         cases = TestCase.objects.filter(id__in=ids).values(
-                'id', 'case_name', 'inputs', 'outputs'
+                'id', 'name', 'inputs', 'outputs'
             )
         return self._handle_case_queryset(cases)
 

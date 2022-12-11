@@ -12,6 +12,7 @@ def exception_handler(exc, context):
     """
     response = rest_handler(exc, context)
     if response is None:
+        logger.error(exc)
         return JsonResponse(
             code=99999,
             msg='System Error',

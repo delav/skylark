@@ -9,4 +9,4 @@ class SuiteDirSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = SuiteDir
-        fields = ('id', 'dir_name', 'parent_dir_id', 'project_id', 'dir_type')
+        fields = ('id', 'name', 'category', 'parent_dir_id', 'project_id')

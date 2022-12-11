@@ -1,4 +1,5 @@
 from loguru import logger
+from django.conf import settings
 from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
@@ -7,6 +8,7 @@ from application.testsuite.models import TestSuite
 from application.testsuite.serializers import TestSuiteSerializers
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers
+from application.common.handler import get_model_extra_data
 
 # Create your views here.
 
@@ -26,9 +28,24 @@ class TestSuiteViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixi
             return JsonResponse(code=10060, msg='get dir child info failed')
         child_dirs = dir_obj.children.all()
         child_suites = dir_obj.suites.all()
+        dir_list, suite_list = [], []
+        for item in child_dirs.iterator():
+            dir_data = SuiteDirSerializers(item).data
+            if item.category != settings.CATEGORY_META.get('TestCase'):
+                dir_data['extra_data'] = {}
+            else:
+                dir_data['extra_data'] = get_model_extra_data(item.id, settings.MODULE_TYPE_META.get('SuiteDir'))
+            dir_list.append(dir_data)
+        for item in child_suites.iterator():
+            dir_data = self.get_serializer(item).data
+            if item.category != settings.CATEGORY_META.get('TestCase'):
+                dir_data['extra_data'] = {}
+            else:
+                dir_data['extra_data'] = get_model_extra_data(item.id, settings.MODULE_TYPE_META.get('TestSuite'))
+            suite_list.append(dir_data)
         data_dict = {
-            'dirs': SuiteDirSerializers(child_dirs, many=True).data,
-            'suites': self.get_serializer(child_suites, many=True).data
+            'dirs': dir_list,
+            'suites': suite_list
         }
         return JsonResponse(data=data_dict)
 

@@ -1,4 +1,5 @@
 from loguru import logger
+from django.conf import settings
 from rest_framework import mixins
 from rest_framework import viewsets
 from application.infra.response import JsonResponse
@@ -6,6 +7,7 @@ from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers
 from application.project.models import Project
 from application.project.serializers import ProjectSerializers
+from application.common.handler import get_model_extra_data
 
 # Create your views here.
 
@@ -23,10 +25,19 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
         except (Exception,) as e:
             logger.error(f'get base dir info failed: {e}')
             return JsonResponse(code=10070, msg='get base dir failed')
-        dirs = project.dirs.filter(parent_dir=None).order_by('dir_type')
+        dirs = project.dirs.filter(parent_dir=None)
+        dir_list = []
+        pro_data = ProjectSerializers(project).data
+        for item in dirs.iterator():
+            dir_data = self.get_serializer(item).data
+            if item.category != settings.CATEGORY_META.get('TestCase'):
+                dir_data['extra_data'] = {}
+            else:
+                dir_data['extra_data'] = get_model_extra_data(item.id, settings.MODULE_TYPE_META.get('SuiteDir'))
+            dir_list.append(dir_data)
         data_dict = {
-            'root': ProjectSerializers(project).data,
-            'dirs': self.get_serializer(dirs, many=True).data
+            'root': pro_data,
+            'dirs': dir_list
         }
         return JsonResponse(data=data_dict)
 

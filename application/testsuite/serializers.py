@@ -8,4 +8,4 @@ class TestSuiteSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = TestSuite
-        fields = ('id', 'suite_name', 'suite_dir_id', 'suite_type', 'timeout')
+        fields = ('id', 'name', 'category', 'suite_dir_id', 'timeout')

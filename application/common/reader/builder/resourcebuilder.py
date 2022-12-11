@@ -31,7 +31,7 @@ class MultiResource(BaseReader):
         resource_builder = BaseResource(self.project_name)
         resource_queryset = SuiteDir.objects.filter(
             project_id=self.project_id,
-            dir_type=1,
+            category=1,
             parent_dir=None
         )
         if resource_queryset.exists():
