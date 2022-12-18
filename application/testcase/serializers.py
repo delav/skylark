@@ -11,5 +11,7 @@ class TestCaseSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = TestCase
-        fields = ('id', 'name', 'category', 'desc', 'priority_id', 'update_by',
-                  'tags', 'test_suite_id', 'inputs', 'outputs', 'timeout')
+        fields = (
+            'id', 'name', 'category', 'desc', 'priority_id', 'update_by',
+            'tags', 'test_suite_id', 'inputs', 'outputs', 'timeout'
+        )

@@ -1,22 +1,24 @@
-from application.common.reader.builder import VariableBuilder
-from application.common.reader.basereader import BaseReader
+from application.variable.models import Variable
+from application.infra.robot.variablefile import VariableFile
 
 
-class VariableReader(BaseReader):
-    def __init__(self, project_name, env, module_id, module_type):
-        super(VariableReader, self).__init__()
+class VariableReader(object):
+    def __init__(self, env, path, module_id, module_type):
         self.env = env
-        self.project_name = project_name
+        self.path = path
         self.module_id = module_id
         self.module_type = module_type
 
     def read(self):
-        var_builder = VariableBuilder(self.project_name, self.module_id, self.module_type, self.env)
-        path = var_builder.get_path()
-        text = var_builder.get_text()
-        if not text:
-            return {}
-        text = self._variables_line + text
-        return {path: text}
+        return {self.path: self._get_common_variable()}
 
-
+    def _get_common_variable(self):
+        variable_list = []
+        var_queryset = Variable.objects.filter(
+            env__env_name=self.env,
+            module_id=self.module_id,
+            module_type=self.module_type
+        )
+        for item in var_queryset.iterator():
+            variable_list.append({'name': item['name'], 'value': item['value']})
+        return VariableFile(variable_list)

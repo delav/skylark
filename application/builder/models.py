@@ -18,7 +18,8 @@ class Builder(models.Model):
     status = models.IntegerField(default=-1, blank=True,
                                  help_text='build status,-1:waiting,1:running,0:normal,9:interrupt')
     cron_job = models.BooleanField(default=False, help_text='if timing task')
-    project = models.ForeignKey(Project, help_text='associated project', on_delete=models.CASCADE)
+    debug = models.BooleanField(default=True, help_text='if debug')
+    project = models.ForeignKey(Project, help_text='associated project', on_delete=models.DO_NOTHING)
 
     class Meta:
         verbose_name = 'builder'

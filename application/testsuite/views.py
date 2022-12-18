@@ -58,6 +58,8 @@ class TestSuiteViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixi
         except (Exception,) as e:
             logger.error(f'save test suite failed: {e}')
             return JsonResponse(code=10061, msg='create test suite failed')
+        result = serializer.data
+        result['extra_data'] = {}
         return JsonResponse(data=serializer.data)
 
     def retrieve(self, request, *args, **kwargs):

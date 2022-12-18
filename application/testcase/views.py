@@ -25,9 +25,14 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
         except (Exception,) as e:
             logger.error(f'get test case failed: {e}')
             return JsonResponse(code=10050, msg='get test case failed')
-        test_cases = suite_obj.cases.all()
+        test_cases = suite_obj.cases.all().prefetch_related('tags')
+        case_list = []
+        for item in test_cases.iterator():
+            case_data = self.get_serializer(item).data
+            case_data['extra_data'] = {}
+            case_list.append(case_data)
         data_dict = {
-            'cases': self.get_serializer(test_cases, many=True).data
+            'cases': case_list
         }
         return JsonResponse(data=data_dict)
 
@@ -48,6 +53,8 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
         except Exception as e:
             logger.error(f'create test case failed: {e}')
             return JsonResponse(code=10051, msg='create test case failed')
+        result = serializer.data
+        result['extra_data'] = {}
         return JsonResponse(data=serializer.data)
 
     def retrieve(self, request, *args, **kwargs):

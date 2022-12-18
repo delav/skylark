@@ -50,7 +50,9 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
         except (Exception,) as e:
             logger.error(f'save suite dir failed: {e}')
             return JsonResponse(code=10071, msg='create suite dir failed')
-        return JsonResponse(data=serializer.data)
+        result = serializer.data
+        result['extra_data'] = {}
+        return JsonResponse(data=result)
 
     def retrieve(self, request, *args, **kwargs):
         pass
