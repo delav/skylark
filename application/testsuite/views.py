@@ -4,6 +4,7 @@ from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
 from application.infra.response import JsonResponse
+from application.infra.settings import CATEGORY_META, MODULE_TYPE_META
 from application.testsuite.models import TestSuite
 from application.testsuite.serializers import TestSuiteSerializers
 from application.suitedir.models import SuiteDir
@@ -31,17 +32,17 @@ class TestSuiteViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixi
         dir_list, suite_list = [], []
         for item in child_dirs.iterator():
             dir_data = SuiteDirSerializers(item).data
-            if item.category != settings.CATEGORY_META.get('TestCase'):
+            if item.category != CATEGORY_META.get('TestCase'):
                 dir_data['extra_data'] = {}
             else:
-                dir_data['extra_data'] = get_model_extra_data(item.id, settings.MODULE_TYPE_META.get('SuiteDir'))
+                dir_data['extra_data'] = get_model_extra_data(item.id, MODULE_TYPE_META.get('SuiteDir'))
             dir_list.append(dir_data)
         for item in child_suites.iterator():
             dir_data = self.get_serializer(item).data
-            if item.category != settings.CATEGORY_META.get('TestCase'):
+            if item.category != CATEGORY_META.get('TestCase'):
                 dir_data['extra_data'] = {}
             else:
-                dir_data['extra_data'] = get_model_extra_data(item.id, settings.MODULE_TYPE_META.get('TestSuite'))
+                dir_data['extra_data'] = get_model_extra_data(item.id, MODULE_TYPE_META.get('TestSuite'))
             suite_list.append(dir_data)
         data_dict = {
             'dirs': dir_list,

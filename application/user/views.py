@@ -9,7 +9,7 @@ from application.infra.response import JsonResponse
 from application.user.models import User
 from application.user.serializers import UserSerializer, RegisterSerializer, UserAdminSerializer
 from application.group.models import Group
-from application.infra.common import PagePagination
+from application.infra.pagination.paginator import PagePagination
 
 # Create your views here.
 

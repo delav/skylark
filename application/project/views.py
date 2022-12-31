@@ -5,7 +5,7 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from application.user.models import User
 from application.group.models import Group
-from application.infra.common import PagePagination
+from application.infra.pagination.paginator import PagePagination
 from application.infra.response import JsonResponse
 from application.project.models import Project
 from application.project.serializers import ProjectSerializers

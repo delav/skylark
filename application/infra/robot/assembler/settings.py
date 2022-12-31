@@ -30,7 +30,7 @@ class Settings(object):
 class LibrarySetting(Settings):
     library_prefix = 'Library'
 
-    def __init__(self, library_list):
+    def __init__(self, library_list: list):
         self.library_list = library_list
 
     def get_library_setting(self):
@@ -43,7 +43,7 @@ class LibrarySetting(Settings):
 class ResourceSetting(Settings):
     resource_prefix = 'Resource'
 
-    def __init__(self, resource_list):
+    def __init__(self, resource_list: list):
         self.resource_list = resource_list
 
     def get_resource_setting(self):
@@ -56,10 +56,12 @@ class ResourceSetting(Settings):
 class TimeoutSetting(Settings):
     timeout_prefix = 'Test Timeout'
 
-    def __init__(self, timeout_str):
+    def __init__(self, timeout_str: str):
         self.timeout_str = timeout_str
 
     def get_timeout_setting(self):
+        if not self.timeout_str:
+            return ''
         return self.get_settings(self.timeout_prefix, self.timeout_str)
 
 
@@ -70,7 +72,8 @@ class SetupTeardownSetting(Settings):
     suite_teardown_prefix = 'Suite Teardown'
     multi_keyword_prefix = 'RUN KEYWORDS'
 
-    def __init__(self, test_setup_str, test_teardown_str, suite_setup_str, suite_teardown_str):
+    def __init__(self, test_setup_str: str, test_teardown_str: str,
+                 suite_setup_str: str, suite_teardown_str: str):
         self.test_setup_str = test_setup_str
         self.test_teardown_str = test_teardown_str
         self.suite_setup_str = suite_setup_str

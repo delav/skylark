@@ -2,13 +2,19 @@ import platform
 
 
 class Config(object):
+    __instance = None
 
     large_sep = ' ' * 8
     small_sep = ' ' * 4
     linefeed = '\n'
     special_sep = '#@#'
 
-    def __new__(cls):
+    def __new__(cls, *args, **kwargs):
+        if not cls.__instance:
+            cls.__instance = super().__new__(cls, *args, **kwargs)
+        return cls.__instance
+
+    def __init__(self):
         _sys = platform.system()
         if _sys == 'Windows':
             line_feed = '\r\n'
@@ -18,7 +24,7 @@ class Config(object):
             line_feed = '\r'
         else:
             line_feed = '\n'
-        cls.linefeed = line_feed
+        self.linefeed = line_feed
 
     @property
     def settings_line(self):

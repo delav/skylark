@@ -1,13 +1,7 @@
 from application.infra.robot.assembler.config import Config
+from application.infra.settings import ENTITY_NAME_KEY, ENTITY_PARAMS_KEY, ENTITY_RETURN_KEY
 
 config = Config()
-
-
-class EntityKey(object):
-    def __init__(self, keyword_name_key, keyword_input_key, keyword_output_key):
-        self.name_key = keyword_name_key
-        self.input_key = keyword_input_key
-        self.output_key = keyword_output_key
 
 
 class KOCAssembler(object):
@@ -33,11 +27,13 @@ class KOCAssembler(object):
         )
         case_line = ''
         # add output parameter
-        case_line += config.small_sep + kw.get_output()
+        if kw.get_output().strip():
+            case_line += config.small_sep + kw.get_output()
         # add keyword name
         case_line += config.small_sep + kw.get_name()
         # add input parameter
-        case_line += config.small_sep + kw.get_input()
+        if kw.get_input().strip():
+            case_line += config.small_sep + kw.get_input()
         # one line per entity
         case_line += config.linefeed
         return case_line
@@ -48,19 +44,22 @@ class TestcaseAssembler(KOCAssembler):
     setup_prefix = '[Setup]'
     # not use
     teardown_prefix = '[Teardown]'
+
     timeout_prefix = '[Timeout]'
 
     def __init__(self, case_name: str, case_timeout: str, entity_list: list,
-                 entity_key: EntityKey, case_setup='', case_teardown=''):
+                 case_setup='', case_teardown=''):
         self.name = case_name
         self.timeout = case_timeout
         self.setup = case_setup
         self.teardown = case_teardown
         self.entities = entity_list
-        self.entity_key = entity_key
 
     def _get_koc_timeout(self):
-        timeout_line = self._add_koc_setting(self.timeout_prefix, self.timeout)
+        timeout_str = self.timeout
+        if not timeout_str:
+            return ''
+        timeout_line = self._add_koc_setting(self.timeout_prefix, timeout_str)
         return timeout_line + config.linefeed
 
     def _get_case_setup(self, setup_str):
@@ -77,10 +76,11 @@ class TestcaseAssembler(KOCAssembler):
         case_content += self._get_koc_timeout()
         # add case body
         for item in self.entities:
+            print(item)
             case_content += self._get_koc_line(
-                item.get(self.entity_key.name_key),
-                item.get(self.entity_key.output_key),
-                item.get(self.entity_key.input_key)
+                item.get(ENTITY_NAME_KEY),
+                item.get(ENTITY_RETURN_KEY),
+                item.get(ENTITY_PARAMS_KEY)
             )
         # end with newline
         case_content += config.linefeed
@@ -91,19 +91,23 @@ class KeywordAssembler(KOCAssembler):
     input_prefix = '[Arguments]'
     output_prefix = '[Return]'
 
-    def __init__(self, keyword_name: str, keyword_inputs: str, keyword_outputs: str,
-                 entity_list: list, entity_key: EntityKey):
+    def __init__(self, keyword_name: str, keyword_inputs: str, keyword_outputs: str, entity_list: list,):
         self.name = keyword_name
         self.inputs = keyword_inputs
         self.outputs = keyword_outputs
         self.entities = entity_list
-        self.entity_key = entity_key
 
     def _get_keyword_input(self):
+        input_str = self.inputs
+        if not input_str:
+            return ''
         arg_line = self._add_koc_setting(self.input_prefix, self.inputs)
         return arg_line + config.linefeed
 
     def _get_keyword_output(self):
+        output_str = self.outputs
+        if not output_str:
+            return ''
         ret_line = self._add_koc_setting(self.output_prefix, self.outputs)
         return ret_line + config.linefeed
 
@@ -116,9 +120,9 @@ class KeywordAssembler(KOCAssembler):
         # add keyword body
         for item in self.entities:
             keyword_content += self._get_koc_line(
-                item.get(self.entity_key.name_key),
-                item.get(self.entity_key.output_key),
-                item.get(self.entity_key.input_key)
+                item.get(ENTITY_NAME_KEY),
+                item.get(ENTITY_RETURN_KEY),
+                item.get(ENTITY_PARAMS_KEY)
             )
         # add keyword output
         keyword_content += self._get_keyword_output()
@@ -129,7 +133,7 @@ class KeywordAssembler(KOCAssembler):
 
 class EntityAssembler(object):
 
-    def __init__(self, name, outputs, inputs):
+    def __init__(self, name: str, outputs: str, inputs: str):
         self.keyword_name = name
         self.inputs = inputs
         self.outputs = outputs

@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-import os
 import sys
 from pathlib import Path
 from loguru import logger
@@ -18,9 +17,12 @@ from datetime import timedelta
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# log setting
-server_log_file_path = os.path.join(BASE_DIR, "logs/server.log")
-error_log_file_path = os.path.join(BASE_DIR, "logs/error.log")
+# Add worker to python path
+sys.path.insert(1, str(BASE_DIR / 'worker'))
+
+# Log setting
+server_log_file_path = BASE_DIR / 'logs/server.log'
+error_log_file_path = BASE_DIR / 'logs/error.log'
 logger.add(server_log_file_path, rotation="50 MB", encoding="utf-8", level="INFO")
 logger.add(error_log_file_path, rotation="50 MB", encoding="utf-8", level="ERROR")
 
@@ -76,6 +78,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'application.infra.middleware.loghandler.OpLogs',
 ]
 
 ROOT_URLCONF = 'skylark.urls'
@@ -175,30 +178,14 @@ AES_KEY = "20220427@)@@)$@&"
 
 STATIC_URL = '/static/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
-# model data category. 0: test case, 1: resource(user keyword), 2: text/other file
-CATEGORY_META = {
-    'TestCase': 0,
-    'Resource': 1,
-    'HelpFile': 2,
-}
-CATEGORY = [(v, k) for k, v in CATEGORY_META.items()]
-
-# related model data type
-MODULE_TYPE_META = {
-    'Project': 0,
-    'SuiteDir': 1,
-    'TestSuite': 2,
-}
-MODULE_TYPE = [(v, k) for k, v in MODULE_TYPE_META.items()]
-
 # Python keyword directory
-LIB_URL = '/library/'
+LIB_URL = BASE_DIR / 'library'
 
 # Default copy project
 PROJECT_MODULE = 'SKYLARK'

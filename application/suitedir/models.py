@@ -1,7 +1,7 @@
 from django.db import models
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from application.project.models import Project
+from application.infra.settings.choices import CATEGORY
 
 # Create your models here.
 
@@ -10,8 +10,7 @@ class SuiteDir(models.Model):
 
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
     name = models.CharField(max_length=255, help_text='dir name')
-    category = models.IntegerField(default=0, choices=settings.CATEGORY,
-                                   help_text='model category')
+    category = models.IntegerField(default=0, choices=CATEGORY, help_text='model category')
     create_at = models.DateTimeField(auto_now_add=True, help_text='create time')
     update_at = models.DateTimeField(auto_now=True, help_text='end time')
     project = models.ForeignKey(Project, null=True, related_name='dirs', on_delete=models.CASCADE,

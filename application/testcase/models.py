@@ -1,9 +1,9 @@
 from django.db import models
-from django.conf import settings
 from application.user.models import User
 from application.testsuite.models import TestSuite
 from application.casetag.models import CaseTag
 from application.casepriority.models import CasePriority
+from application.infra.settings.choices import CATEGORY
 
 # Create your models here.
 
@@ -11,8 +11,7 @@ from application.casepriority.models import CasePriority
 class TestCase(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
     name = models.CharField(max_length=255, help_text='test case name')
-    category = models.IntegerField(default=0, choices=settings.CATEGORY,
-                                   help_text='model category')
+    category = models.IntegerField(default=0, choices=CATEGORY, help_text='model category')
     desc = models.TextField(default=None, blank=True, null=True, help_text='test case desc')
     create_at = models.DateTimeField(auto_now_add=True, help_text='create time')
     update_at = models.DateTimeField(auto_now=True, help_text='update time')

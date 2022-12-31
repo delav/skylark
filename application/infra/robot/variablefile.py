@@ -11,11 +11,7 @@ class VariableFile(object):
         self.variables = variable_list
 
     def _get_variables(self):
-        var_key = VariableKey(
-            variable_name_key='name',
-            variable_value_key='value'
-        )
-        return Variables(self.variables, var_key).get_variables()
+        return Variables(self.variables).get_variables()
 
     def get_text(self):
         return Config().variables_line + self._get_variables()

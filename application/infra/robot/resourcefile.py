@@ -1,7 +1,7 @@
 from application.infra.robot.assembler.config import Config
 from application.infra.robot.assembler.settings import LibrarySetting
-from application.infra.robot.assembler.variables import Variables, VariableKey
-from application.infra.robot.assembler.testcase import KeywordAssembler, EntityKey
+from application.infra.robot.assembler.variables import Variables
+from application.infra.robot.assembler.testcase import KeywordAssembler
 
 
 class ResourceFile(object):
@@ -14,33 +14,27 @@ class ResourceFile(object):
         self.variables = variable_list
         self.keywords = keyword_list
 
-    def _get_libraries(self):
+    def _get_libraries_setting(self):
         return LibrarySetting(self.libraries).get_library_setting()
 
+    def _get_settings(self):
+        return self._get_libraries_setting()
+
     def _get_variables(self):
-        var_key = VariableKey(
-            variable_name_key='name',
-            variable_value_key='value'
-        )
-        return Variables(self.variables, var_key).get_variables()
+        return Variables(self.variables).get_variables()
 
     def _get_keywords(self):
         """
         these keywords actually is customized test cases
         """
         result = ''
-        entity_key = EntityKey(
-            keyword_name_key='keyword_name',
-            keyword_input_key='keyword_input',
-            keyword_output_key='keyword_output'
-        )
+
         for item in self.keywords:
             result += KeywordAssembler(
                 keyword_name=item['name'],
                 keyword_inputs=item['inputs'],
                 keyword_outputs=item['outputs'],
-                entity_list=item['entity'],
-                entity_key=entity_key
+                entity_list=item['entity']
             ).get_keyword_content()
         return result
 
@@ -49,10 +43,20 @@ class ResourceFile(object):
 
     def get_text(self):
         config = Config()
-        settings_text = config.settings_line + self._get_libraries()
-        variable_text = config.variables_line + self._get_variables()
-        keyword_text = config.keywords_line + self._get_keywords()
-        return config.linefeed.join([settings_text, variable_text, keyword_text])
+        join_list = []
+        setting_ctx = self._get_settings()
+        if setting_ctx:
+            settings_text = config.settings_line + setting_ctx
+            join_list.append(settings_text)
+        variable_ctx = self._get_variables()
+        if variable_ctx:
+            variable_text = config.variables_line + variable_ctx
+            join_list.append(variable_text)
+        keyword_ctx = self._get_keywords()
+        if keyword_ctx:
+            keyword_text = config.keywords_line + keyword_ctx
+            join_list.append(keyword_text)
+        return config.linefeed.join(join_list)
 
 
 
