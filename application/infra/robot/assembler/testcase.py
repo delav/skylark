@@ -76,7 +76,6 @@ class TestcaseAssembler(KOCAssembler):
         case_content += self._get_koc_timeout()
         # add case body
         for item in self.entities:
-            print(item)
             case_content += self._get_koc_line(
                 item.get(ENTITY_NAME_KEY),
                 item.get(ENTITY_RETURN_KEY),

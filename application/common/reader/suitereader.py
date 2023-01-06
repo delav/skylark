@@ -60,12 +60,12 @@ class SuiteReader(object):
         library_list = []
         pl_queryset = PythonLib.objects.all()
         for item in pl_queryset.iterator():
-            if item['lib_type'] == 1:
+            if item.lib_type == 1:
                 # builtin library
-                library = item['lib_name']
+                library = item.lib_name
             else:
                 # customize python file
-                library = os.path.join(lib_path, item['lib_name'])
+                library = os.path.join(lib_path, item.lib_name)
             library_list.append(library)
         return library_list
 
@@ -76,7 +76,7 @@ class SuiteReader(object):
             module_type=self.module_type
         )
         for item in var_queryset.iterator():
-            variable_list.append({'name': item['name'], 'value': item['value']})
+            variable_list.append({'name': item.name, 'value': item.value})
         return variable_list
 
     def _get_resource_list(self):

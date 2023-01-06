@@ -5,7 +5,7 @@ from application.infra.response import JsonResponse
 from application.builder.models import Builder
 from application.builder.serializers import BuilderSerializers
 from application.common.reader.structure import Structure
-
+from worker.runner import Runner
 
 # Create your views here.
 
@@ -24,8 +24,8 @@ class BuilderViewSets(mixins.RetrieveModelMixin,
         root = request.data.get('data')
         project_id = root.get('mid')
         project_name = root.get('name')
-        data = Structure(project_id, project_name).parser_from_db()
-        # Runner(data).start()
+        data, struct = Structure(project_id, project_name).parser_from_db()
+        Runner(data, struct).start()
         return JsonResponse(data={'build_id': 1})
 
     def retrieve(self, request, *args, **kwargs):

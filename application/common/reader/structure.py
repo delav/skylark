@@ -42,7 +42,7 @@ class Structure(object):
                 pass
 
     def parser_from_db(self):
-        result = {}
+        result = {'resource': {}, 'suite': {}, 'init': {}}
         # handle resources first, will use to suite and init file
         resource_dir_queryset = SuiteDir.objects.filter(
             project_id=self.project_id,
@@ -70,7 +70,7 @@ class Structure(object):
                     suite_id=suite.id,
                     module_type=MODULE_TYPE_META.get('TestSuite'),
                 ).read()
-                result[resource_file] = resource_text
+                result['resource'][resource_file] = resource_text
                 resource_list.append(resource_file)
         # handle case file
         case_dirs_queryset = SuiteDir.objects.filter(
@@ -81,6 +81,7 @@ class Structure(object):
         case_dir_list = case_dirs_ser.data
         case_tree = list_to_tree(case_dir_list)
         case_path_map = get_path_from_tree(case_tree)
+        run_suites = []
         for item in case_dir_list:
             # dir init file
             dir_id = item['id']
@@ -92,7 +93,8 @@ class Structure(object):
                 resource_list=resource_list
             ).read()
             if init_text:
-                result[init_file] = init_text
+                run_suites.append(init_file)
+                result['init'][init_file] = init_text
             # suite file
             suite_queryset = TestSuite.objects.filter(suite_dir_id=dir_id)
             if not suite_queryset.exists():
@@ -111,6 +113,8 @@ class Structure(object):
                     suite_timeout=suite.timeout,
                     resource_list=resource_list
                 ).read()
-                result[suite_file] = suite_text
+                run_suites.append(suite_file)
+                result['suite'][suite_file] = suite_text
+        print("suites:", run_suites)
         print("result:", result)
-        return result
+        return result, run_suites
