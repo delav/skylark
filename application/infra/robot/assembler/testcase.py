@@ -1,5 +1,5 @@
 from application.infra.robot.assembler.config import Config
-from application.infra.settings import ENTITY_NAME_KEY, ENTITY_PARAMS_KEY, ENTITY_RETURN_KEY
+from application.infra.constant import SPECIAL_SEP, ENTITY_NAME_KEY, ENTITY_PARAMS_KEY, ENTITY_RETURN_KEY
 
 config = Config()
 
@@ -45,21 +45,28 @@ class TestcaseAssembler(KOCAssembler):
     # not use
     teardown_prefix = '[Teardown]'
 
+    document_prefix = '[Documentation]'
     timeout_prefix = '[Timeout]'
 
-    def __init__(self, case_name: str, case_timeout: str, entity_list: list,
+    def __init__(self, case_name: str, case_id: int, case_timeout: str, entity_list: list,
                  case_setup='', case_teardown=''):
         self.name = case_name
+        self.cid = case_id
         self.timeout = case_timeout
         self.setup = case_setup
         self.teardown = case_teardown
         self.entities = entity_list
 
-    def _get_koc_timeout(self):
-        timeout_str = self.timeout
-        if not timeout_str:
+    def _get_case_document(self):
+        if not self.cid:
             return ''
-        timeout_line = self._add_koc_setting(self.timeout_prefix, timeout_str)
+        document_line = self._add_koc_setting(self.document_prefix, str(self.cid))
+        return document_line + config.linefeed
+
+    def _get_case_timeout(self):
+        if not self.timeout:
+            return ''
+        timeout_line = self._add_koc_setting(self.timeout_prefix, self.timeout)
         return timeout_line + config.linefeed
 
     def _get_case_setup(self, setup_str):
@@ -72,8 +79,10 @@ class TestcaseAssembler(KOCAssembler):
         case_content = ''
         # add case name
         case_content += self.name + config.linefeed
+        # add case document(case id)
+        case_content += self._get_case_document()
         # add case timeout
-        case_content += self._get_koc_timeout()
+        case_content += self._get_case_timeout()
         # add case body
         for item in self.entities:
             case_content += self._get_koc_line(
@@ -140,8 +149,8 @@ class EntityAssembler(object):
     def _get_inout(self, outputs_or_inputs):
         inout_str = ''
         if outputs_or_inputs:
-            if config.special_sep in outputs_or_inputs:
-                cco_var = outputs_or_inputs.split(config.special_sep.special_sep)
+            if SPECIAL_SEP in outputs_or_inputs:
+                cco_var = outputs_or_inputs.split(SPECIAL_SEP)
                 inout_str = config.small_sep.join(cco_var)
             else:
                 inout_str = outputs_or_inputs

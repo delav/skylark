@@ -1,5 +1,5 @@
 from application.infra.robot.assembler.config import Config
-from application.infra.robot.assembler.settings import LibrarySetting
+from application.infra.robot.assembler.settings import LibrarySetting, ResourceSetting
 from application.infra.robot.assembler.variables import Variables
 from application.infra.robot.assembler.testcase import KeywordAssembler
 
@@ -9,23 +9,36 @@ class ResourceFile(object):
     resource file support library, variables, keywords(user customize keyword, similar with test case)
     """
 
-    def __init__(self, library_list, variable_list, keyword_list):
+    def __init__(self, library_list, variable_list, resource_list, keyword_list):
         self.libraries = library_list
         self.variables = variable_list
+        self.resources = resource_list
         self.keywords = keyword_list
 
     def _get_libraries_setting(self):
         return LibrarySetting(self.libraries).get_library_setting()
 
+    def _get_resources_setting(self):
+        """
+        this resource setting means only common variable files
+        """
+        return ResourceSetting(self.resources).get_resource_setting()
+
     def _get_settings(self):
-        return self._get_libraries_setting()
+        """
+        [*** Settings ***] filed content
+        """
+        return self._get_libraries_setting() + self._get_resources_setting()
 
     def _get_variables(self):
+        """
+        [*** Variables ***] filed content
+        """
         return Variables(self.variables).get_variables()
 
     def _get_keywords(self):
         """
-        these keywords actually is customized test cases
+        [*** Keywords ***] filed content, these keywords actually is customized test cases
         """
         result = ''
 
@@ -38,10 +51,10 @@ class ResourceFile(object):
             ).get_keyword_content()
         return result
 
-    def get_path(self):
-        pass
-
     def get_text(self):
+        """
+        will return all resource file content
+        """
         config = Config()
         join_list = []
         setting_ctx = self._get_settings()

@@ -1,5 +1,5 @@
 from application.infra.robot.assembler.config import Config
-from application.infra.settings import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
+from application.infra.constant import SPECIAL_SEP, VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
 
 config = Config()
 
@@ -22,13 +22,13 @@ class Variables(object):
         variable_str = ''
         for item in self.variable_list:
             var_name = item.get(VARIABLE_NAME_KEY)
-            var_value = self._get_value_str(VARIABLE_VALUE_KEY)
+            var_value = self._get_value_str(item.get(VARIABLE_VALUE_KEY))
             variable_str += self._combine_variable_str(var_name, var_value)
         return variable_str
 
     def _get_value_str(self, value):
-        if config.special_sep in value:
-            value_list = value.split(config.special_sep.special_sep)
+        if SPECIAL_SEP in value:
+            value_list = value.split(SPECIAL_SEP)
             value_text = config.small_sep.join(value_list)
         else:
             value_text = value

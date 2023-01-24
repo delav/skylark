@@ -18,7 +18,7 @@ import os.path
 from robot.errors import DataError
 from robot.model import SuiteNamePatterns
 from robot.output import LOGGER
-from robot.utils import abspath, get_error_message, safe_str
+from robot.utils import abspath, get_error_message, safe_str, get_source_split
 
 
 class SuiteStructure:
@@ -33,7 +33,11 @@ class SuiteStructure:
         if self.is_directory and not init_file:
             return None
         source = init_file or source
-        return os.path.splitext(source)[1][1:].lower()
+        path_split = get_source_split()
+        paths = source.split(path_split)
+        if '.' not in paths[-1]:
+            return None
+        return paths[-1].split('.')[-1].lower()
 
     @property
     def is_directory(self):
@@ -47,112 +51,67 @@ class SuiteStructure:
 
 
 class SuiteStructureBuilder:
-    ignored_prefixes = ('_', '.')
-    ignored_dirs = ('CVS',)
+    path_split = get_source_split()
 
     def __init__(self, included_extensions=('robot',), included_suites=None):
         self.included_extensions = included_extensions
         self.included_suites = included_suites
 
     def build(self, paths):
-        paths = list(self._normalize_paths(paths))
-        if len(paths) == 1:
-            return self._build(paths[0], self.included_suites)
-        children = [self._build(p, self.included_suites) for p in paths]
-        return SuiteStructure(children=children)
+        paths = self._normalize_path(paths)
+        root = SuiteStructure(source=self._top_level_name(paths))
+        [self._build(root, path) for path in paths]
+        # self.show_child([root])
+        return root
 
-    def _normalize_paths(self, paths):
+    def _build(self, pointer, path_str):
+        path_list = path_str.split(self.path_split)
+        for j in range(1, len(path_list)):
+            if not pointer.children:
+                pointer.children = []
+            ok, extension = self._is_init_file(path_list[j])
+            if ok:
+                pointer.init_file = path_str
+                pointer.extension = extension
+                continue
+            source_name = self.path_split.join(path_list[:j + 1])
+            child_suite = self._find_child(pointer, source_name)
+            if not child_suite:
+                child_suite = SuiteStructure(source=source_name)
+                pointer.children.append(child_suite)
+            pointer = child_suite
+        return pointer
+
+    def _normalize_path(self, paths):
+        return paths
+
+    def _top_level_name(self, paths):
         if not paths:
             raise DataError('One or more source paths required.')
-        for path in paths:
-            path = os.path.normpath(path)
-            if not os.path.exists(path):
-                raise DataError("Parsing '%s' failed: File or directory to "
-                                "execute does not exist." % path)
-            yield abspath(path)
-
-    def _build(self, path, include_suites):
-        if os.path.isfile(path):
-            return SuiteStructure(path)
-        include_suites = self._get_include_suites(path, include_suites)
-        init_file, paths = self._get_child_paths(path, include_suites)
-        children = [self._build(p, include_suites) for p in paths]
-        return SuiteStructure(path, init_file, children)
-
-    def _get_include_suites(self, path, incl_suites):
-        if not incl_suites:
-            return None
-        if not isinstance(incl_suites, SuiteNamePatterns):
-            incl_suites = SuiteNamePatterns(
-                self._create_included_suites(incl_suites))
-        # If a directory is included, also all its children should be included.
-        if self._is_in_included_suites(os.path.basename(path), incl_suites):
-            return None
-        return incl_suites
-
-    def _create_included_suites(self, incl_suites):
-        for suite in incl_suites:
-            yield suite
-            while '.' in suite:
-                suite = suite.split('.', 1)[1]
-                yield suite
-
-    def _get_child_paths(self, dirpath, incl_suites=None):
-        init_file = None
-        paths = []
-        for path, is_init_file in self._list_dir(dirpath, incl_suites):
-            if is_init_file:
-                if not init_file:
-                    init_file = path
-                else:
-                    LOGGER.error("Ignoring second test suite init file '%s'."
-                                 % path)
-            else:
-                paths.append(path)
-        return init_file, paths
-
-    def _list_dir(self, dir_path, incl_suites):
         try:
-            names = os.listdir(dir_path)
-        except:
-            raise DataError("Reading directory '%s' failed: %s"
-                            % (dir_path, get_error_message()))
-        for name in sorted(names, key=lambda item: item.lower()):
-            name = safe_str(name)  # Handles NFC normalization on OSX
-            path = os.path.join(dir_path, name)
-            base, ext = os.path.splitext(name)
-            ext = ext[1:].lower()
-            if self._is_init_file(path, base, ext):
-                yield path, True
-            elif self._is_included(path, base, ext, incl_suites):
-                yield path, False
-            else:
-                LOGGER.info("Ignoring file or directory '%s'." % path)
+            return paths[0].split(self.path_split, 1)[0]
+        except DataError as err:
+            raise DataError("Checking path '%s' failed: %s" % (paths[0], err.message))
 
-    def _is_init_file(self, path, base, ext):
-        return (base.lower() == '__init__'
-                and ext in self.included_extensions
-                and os.path.isfile(path))
+    def _is_init_file(self, base):
+        base = base.lower()
+        index = base.find('__init__')
+        if index == -1:
+            return False, None
+        extension = base[index:].split('.')[-1]
+        return True, extension
 
-    def _is_included(self, path, base, ext, incl_suites):
-        if base.startswith(self.ignored_prefixes):
-            return False
-        if os.path.isdir(path):
-            return base not in self.ignored_dirs or ext
-        if ext not in self.included_extensions:
-            return False
-        return self._is_in_included_suites(base, incl_suites)
+    def _find_child(self, suite, suite_name):
+        for child in suite.children:
+            if suite_name == child.source:
+                return child
+        return None
 
-    def _is_in_included_suites(self, name, incl_suites):
-        if not incl_suites:
-            return True
-        return incl_suites.match(self._split_prefix(name))
-
-    def _split_prefix(self, name):
-        result = name.split('__', 1)[-1]
-        if result:
-            return result
-        return name
+    def show_child(self, root):
+        for node in root:
+            print(node.__dict__)
+            if node.children:
+                self.show_child(node.children)
 
 
 class SuiteStructureVisitor:

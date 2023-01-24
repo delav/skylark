@@ -1,5 +1,5 @@
 from application.infra.robot.assembler.config import Config
-from application.infra.robot.assembler.variables import Variables, VariableKey
+from application.infra.robot.assembler.variables import Variables
 
 
 class VariableFile(object):
@@ -11,6 +11,9 @@ class VariableFile(object):
         self.variables = variable_list
 
     def _get_variables(self):
+        """
+        [*** Variables ***] filed content
+        """
         return Variables(self.variables).get_variables()
 
     def get_text(self):

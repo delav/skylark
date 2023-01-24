@@ -1,5 +1,4 @@
 from loguru import logger
-from django.core.exceptions import ValidationError
 from rest_framework import mixins
 from rest_framework import viewsets
 from application.infra.response import JsonResponse
@@ -17,22 +16,25 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
         logger.info(f'get project user keyword: {request.query_params}')
         try:
             project_id = request.query_params.get('project')
-            queryset = UserKeyword.objects.select_related('test_case').filter(project_id=project_id)
-        except ValidationError:
+            print(project_id)
+            queryset = UserKeyword.objects.filter(project_id=project_id).select_related('test_case')
+        except (Exception,) as e:
+            logger.error(f'get user keyword failed: {e}')
             return JsonResponse(code=1000030, msg='request params error')
         user_keywords = []
         for item in queryset.iterator():
+            ser = self.get_serializer(item).data
             keyword_data = {
-                'id': item.id,
+                'id': ser['id'],
                 'name': item.test_case.name,
                 'ext_name': item.test_case.name,
                 'desc': item.test_case.desc,
-                'group': item.group,
+                'group': ser['group'],
                 'input_arg': item.test_case.inputs,
-                'output_arg': item.case.outputs,
+                'output_arg': item.test_case.outputs,
                 'input_desc': '',
                 'output_desc': '',
-                'image': item.image}
+                'image': ser['image']}
             user_keywords.append(keyword_data)
         return JsonResponse(data=user_keywords)
 

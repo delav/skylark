@@ -16,7 +16,7 @@
 from itertools import chain
 
 from robot.errors import DataError
-from robot.utils import get_error_message, FileReader
+from robot.utils import get_error_message, FileReader, DataReader
 
 from .blocklexers import FileLexer
 from .context import InitFileContext, TestCaseFileContext, ResourceFileContext
@@ -98,8 +98,7 @@ class Lexer:
 
     def _read(self, source):
         try:
-            with FileReader(source, accept_text=True) as reader:
-                return reader.read()
+            return DataReader().read(source)
         except Exception:
             raise DataError(get_error_message())
 

@@ -149,8 +149,8 @@ class Namespace:
             name = self.variables.replace_string(name)
         except DataError as err:
             self._raise_replacing_vars_failed(setting, err)
-        if self._is_import_by_path(setting.type, name):
-            return find_file(name, setting.directory, file_type=setting.type)
+        # if self._is_import_by_path(setting.type, name):
+        #     return find_file(name, setting.directory, file_type=setting.type)
         return name
 
     def _raise_replacing_vars_failed(self, setting, error):

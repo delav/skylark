@@ -3,6 +3,7 @@ from application.variable.models import Variable
 
 
 class VariableSerializers(serializers.ModelSerializer):
+    edit = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Variable

@@ -42,7 +42,13 @@ class DirInitFile(object):
         return ResourceSetting(self.resource_list).get_resource_setting()
 
     def _get_settings(self):
+        """
+        [*** Settings ***] filed content
+        """
         return self._get_setup_teardown_setting() + self._get_resources_setting()
 
     def _get_variables(self):
+        """
+        [*** Variables ***] filed content
+        """
         return Variables(self.variable_list).get_variables()

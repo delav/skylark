@@ -4,16 +4,15 @@ from application.variable.models import Variable
 from application.setupteardown.models import SetupTeardown
 from application.testcase.models import TestCase
 from application.caseentity.models import CaseEntity
+from application.caseentity.serializers import CaseEntitySerializers
 from application.infra.robot.suitefile import SuiteFile
-from application.common.reader.keywords import LibKeywordMap
-from application.infra.settings import ENTITY_NAME_KEY, ENTITY_PARAMS_KEY, ENTITY_RETURN_KEY
+from application.common.reader.libkeywords import LibKeywordManager, LibKeywordMap
+from application.infra.constant import ENTITY_NAME_KEY, ENTITY_PARAMS_KEY, ENTITY_RETURN_KEY
 
 lib_path = ''
 
 
 class SuiteReader(object):
-
-    keyword_dict = {}
 
     def __init__(self, project_id, project_name, suite_id, module_type, suite_timeout, resource_list):
         self.project_id = project_id
@@ -22,7 +21,6 @@ class SuiteReader(object):
         self.module_type = module_type
         self.suite_timeout = suite_timeout
         self.resource_list = resource_list
-        self.keyword_dict = LibKeywordMap().change_to_dict()
 
     def read(self):
         return self._fetch_content()
@@ -87,18 +85,22 @@ class SuiteReader(object):
         case_queryset = TestCase.objects.filter(
             test_suite_id=self.suite_id
         )
+        map_instance = LibKeywordMap()
         for item in case_queryset.iterator():
             entity_list = []
             entity_queryset = CaseEntity.objects.filter(
                 test_case_id=item.id
             ).order_by('seq_number')
             for entity in entity_queryset.iterator():
+                ser_entity = CaseEntitySerializers(entity).data
+                info = LibKeywordManager(ser_entity, map_instance)
                 entity_list.append({
-                    ENTITY_NAME_KEY: self.keyword_dict[entity.keyword_id]['name'],
-                    ENTITY_PARAMS_KEY: entity.input_args,
-                    ENTITY_RETURN_KEY: entity.output_args
+                    ENTITY_NAME_KEY: info.keyword_name,
+                    ENTITY_PARAMS_KEY: info.entity_input,
+                    ENTITY_RETURN_KEY: info.entity_output
                 })
             case_info = {
+                'id': item.id,
                 'name': item.name,
                 'inputs': item.inputs,
                 'outputs': item.outputs,

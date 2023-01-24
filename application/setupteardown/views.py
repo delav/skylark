@@ -18,7 +18,12 @@ class SetupTeardownViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            self.perform_create(serializer)
+            data = serializer.data
+            SetupTeardown.objects.update_or_create(
+                defaults=data,
+                module_id=data['module_id'],
+                module_type=data['module_type']
+            )
         except Exception as e:
             logger.error(f'create setup teardown failed: {e}')
             return JsonResponse(code=10091, msg='create setup teardown failed')

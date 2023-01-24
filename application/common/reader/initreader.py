@@ -51,7 +51,7 @@ class DirInitReader(object):
             module_type=self.module_type
         )
         for item in var_queryset.iterator():
-            variable_list.append({'name': item['name'], 'value': item['value']})
+            variable_list.append({'name': item.name, 'value': item.value})
         return variable_list
 
 

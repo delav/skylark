@@ -1,0 +1,5 @@
+path_sep = '/'
+variable_file_subfix = '.txt'
+resource_file_subfix = '.resource'
+robot_file_subfix = '.robot'
+init_file_name = '__init__'

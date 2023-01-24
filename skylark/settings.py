@@ -21,8 +21,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(1, str(BASE_DIR / 'worker'))
 
 # Log setting
-server_log_file_path = BASE_DIR / 'logs/server.log'
-error_log_file_path = BASE_DIR / 'logs/error.log'
+server_log_file_path = BASE_DIR / 'log/server.log'
+error_log_file_path = BASE_DIR / 'log/error.log'
 logger.add(server_log_file_path, rotation="50 MB", encoding="utf-8", level="INFO")
 logger.add(error_log_file_path, rotation="50 MB", encoding="utf-8", level="ERROR")
 
@@ -111,10 +111,17 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'CONN_MAX_AGE': 3600,
         'NAME': 'skylark',
-        'HOST': 'localhost',
+        'HOST': '127.0.0.1',
         'USER': 'root',
         'PASSWORD': '729814'
     }
+}
+
+# Redis
+REDIS = {
+    'HOST': '127.0.0.1',
+    'PORT': '6379',
+    'PASSWORD': '',
 }
 
 # rest framework
@@ -181,12 +188,45 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
+# Customized python lib keyword path, each machine must be the same
+LIB_PATH = BASE_DIR / 'library'
+
+# Robot report path
+REPORT_PATH = BASE_DIR / 'report'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
-# Python keyword directory
-LIB_URL = BASE_DIR / 'library'
-
 # Default copy project
 PROJECT_MODULE = 'SKYLARK'
+
+# Robot result redis
+ROBOT_REDIS_URL = f'redis://{REDIS.get("HOST")}:{REDIS.get("PORT")}/1'
+CASE_RESULT_KEY_PREFIX = 'case:'
+
+
+# model data category. 0: test case, 1: resource(user keyword), 2: text/other file
+CATEGORY_META = {
+    'TestCase': 0,
+    'Resource': 1,
+    'HelpFile': 2,
+}
+CATEGORY = [(v, k) for k, v in CATEGORY_META.items()]
+# related model data type
+MODULE_TYPE_META = {
+    'Project': 0,
+    'SuiteDir': 1,
+    'TestSuite': 2,
+}
+MODULE_TYPE = [(v, k) for k, v in MODULE_TYPE_META.items()]
+# variable value type
+VALUE_TYPE_META = {
+    'String': 0,
+    'Number': 1,
+    'List': 2,
+    'Dict': 3,
+}
+VALUE_TYPE = [(v, k) for k, v in VALUE_TYPE_META.items()]
+
+
 

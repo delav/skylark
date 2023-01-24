@@ -1,8 +1,8 @@
 from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
+from django.conf import settings
 from application.infra.response import JsonResponse
-from application.infra.settings.choices import CATEGORY_META, MODULE_TYPE_META
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers
 from application.project.models import Project
@@ -30,10 +30,10 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
         pro_data = ProjectSerializers(project).data
         for item in dirs.iterator():
             dir_data = self.get_serializer(item).data
-            if item.category != CATEGORY_META.get('TestCase'):
+            if item.category != settings.CATEGORY_META.get('TestCase'):
                 dir_data['extra_data'] = {}
             else:
-                dir_data['extra_data'] = get_model_extra_data(item.id, MODULE_TYPE_META.get('SuiteDir'))
+                dir_data['extra_data'] = get_model_extra_data(item.id, settings.MODULE_TYPE_META.get('SuiteDir'))
             dir_list.append(dir_data)
         data_dict = {
             'root': pro_data,

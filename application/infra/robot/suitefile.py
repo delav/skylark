@@ -40,26 +40,36 @@ class SuiteFile(object):
         return ResourceSetting(self.resources).get_resource_setting()
 
     def _get_variables(self):
+        """
+        [*** Variables ***] filed content
+        """
         return Variables(self.variables).get_variables()
 
     def _get_testcases(self):
         """
-        these keywords actually is customized test cases
+        [*** Test Cases ***] filed content
         """
         result = ''
         for item in self.testcases:
             result += TestcaseAssembler(
                 case_name=item['name'],
+                case_id=item['id'],
                 case_timeout=item['timeout'],
                 entity_list=item['entity']
             ).get_case_content()
         return result
 
     def _get_settings(self):
-        return self._get_setup_teardown_setting() + self._get_timeout_setting() + \
-               self._get_libraries_setting() + self._get_resources_setting()
+        """
+        [*** Settings ***] filed content
+        """
+        return self._get_setup_teardown_setting() + self._get_timeout_setting() +\
+            self._get_libraries_setting() + self._get_resources_setting()
 
     def get_text(self):
+        """
+        will return all suite file content
+        """
         config = Config()
         join_list = []
         setting_ctx = self._get_settings()

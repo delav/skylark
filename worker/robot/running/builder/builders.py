@@ -211,6 +211,6 @@ class ResourceFileBuilder:
         return resource
 
     def _parse(self, source):
-        if os.path.splitext(source)[1].lower() in ('.rst', '.rest'):
+        if source.split('.')[-1].lower() in ('.rst', '.rest'):
             return RestParser(self.lang, self.process_curdir).parse_resource_file(source)
         return RobotParser(self.lang, self.process_curdir).parse_resource_file(source)

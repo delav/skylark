@@ -7,7 +7,6 @@ class Config(object):
     large_sep = ' ' * 8
     small_sep = ' ' * 4
     linefeed = '\n'
-    special_sep = '#@#'
 
     def __new__(cls, *args, **kwargs):
         if not cls.__instance:

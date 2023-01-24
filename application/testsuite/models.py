@@ -1,7 +1,7 @@
 from django.db import models
+from django.conf import settings
 from application.project.models import Project
 from application.suitedir.models import SuiteDir
-from application.infra.settings import CATEGORY
 
 # Create your models here.
 
@@ -9,7 +9,7 @@ from application.infra.settings import CATEGORY
 class TestSuite(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
     name = models.CharField(max_length=255, help_text='test suite name')
-    category = models.IntegerField(default=0, choices=CATEGORY, help_text='model category')
+    category = models.IntegerField(default=0, choices=settings.CATEGORY, help_text='model category')
     create_at = models.DateTimeField(auto_now_add=True, help_text='create time')
     update_at = models.DateTimeField(auto_now=True, help_text='update time')
     suite_dir = models.ForeignKey(SuiteDir, null=True, related_name='suites', on_delete=models.CASCADE,

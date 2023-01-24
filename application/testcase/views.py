@@ -2,8 +2,8 @@ from loguru import logger
 from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
+from django.conf import settings
 from application.infra.response import JsonResponse
-from application.infra.settings import CATEGORY_META
 from application.testcase.models import TestCase
 from application.testcase.serializers import TestCaseSerializers
 from application.userkeyword.models import UserKeyword
@@ -46,7 +46,7 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
                 self.perform_create(serializer)
                 case_id = serializer.data['id']
                 suite_id = serializer.data['test_suite_id']
-                if serializer.data['category'] == CATEGORY_META.get('Resource'):
+                if serializer.data['category'] == settings.CATEGORY_META.get('Resource'):
                     suite = TestSuite.objects.select_related('suite_dir__project').get(id=suite_id)
                     project_id = suite.suite_dir.project_id
                     UserKeyword.objects.create(test_case_id=case_id, project_id=project_id)
@@ -73,7 +73,7 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
             with transaction.atomic():
                 self.perform_update(serializer)
                 case_id = serializer.data['id']
-                if serializer.data['case_type'] == CATEGORY_META.get('Resource'):
+                if serializer.data['case_type'] == settings.CATEGORY_META.get('Resource'):
                     UserKeyword.objects.get(test_case_id=case_id).save()
         except Exception as e:
             logger.error(f'create test case failed: {e}')

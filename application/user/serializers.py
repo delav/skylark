@@ -25,14 +25,6 @@ class UserSerializer(TokenObtainPairSerializer, serializers.ModelSerializer):
 
     @classmethod
     def get_token(cls, user):
-        """
-        此方法往token的有效负载 payload 里面添加数据
-        例如自定义了用户表结构，可以在这里面添加用户邮箱，头像图片地址，性别，年龄等可以公开的信息
-        这部分放在token里面是可以被解析的，所以不要放比较私密的信息
-
-        :param user: 用戶信息
-        :return: token
-        """
         token = super().get_token(user)
         # add user extra info
         # token['name'] = user.username

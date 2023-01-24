@@ -43,6 +43,7 @@ from robot.output import LOGGER, pyloggingconf
 from robot.reporting import ResultWriter
 from robot.running.builder import TestSuiteBuilder
 from robot.utils import Application, text
+from robot.utils import DataReader
 
 
 USAGE = """Robot Framework -- A generic automation framework
@@ -423,6 +424,9 @@ class RobotFramework(Application):
     def main(self, datasources, **options):
         try:
             settings = RobotSettings(options)
+            task_id = options.get('metadata')['taskid']
+            source_data = options.get('metadata')['data']
+            reader = DataReader(task_id, source_data)
         except:
             LOGGER.register_console_logger(stdout=options.get('stdout'),
                                            stderr=options.get('stderr'))

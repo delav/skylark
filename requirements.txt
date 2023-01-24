@@ -3,3 +3,7 @@ loguru==0.6.0
 djangorestframework==3.13.1
 PyMySQL==1.0.2
 Pillow==9.1.1
+PyYAML==6.0
+redis==4.4.2
+celery==5.2.7
+kombu==5.2.4
