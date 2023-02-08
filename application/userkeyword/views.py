@@ -28,7 +28,7 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
                 'id': ser['id'],
                 'name': item.test_case.name,
                 'ext_name': item.test_case.name,
-                'desc': item.test_case.desc,
+                'desc': item.test_case.document,
                 'group': ser['group'],
                 'input_arg': item.test_case.inputs,
                 'output_arg': item.test_case.outputs,

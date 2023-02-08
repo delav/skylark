@@ -12,7 +12,12 @@ VARIABLE_VALUE_KEY = 'value'
 
 # robot file path config
 PATH_SEP = '/'
-VARIABLE_FILE_SUBFIX = '.txt'
+COMMON_RESOURCE_PREFIX = 'common-'
 RESOURCE_FILE_SUBFIX = '.resource'
 ROBOT_FILE_SUBFIX = '.robot'
 INIT_FILE_NAME = '__init__'
+
+# front tree node desc
+FRONT_NODE_DESC = {'case': 'C', 'suite': 'S', 'dir': 'D', 'root': 'P'}
+# extra entity key
+FRONT_ENTITY_KEY = 'entity'

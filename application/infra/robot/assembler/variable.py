@@ -1,10 +1,10 @@
-from application.infra.robot.assembler.config import Config
+from application.infra.robot.assembler.configure import Config
 from application.infra.constant import SPECIAL_SEP, VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
 
 config = Config()
 
 
-class Variables(object):
+class VariableAssembler(object):
 
     def __init__(self, variable_list: list):
         self.variable_list = variable_list

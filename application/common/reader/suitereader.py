@@ -1,41 +1,69 @@
-import os
-from application.pythonlib.models import PythonLib
+from django.conf import settings
 from application.variable.models import Variable
 from application.setupteardown.models import SetupTeardown
-from application.testcase.models import TestCase
-from application.caseentity.models import CaseEntity
-from application.caseentity.serializers import CaseEntitySerializers
+from application.tag.models import Tag
 from application.infra.robot.suitefile import SuiteFile
-from application.common.reader.libkeywords import LibKeywordManager, LibKeywordMap
-from application.infra.constant import ENTITY_NAME_KEY, ENTITY_PARAMS_KEY, ENTITY_RETURN_KEY
-
-lib_path = ''
+from application.common.reader.module.testcase import CaseReader
 
 
-class SuiteReader(object):
+class JsonSuiteReader(object):
+    lib_path = settings.LIB_PATH
 
-    def __init__(self, project_id, project_name, suite_id, module_type, suite_timeout, resource_list):
-        self.project_id = project_id
-        self.project_name = project_name
+    def __init__(self, setup_teardown_data, suite_timeout,
+                 variable_list, resource_list, variable_files, tag_list, case_data):
+        self.setup_teardown_data = setup_teardown_data
+        self.suite_timeout = suite_timeout
+        self.variable_list = variable_list
+        self.resource_list = resource_list
+        self.variable_files = variable_files
+        self.tag_list = tag_list
+        self.case_data = case_data
+
+    def read(self):
+        return SuiteFile(
+            self.setup_teardown_data.get('test_setup', ''),
+            self.setup_teardown_data.get('test_teardown', ''),
+            self.setup_teardown_data.get('suite_setup', ''),
+            self.setup_teardown_data.get('suite_teardown', ''),
+            self.suite_timeout,
+            self.variable_list,
+            self.resource_list,
+            self.variable_files,
+            self.tag_list,
+            self._get_testcase_list()
+        ).get_text()
+
+    def _get_testcase_list(self):
+        cases = CaseReader().get_by_case_data(self.case_data)
+        self.suite_cases = len(cases)
+        return cases
+
+    def get_suite_cases(self):
+        return self.suite_cases or 0
+
+
+class DBSuiteReader(object):
+    lib_path = settings.LIB_PATH
+
+    def __init__(self, suite_id, module_type, suite_timeout, resource_list, variable_files):
         self.suite_id = suite_id
         self.module_type = module_type
         self.suite_timeout = suite_timeout
         self.resource_list = resource_list
+        self.variable_files = variable_files
 
     def read(self):
-        return self._fetch_content()
-
-    def _fetch_content(self):
-        st_list = self._get_setup_teardown()
+        setup_teardown_data = self._get_setup_teardown()
         return SuiteFile(
-            st_list[0],
-            st_list[1],
-            st_list[2],
-            st_list[3],
+            setup_teardown_data[0],
+            setup_teardown_data[1],
+            setup_teardown_data[2],
+            setup_teardown_data[3],
             self.suite_timeout,
-            self._get_library_list(),
             self._get_variable_list(),
-            self._get_resource_list(),
+            self.resource_list,
+            self.variable_files,
+            self._get_tag_list(),
             self._get_testcase_list()
         ).get_text()
 
@@ -54,18 +82,12 @@ class SuiteReader(object):
             setup_teardown.suite_teardown
         ]
 
-    def _get_library_list(self):
-        library_list = []
-        pl_queryset = PythonLib.objects.all()
-        for item in pl_queryset.iterator():
-            if item.lib_type == 1:
-                # builtin library
-                library = item.lib_name
-            else:
-                # customize python file
-                library = os.path.join(lib_path, item.lib_name)
-            library_list.append(library)
-        return library_list
+    def _get_tag_list(self):
+        tag_queryset = Tag.objects.filter(
+            module_id=self.suite_id,
+            module_type=self.module_type
+        )
+        return [t.name for t in tag_queryset.iterator()]
 
     def _get_variable_list(self):
         variable_list = []
@@ -77,35 +99,10 @@ class SuiteReader(object):
             variable_list.append({'name': item.name, 'value': item.value})
         return variable_list
 
-    def _get_resource_list(self):
-        return self.resource_list
-
     def _get_testcase_list(self):
-        testcase_list = []
-        case_queryset = TestCase.objects.filter(
-            test_suite_id=self.suite_id
-        )
-        map_instance = LibKeywordMap()
-        for item in case_queryset.iterator():
-            entity_list = []
-            entity_queryset = CaseEntity.objects.filter(
-                test_case_id=item.id
-            ).order_by('seq_number')
-            for entity in entity_queryset.iterator():
-                ser_entity = CaseEntitySerializers(entity).data
-                info = LibKeywordManager(ser_entity, map_instance)
-                entity_list.append({
-                    ENTITY_NAME_KEY: info.keyword_name,
-                    ENTITY_PARAMS_KEY: info.entity_input,
-                    ENTITY_RETURN_KEY: info.entity_output
-                })
-            case_info = {
-                'id': item.id,
-                'name': item.name,
-                'inputs': item.inputs,
-                'outputs': item.outputs,
-                'timeout': item.timeout,
-                'entity': entity_list
-            }
-            testcase_list.append(case_info)
-        return testcase_list
+        cases = CaseReader().get_by_suite_id(self.suite_id)
+        self.suite_cases = len(cases)
+        return cases
+
+    def get_suite_cases(self):
+        return self.suite_cases or 0

@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'application.user.apps.UserConfig',
     'application.group.apps.GroupConfig',
-    'application.casetag.apps.CaseTagConfig',
+    'application.tag.apps.TagConfig',
     'application.keywordgroup.apps.KeywordGroupConfig',
     'application.libkeyword.apps.LibKeywordConfig',
     'application.project.apps.ProjectConfig',
@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'application.userkeyword.apps.UserKeywordConfig',
     'application.setupteardown.apps.SetupTeardownConfig',
     'application.variable.apps.VariableConfig',
+    'application.virtualfile.apps.VirtualFileConfig',
     'application.builder.apps.BuilderConfig',
     'application.buildcase.apps.BuildCaseConfig',
     'application.environment.apps.EnvironmentConfig',
@@ -188,6 +189,10 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
+# distributed execute
+DISTRIBUTED_BUILD = False
+WORKER_MAX_CASE_LIMIT = 200
+
 # Customized python lib keyword path, each machine must be the same
 LIB_PATH = BASE_DIR / 'library'
 
@@ -202,14 +207,16 @@ PROJECT_MODULE = 'SKYLARK'
 
 # Robot result redis
 ROBOT_REDIS_URL = f'redis://{REDIS.get("HOST")}:{REDIS.get("PORT")}/1'
-CASE_RESULT_KEY_PREFIX = 'case:'
+CASE_RESULT_KEY_PREFIX = 'robot:case:'
+TASK_RESULT_KEY_PREFIX = 'robot:task:'
 
 
 # model data category. 0: test case, 1: resource(user keyword), 2: text/other file
 CATEGORY_META = {
     'TestCase': 0,
-    'Resource': 1,
-    'HelpFile': 2,
+    'Keyword': 1,
+    'Resource': 2,
+    'HelpFile': 3,
 }
 CATEGORY = [(v, k) for k, v in CATEGORY_META.items()]
 # related model data type

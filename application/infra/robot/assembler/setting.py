@@ -1,4 +1,4 @@
-from application.infra.robot.assembler.config import Config
+from application.infra.robot.assembler.configure import Config
 
 
 config = Config()
@@ -117,3 +117,29 @@ class SetupTeardownSetting(Settings):
             format_suite_teardown = self._handler_step(self.suite_teardown_str)
             setup_teardown_setting += self.get_settings(self.suite_teardown_prefix, format_suite_teardown)
         return setup_teardown_setting
+
+
+class VariableSetting(Settings):
+    variable_prefix = 'Variables'
+
+    def __init__(self, py_file_list):
+        self.variable_files = py_file_list
+
+    def get_variable_setting(self):
+        variables = ''
+        for file in self.variable_files:
+            variables += self.get_settings(self.variable_prefix, file)
+        return variables
+
+
+class TagSetting(Settings):
+    tag_prefix = 'Force Tags'
+
+    def __init__(self, tag_list):
+        self.tag_list = tag_list
+
+    def get_tag_setting(self):
+        tags = ''
+        for tag in self.tag_list:
+            tags += self.get_settings(self.tag_prefix, tag)
+        return tags

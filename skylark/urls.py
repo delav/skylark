@@ -31,7 +31,7 @@ from application.setupteardown.views import SetupTeardownViewSets
 from application.keywordgroup.views import KeywordGroupViewSets
 from application.environment.views import EnvironmentViewSets
 from application.variable.views import VariableViewSets
-from application.builder.views import BuilderViewSets
+from application.builder.views import BuilderViewSets, BuildEdgeViewSets
 
 router = routers.SimpleRouter(trailing_slash=False)
 router.register('user/info', NormalUserViewSets, basename='user_info')
@@ -49,6 +49,7 @@ router.register('keyword-group', KeywordGroupViewSets, basename='keyword_group')
 router.register('environment', EnvironmentViewSets, basename='environment')
 router.register('variable', VariableViewSets, basename='variable')
 router.register('build', BuilderViewSets, basename='build')
+router.register('build-edge', BuildEdgeViewSets, basename='build_edge')
 
 
 urlpatterns = [

@@ -1,22 +1,19 @@
-from application.infra.robot.assembler.config import Config
-from application.infra.robot.assembler.settings import LibrarySetting, ResourceSetting
-from application.infra.robot.assembler.variables import Variables
+from application.infra.robot.assembler.setting import LibrarySetting, ResourceSetting, VariableSetting
+from application.infra.robot.assembler.variable import VariableAssembler
 from application.infra.robot.assembler.testcase import KeywordAssembler
+from application.infra.robot.basefile import BaseFile
 
 
-class ResourceFile(object):
+class ResourceKeywordFile(BaseFile):
     """
     resource file support library, variables, keywords(user customize keyword, similar with test case)
     """
 
-    def __init__(self, library_list, variable_list, resource_list, keyword_list):
-        self.libraries = library_list
-        self.variables = variable_list
+    def __init__(self, resource_list, variable_files, variable_list, keyword_list):
         self.resources = resource_list
+        self.varfiles = variable_files
+        self.variables = variable_list
         self.keywords = keyword_list
-
-    def _get_libraries_setting(self):
-        return LibrarySetting(self.libraries).get_library_setting()
 
     def _get_resources_setting(self):
         """
@@ -24,17 +21,20 @@ class ResourceFile(object):
         """
         return ResourceSetting(self.resources).get_resource_setting()
 
+    def _get_variable_setting(self):
+        return VariableSetting(self.varfiles).get_variable_setting()
+
     def _get_settings(self):
         """
         [*** Settings ***] filed content
         """
-        return self._get_libraries_setting() + self._get_resources_setting()
+        return self._get_variable_setting() + self._get_resources_setting()
 
     def _get_variables(self):
         """
         [*** Variables ***] filed content
         """
-        return Variables(self.variables).get_variables()
+        return VariableAssembler(self.variables).get_variables()
 
     def _get_keywords(self):
         """
@@ -51,25 +51,29 @@ class ResourceFile(object):
             ).get_keyword_content()
         return result
 
-    def get_text(self):
-        """
-        will return all resource file content
-        """
-        config = Config()
-        join_list = []
-        setting_ctx = self._get_settings()
-        if setting_ctx:
-            settings_text = config.settings_line + setting_ctx
-            join_list.append(settings_text)
-        variable_ctx = self._get_variables()
-        if variable_ctx:
-            variable_text = config.variables_line + variable_ctx
-            join_list.append(variable_text)
-        keyword_ctx = self._get_keywords()
-        if keyword_ctx:
-            keyword_text = config.keywords_line + keyword_ctx
-            join_list.append(keyword_text)
-        return config.linefeed.join(join_list)
 
+class ResourceCommonFile(BaseFile):
+    """
+    common variables, separate file, scalar, will be used by all keyword resource or suite .
+    import all library at here, and no longer needed import at every suite or keyword resource
+    """
 
+    def __init__(self, library_list, variable_list):
+        self.libraries = library_list
+        self.variables = variable_list
+
+    def _get_library_setting(self):
+        return LibrarySetting(self.libraries).get_library_setting()
+
+    def _get_variables(self):
+        """
+        [*** Variables ***] filed content
+        """
+        return VariableAssembler(self.variables).get_variables()
+
+    def _get_settings(self):
+        """
+        [*** Settings ***] filed content
+        """
+        return self._get_library_setting()
 

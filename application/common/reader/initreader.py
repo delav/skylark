@@ -1,29 +1,56 @@
 from application.setupteardown.models import SetupTeardown
+from application.tag.models import Tag
 from application.variable.models import Variable
 from application.infra.robot.initfile import DirInitFile
 
 
-class DirInitReader(object):
+class JsonDirInitReader(object):
 
-    def __init__(self, dir_id, module_type, resource_list):
+    def __init__(self, setup_teardown_data, variable_list, resource_list, variable_files, tag_list):
+        self.setup_teardown_data = setup_teardown_data
+        self.variable_list = variable_list
+        self.resource_list = resource_list
+        self.variable_files = variable_files
+        self.tag_list = tag_list
+
+    def read(self):
+        if not any([self.setup_teardown_data, self.tag_list, self.variable_list]):
+            return ''
+        return DirInitFile(
+            self.setup_teardown_data['test_setup'],
+            self.setup_teardown_data['test_teardown'],
+            self.setup_teardown_data['suite_setup'],
+            self.setup_teardown_data['suite_teardown'],
+            self.resource_list,
+            self.variable_files,
+            self.tag_list,
+            self.variable_list
+        ).get_text()
+
+
+class DBDirInitReader(object):
+
+    def __init__(self, dir_id, module_type, resource_list, variable_files):
         self.dir_id = dir_id
         self.module_type = module_type
         self.resource_list = resource_list
+        self.variable_files = variable_files
 
     def read(self):
-        return self._fetch_content()
-
-    def _fetch_content(self):
-        st_list = self._get_setup_teardown()
-        if not st_list:
+        setup_teardown_data = self._get_setup_teardown()
+        tags = self._get_tag_list()
+        variables = self._get_variable_list()
+        if not any([setup_teardown_data, tags, variables]):
             return ''
         return DirInitFile(
-            st_list[0],
-            st_list[1],
-            st_list[2],
-            st_list[3],
-            self._get_resource_list(),
-            self._get_variable_list()
+            setup_teardown_data[0],
+            setup_teardown_data[1],
+            setup_teardown_data[2],
+            setup_teardown_data[3],
+            self.resource_list,
+            self.variable_files,
+            tags,
+            variables,
         ).get_text()
 
     def _get_setup_teardown(self):
@@ -41,10 +68,19 @@ class DirInitReader(object):
             setup_teardown.suite_teardown
         ]
 
-    def _get_resource_list(self):
-        return self.resource_list
+    def _get_tag_list(self):
+        tag_queryset = Tag.objects.filter(
+            module_id=self.dir_id,
+            module_type=self.module_type
+        )
+        if not tag_queryset.exists():
+            return None
+        return [t.name for t in tag_queryset.iterator()]
 
     def _get_variable_list(self):
+        """
+        dir variable only can use in dir setup or teardown
+        """
         variable_list = []
         var_queryset = Variable.objects.filter(
             module_id=self.dir_id,

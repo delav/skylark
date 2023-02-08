@@ -16,7 +16,7 @@ class Singleton(type):
 class RedisClient(metaclass=Singleton):
 
     def __init__(self, redis_url):
-        self.pool = ConnectionPool.from_url(redis_url)
+        self.pool = ConnectionPool.from_url(redis_url, decode_responses=True)
 
     @property
     def connector(self):
