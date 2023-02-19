@@ -64,7 +64,7 @@ INSTALLED_APPS = [
     'application.variable.apps.VariableConfig',
     'application.virtualfile.apps.VirtualFileConfig',
     'application.builder.apps.BuilderConfig',
-    'application.buildcase.apps.BuildCaseConfig',
+    'application.builddetail.apps.BuildDetailConfig',
     'application.environment.apps.EnvironmentConfig',
     'application.casepriority.apps.CasePriorityConfig',
     'application.pythonlib.apps.PythonlibConfig',
@@ -190,7 +190,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
 # distributed execute
-DISTRIBUTED_BUILD = False
+DISTRIBUTED_BUILD = True
+DISTRIBUTED_WITH_SUITE = False
 WORKER_MAX_CASE_LIMIT = 200
 
 # Customized python lib keyword path, each machine must be the same
@@ -206,6 +207,7 @@ REPORT_PATH = BASE_DIR / 'report'
 PROJECT_MODULE = 'SKYLARK'
 
 # Robot result redis
+REDIS_EXPIRE_TIME = 60*60*24*2
 ROBOT_REDIS_URL = f'redis://{REDIS.get("HOST")}:{REDIS.get("PORT")}/1'
 CASE_RESULT_KEY_PREFIX = 'robot:case:'
 TASK_RESULT_KEY_PREFIX = 'robot:task:'
@@ -224,6 +226,7 @@ MODULE_TYPE_META = {
     'Project': 0,
     'SuiteDir': 1,
     'TestSuite': 2,
+    'TestCase': 3,
 }
 MODULE_TYPE = [(v, k) for k, v in MODULE_TYPE_META.items()]
 # variable value type

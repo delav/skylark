@@ -6,10 +6,10 @@ redis_host = settings.REDIS.get('HOST')
 redis_port = settings.REDIS.get('PORT')
 
 # Celery config
+imports = ('task.tasks',)
 broker_url = f'redis://{redis_host}:{redis_port}/0'
 result_backend = f'redis://{redis_host}:{redis_port}/0'
 task_queues = (
-    Queue('runner', routing_key='runner'),
     Queue('notifier', routing_key='notifier'),
  )
 task_routes = {

@@ -33,7 +33,7 @@ class LibKeywordMap(object):
         return self.alias_name_map
 
 
-# init lib keyword data
+# TODO, init lib keyword data
 lib_keyword = LibKeywordMap()
 keyword_map = lib_keyword.get_id_map()
 name_map = lib_keyword.get_name_map()

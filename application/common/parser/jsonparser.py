@@ -1,5 +1,5 @@
 from application.infra.constant.constants import PATH_SEP, ROBOT_FILE_SUBFIX, INIT_FILE_NAME
-from application.infra.engine.structure import SuiteStructure, CaseStructure
+from application.infra.engine.structure import SuiteStructure, CommonStructure
 from application.common.reader.initreader import JsonDirInitReader
 from application.common.reader.suitereader import JsonSuiteReader
 from application.common.parser.baseparser import BaseParser
@@ -8,13 +8,16 @@ from application.common.parser.treeformat import get_path_from_front_tree
 
 class JsonParser(BaseParser):
 
-    def _parse_run_data(self):
-        return get_path_from_front_tree(self.run_data, PATH_SEP)
-
     def parse(self):
-        # handle resources first, will use to suite and init file
-        resources_map = self._get_keyword_resources()
-        self.robot_data.update(resources_map)
+        common_file_paths = []
+        common_file_sources = {}
+        # handle variable files, will use to suite and init file
+        variable_file_map = self.get_common_variable_files()
+        variable_file_list = list(variable_file_map.keys())
+        # handle resources, will use to suite and init file
+        resources_map = self.get_common_resources(variable_file_list)
+        common_file_sources.update(resources_map)
+        common_file_sources.update(variable_file_map)
         resource_list = list(resources_map.keys())
         # handle front run data
         format_data = self._parse_run_data()
@@ -26,12 +29,14 @@ class JsonParser(BaseParser):
                 init_text = JsonDirInitReader(
                     setup_teardown_data=dir_extra_data['fixtures'],
                     variable_list=dir_extra_data['variables'],
-                    resource_list=resource_list
+                    resource_list=resource_list,
+                    variable_files=variable_file_list,
+                    tag_list=dir_extra_data['tags']
                 ).read()
                 if not init_text:
                     continue
-                self.robot_suite.append(init_file)
-                self.robot_data[init_file] = init_text
+                common_file_paths.append(init_file)
+                common_file_sources[init_file] = init_text
         for suite_id, suite_data in format_data['suites'].items():
             suite_file = PATH_SEP.join([self.project_name, suite_data['path'] + ROBOT_FILE_SUBFIX])
             suite_extra_data = suite_data['data']['extra_data']
@@ -43,11 +48,22 @@ class JsonParser(BaseParser):
                 suite_timeout=suite_data['data']['timeout'],
                 variable_list=suite_extra_data['variables'],
                 resource_list=resource_list,
-                suite_id=suite_id,
+                variable_files=variable_file_list,
+                tag_list=suite_extra_data['tags'],
                 case_data=suite_case_data
             )
-            suite_text = suite_reader.read()
-            self.total_case += suite_reader.get_suite_cases()
-            self.robot_suite.append(suite_file)
-            self.robot_data[suite_file] = suite_text
+            self._extract(suite_file, suite_reader)
+        common = CommonStructure(common_file_paths, common_file_sources)
+        return common, self.structures
 
+    def _parse_run_data(self):
+        return get_path_from_front_tree(self.run_data, PATH_SEP)
+
+    def _extract(self, path, reader):
+        file_text = reader.read()
+        struct = SuiteStructure()
+        struct.set_path(path)
+        struct.set_header(reader.head_text_str)
+        struct.set_testcase(reader.body_text_list)
+        struct.set_content(file_text)
+        self.structures.append(struct)

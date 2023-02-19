@@ -11,6 +11,9 @@ class JsonSuiteReader(object):
 
     def __init__(self, setup_teardown_data, suite_timeout,
                  variable_list, resource_list, variable_files, tag_list, case_data):
+        self.head_text_str = ''
+        self.body_text_list = []
+        self.file_text = ''
         self.setup_teardown_data = setup_teardown_data
         self.suite_timeout = suite_timeout
         self.variable_list = variable_list
@@ -20,7 +23,7 @@ class JsonSuiteReader(object):
         self.case_data = case_data
 
     def read(self):
-        return SuiteFile(
+        file = SuiteFile(
             self.setup_teardown_data.get('test_setup', ''),
             self.setup_teardown_data.get('test_teardown', ''),
             self.setup_teardown_data.get('suite_setup', ''),
@@ -31,21 +34,24 @@ class JsonSuiteReader(object):
             self.variable_files,
             self.tag_list,
             self._get_testcase_list()
-        ).get_text()
+        )
+        self.file_text = file.get_text()
+        self.head_text_str = file.get_head()
+        self.body_text_list = file.get_body()
+        return self.file_text
 
     def _get_testcase_list(self):
         cases = CaseReader().get_by_case_data(self.case_data)
-        self.suite_cases = len(cases)
         return cases
-
-    def get_suite_cases(self):
-        return self.suite_cases or 0
 
 
 class DBSuiteReader(object):
     lib_path = settings.LIB_PATH
 
     def __init__(self, suite_id, module_type, suite_timeout, resource_list, variable_files):
+        self.head_text_str = ''
+        self.body_text_list = []
+        self.file_text = ''
         self.suite_id = suite_id
         self.module_type = module_type
         self.suite_timeout = suite_timeout
@@ -54,7 +60,7 @@ class DBSuiteReader(object):
 
     def read(self):
         setup_teardown_data = self._get_setup_teardown()
-        return SuiteFile(
+        file = SuiteFile(
             setup_teardown_data[0],
             setup_teardown_data[1],
             setup_teardown_data[2],
@@ -65,7 +71,11 @@ class DBSuiteReader(object):
             self.variable_files,
             self._get_tag_list(),
             self._get_testcase_list()
-        ).get_text()
+        )
+        file_text = file.get_text()
+        self.head_text_str = file.get_head()
+        self.body_text_list = file.get_body()
+        return file_text
 
     def _get_setup_teardown(self):
         st_queryset = SetupTeardown.objects.filter(
@@ -101,8 +111,4 @@ class DBSuiteReader(object):
 
     def _get_testcase_list(self):
         cases = CaseReader().get_by_suite_id(self.suite_id)
-        self.suite_cases = len(cases)
         return cases
-
-    def get_suite_cases(self):
-        return self.suite_cases or 0

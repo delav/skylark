@@ -1,11 +1,10 @@
-import os
 import json
-import tempfile
 from datetime import datetime
 from skylark.celeryapp import app
 from django.conf import settings
 from application.builder.models import Builder
 from application.infra.client.redisclient import RedisClient
+from application.infra.utils.makedir import make_path
 from worker.robot.rebot import rebot
 
 
@@ -21,7 +20,7 @@ def robot_notifier(build_id):
     redis_key = settings.TASK_RESULT_KEY_PREFIX + build_id
     current_result = conn.hgetall(redis_key)
     batch = current_result.pop('batch')
-    if len(current_result) != batch:
+    if len(current_result) != int(batch):
         return
     # all batch finish, merge xml output to html report/log file
     build_result = {
@@ -35,14 +34,14 @@ def robot_notifier(build_id):
         max_end_time = build_result['end_time'] or batch_result['end_time']
         build_result['start_time'] = min(batch_result['start_time'], min_start_time)
         build_result['end_time'] = max(batch_result['end_time'], max_end_time)
-        output_list.append(bytes(batch_result['output']))
-    queryset = Builder.objects.filter(id=build_id)
-    queryset.update(**build_result)
-    today = datetime.today().strftime('%y%M%D')
-    output_path = os.path.join(settings.REPORT_PATH, today, build_id)
-    if not os.path.exists(output_path):
-        os.makedirs(output_path)
+        output_list.append(batch_result['output'].encode())
+    build_result['start_time'] = datetime.fromtimestamp(build_result['start_time'])
+    build_result['end_time'] = datetime.fromtimestamp(build_result['end_time'])
+    output_path = make_path(settings.REPORT_PATH, build_id)
     rebot(*output_list, outputdir=output_path)
+    build_result['report_path'] = output_path
+    queryset = Builder.objects.filter(id=int(build_id))
+    queryset.update(**build_result)
 
 
 

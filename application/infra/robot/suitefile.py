@@ -82,7 +82,7 @@ class SuiteFile(BaseFile):
             (config.variables_line, self._get_variables()),
         )
         body_ctx_tuple = (
-            (config.keywords_line, self._get_keywords),
+            (config.keywords_line, self._get_keywords()),
             (config.testcases_line, self._get_testcases()),
         )
         header_list = []
@@ -97,6 +97,7 @@ class SuiteFile(BaseFile):
                 continue
             section_list.append(line + text)
         self.header_text = config.linefeed.join(header_list)
+        self.header_text += config.linefeed + config.testcases_line
         return config.linefeed.join(section_list)
 
     def get_head(self):

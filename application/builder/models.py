@@ -24,6 +24,7 @@ class Builder(models.Model):
     task_id = models.CharField(default=None, null=True, max_length=128, help_text='celery task id')
     env = models.ForeignKey(Environment, help_text='associated env', on_delete=models.DO_NOTHING)
     project = models.ForeignKey(Project, help_text='associated project', on_delete=models.DO_NOTHING)
+    report_path = models.CharField(default='', max_length=256, help_text='report path')
 
     class Meta:
         verbose_name = 'builder'

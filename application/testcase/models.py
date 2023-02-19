@@ -18,7 +18,7 @@ class TestCase(models.Model):
     update_by = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING, help_text='last update user')
     priority = models.ForeignKey(CasePriority, related_name='pri', null=True, on_delete=models.SET_NULL,
                                  help_text='test case priority')
-    tags = models.ManyToManyField(Tag, related_name='tags', blank=True, help_text='test case tags')
+    tags = models.ManyToManyField(Tag, related_name='ctags', blank=True, help_text='test case tags')
     test_suite = models.ForeignKey(TestSuite, related_name='cases', null=True, on_delete=models.CASCADE,
                                    help_text='associated test suite')
     inputs = models.TextField(default=None, blank=True, null=True, help_text='input args for keyword')

@@ -15,9 +15,7 @@ class BaseParser(object):
         self.run_data = run_data
         self.project_id = project_id
         self.project_name = project_name
-        self.total_case = 0
-        self.robot_suite = []
-        self.robot_data = {}
+        self.structures = []
 
     def _get_suite_map(self, iterator, path, subfix, reader, **kwargs):
         suite_map = {}
@@ -55,8 +53,10 @@ class BaseParser(object):
             result_map.update(suite_map)
         return result_map
 
-    def _get_common_resources(self):
-        # handle common variable file, belong resource file, too
+    def _get_common_variable_resources(self):
+        """
+        handle common variable file. belong resource file, too
+        """
         common_name = f'{COMMON_RESOURCE_PREFIX}{self.env_id}{RESOURCE_FILE_SUBFIX}'
         common_file = PATH_SEP.join([self.project_name, common_name])
         common_text = ResourceCommonReader(
@@ -64,23 +64,22 @@ class BaseParser(object):
             project_id=self.project_id,
             module_type=settings.MODULE_TYPE_META.get('Project')
         ).read()
+        if not common_text:
+            return {}
         return {common_file: common_text}
 
-    def _get_common_variable_files(self):
+    def get_common_variable_files(self):
         return self._recursion_suite_path(
             settings.CATEGORY_META.get('Resource'),
             VariablePyFileReader,
             suite_id=None,
         )
 
-    def _get_keyword_resources(self):
+    def get_common_resources(self, common_variable_file_list):
         resource_map = {}
-        common_resource_map = self._get_common_resources()
-        common_variable_file_map = self._get_common_variable_files()
+        common_resource_map = self._get_common_variable_resources()
         resource_map.update(common_resource_map)
-        resource_map.update(common_variable_file_map)
         common_resource_list = list(common_resource_map.keys())
-        common_variable_file_list = list(common_variable_file_map.keys())
         keyword_map = self._recursion_suite_path(
             settings.CATEGORY_META.get('Keyword'),
             ResourceKeywordReader,
@@ -92,14 +91,3 @@ class BaseParser(object):
         resource_map.update(keyword_map)
         return resource_map
 
-    @property
-    def case(self):
-        return self.total_case
-
-    @property
-    def suite(self):
-        return self.robot_suite
-
-    @property
-    def data(self):
-        return self.robot_data

@@ -4,7 +4,7 @@ from application.builder.models import Builder
 # Create your models here.
 
 
-class BuildCase(models.Model):
+class BuildDetail(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
     suite_name = models.CharField(max_length=255, help_text='test suite name')
     case_id = models.IntegerField(help_text='test case id')
@@ -15,6 +15,6 @@ class BuildCase(models.Model):
     builder = models.ForeignKey(Builder, null=True, on_delete=models.CASCADE, help_text='build id')
 
     class Meta:
-        verbose_name = 'build case'
+        verbose_name = 'build detail'
         verbose_name_plural = verbose_name
-        db_table = 'buidl_case'
+        db_table = 'buidl_detail'

@@ -31,40 +31,49 @@ class BuilderViewSets(mixins.RetrieveModelMixin,
         env_id = serializer.data['env']
         project_id = serializer.data['project_id']
         project_name = serializer.data['project_name']
+        run_data = serializer.data['run_data']
         conn = RedisClient(settings.ROBOT_REDIS_URL).connector
-        parser = JsonParser(project_id, project_name, serializer.data['run_data'], env_id).parse()
+        common_struct, structure_list = JsonParser(project_id, project_name, run_data, env_id).parse()
+        engine = DcsEngine(distributed=settings.DISTRIBUTED_BUILD, limit=settings.WORKER_MAX_CASE_LIMIT)
+        engine.init_common_data(common_struct)
+        engine.visit(structure_list)
+        batch_data = engine.get_batch_data()
+        print(batch_data)
         try:
             instance = Builder(
-                total_case=parser.case,
+                total_case=engine.get_case_count(),
                 build_by=request.user,
                 cron_job=serializer.data['cron_job'],
                 debug=serializer.data['debug'],
                 env_id=env_id,
                 project_id=project_id,
-                build_data=json.dumps({'suite': parser.suite, 'data': parser.data})
+                build_data=json.dumps(batch_data)
             )
             instance.save()
         except (Exception,) as e:
             logger.error(f'build task failed: {e}')
             return JsonResponse(code=10100, msg='build task failed')
-
         build_id = instance.id
-        engine = DcsEngine(distributed=settings.DISTRIBUTED_BUILD, limit=settings.WORKER_MAX_CASE_LIMIT)
-        engine.visit(parser)
-        batch = engine.get_batch()
-        conn.hset(f'{settings.TASK_RESULT_KEY_PREFIX}{build_id}', 'batch', batch)
         task_id_list = []
-        for batch_no in range(1, batch+1):
-            suite, data = engine.get(batch_no)
-            task = app.send_task(
-                'task.tasks.robot_runner',
-                queue='runner',
-                args=(str(build_id), str(batch_no), suite, data)
-            )
-            task_id_list.append(task.id)
-        instance.task_id = ','.join(task_id_list)
-        instance.save()
-        return JsonResponse(data={'build_id': build_id, 'status': instance.status, 'total_case': engine.get_cases()})
+        if not instance.cron_job:
+            batch = len(batch_data)
+            redis_key = f'{settings.TASK_RESULT_KEY_PREFIX}{build_id}'
+            conn.hset(redis_key, 'batch', batch)
+            conn.expire(redis_key, settings.REDIS_EXPIRE_TIME)
+            for batch_no, data in batch_data.items():
+                suites, sources = data[0], data[1]
+                task = app.send_task(
+                    'task.tasks.robot_runner',
+                    queue='runner',
+                    args=(str(build_id), str(batch_no), suites, sources)
+                )
+                task_id_list.append(task.id)
+            instance.task_id = ','.join(task_id_list)
+            instance.save()
+        else:
+            # todo, build with cron job
+            pass
+        return JsonResponse(data={'build_id': build_id, 'status': instance.status, 'total_case': engine.total_case})
 
     def retrieve(self, request, *args, **kwargs):
         pass

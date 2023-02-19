@@ -23,9 +23,12 @@ class JsonDirInitReader(object):
             self.setup_teardown_data['suite_teardown'],
             self.resource_list,
             self.variable_files,
-            self.tag_list,
+            self._get_tag_list(),
             self.variable_list
         ).get_text()
+
+    def _get_tag_list(self):
+        return [item['name'] for item in self.tag_list]
 
 
 class DBDirInitReader(object):

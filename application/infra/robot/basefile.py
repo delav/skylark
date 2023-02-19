@@ -11,7 +11,7 @@ class BaseFile(object):
         ctx_tuple = (
             (config.settings_line, self._get_settings()),
             (config.variables_line, self._get_variables()),
-            (config.keywords_line, self._get_keywords),
+            (config.keywords_line, self._get_keywords()),
             (config.testcases_line, self._get_testcases()),
         )
         section_list = []
