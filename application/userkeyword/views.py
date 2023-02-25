@@ -16,7 +16,6 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
         logger.info(f'get project user keyword: {request.query_params}')
         try:
             project_id = request.query_params.get('project')
-            print(project_id)
             queryset = UserKeyword.objects.filter(project_id=project_id).select_related('test_case')
         except (Exception,) as e:
             logger.error(f'get user keyword failed: {e}')

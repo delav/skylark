@@ -17,9 +17,9 @@ class ResourceKeywordReader(object):
 
     def read(self):
         return ResourceKeywordFile(
-            self._get_variable_list(),
-            self.variable_files,
             self.resource_list,
+            self.variable_files,
+            self._get_variable_list(),
             self._get_keyword_list()
         ).get_text()
 

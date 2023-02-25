@@ -212,6 +212,16 @@ ROBOT_REDIS_URL = f'redis://{REDIS.get("HOST")}:{REDIS.get("PORT")}/1'
 CASE_RESULT_KEY_PREFIX = 'robot:case:'
 TASK_RESULT_KEY_PREFIX = 'robot:task:'
 
+# Celery task
+CELERY_TASKS_PATH = (
+    'task.robot.tasks',
+)
+RUNNER_QUEUE = 'runner'
+RUNNER_TASK = 'task.robot.tasks.robot_runner'
+RUNNER_ROUTING_KEY = 'robot.runner'
+NOTIFIER_QUEUE = 'notifier'
+NOTIFIER_TASK = 'task.robot.tasks.robot_notifier'
+NOTIFIER_ROUTING_KEY = 'robot.notifier'
 
 # model data category. 0: test case, 1: resource(user keyword), 2: text/other file
 CATEGORY_META = {

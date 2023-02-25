@@ -3,7 +3,7 @@ from application.testcase.models import TestCase
 from application.caseentity.models import CaseEntity
 
 
-class CaseReplicator(object):
+class CaseOperator(object):
 
     def __init__(self, new_suite):
         self.suite = new_suite

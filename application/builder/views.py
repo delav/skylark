@@ -63,10 +63,12 @@ class BuilderViewSets(mixins.RetrieveModelMixin,
             for batch_no, data in batch_data.items():
                 suites, sources = data[0], data[1]
                 task = app.send_task(
-                    'task.tasks.robot_runner',
-                    queue='runner',
+                    settings.RUNNER_TASK,
+                    queue=settings.RUNNER_QUEUE,
+                    routing_key=settings.RUNNER_ROUTING_KEY,
                     args=(str(build_id), str(batch_no), suites, sources)
                 )
+                print(task)
                 task_id_list.append(task.id)
             instance.task_id = ','.join(task_id_list)
             instance.save()
@@ -93,11 +95,16 @@ class BuildEdgeViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, view
         except (Exception,) as e:
             logger.error(f'stop build failed: {e}')
             return JsonResponse(code=10200, msg='stop build failed')
-        app.send_task('task.tasks.robot_runner',
-                      queue='runner',
+        app.send_task(settings.RUNNER_TASK,
+                      queue=settings.RUNNER_QUEUE,
                       args=(build_id,)
                       )
-        app.control.revoke(instance.task_id, terminate=True)
+        task_id_str = instance.task_id
+        task_id_list = [task_id_str]
+        if ',' in task_id_str:
+            task_id_list = task_id_str.split(',')
+        for task_id in task_id_list:
+            app.control.revoke(task_id, terminate=True)
         instance.status = 9
         instance.save()
         return JsonResponse(data={'build_id': build_id, 'status': instance.status})

@@ -6,14 +6,14 @@ redis_host = settings.REDIS.get('HOST')
 redis_port = settings.REDIS.get('PORT')
 
 # Celery config
-imports = ('task.tasks',)
+imports = settings.CELERY_TASKS_PATH
 broker_url = f'redis://{redis_host}:{redis_port}/0'
 result_backend = f'redis://{redis_host}:{redis_port}/0'
 task_queues = (
-    Queue('notifier', routing_key='notifier'),
+    Queue(settings.NOTIFIER_QUEUE, routing_key=settings.NOTIFIER_ROUTING_KEY),
  )
 task_routes = {
-    'task.tasks.robot_notifier': {'queue': 'notifier', 'routing_key': 'notifier'}
+    settings.NOTIFIER_TASK: {'queue': settings.NOTIFIER_QUEUE, 'routing_key': settings.NOTIFIER_ROUTING_KEY}
  }
 # notify mq message is consumed only task finish, notifier not need
 # ack_late = True
