@@ -3,6 +3,7 @@ from datetime import datetime
 from skylark.celeryapp import app
 from django.conf import settings
 from application.builder.models import Builder
+from application.builddetail.models import BuildDetail
 from application.infra.client.redisclient import RedisClient
 from application.infra.utils.makedir import make_path
 from worker.robot.rebot import rebot
@@ -17,9 +18,11 @@ def robot_runner(build_id, batch_no, run_suite, run_data):
 @app.task
 def robot_notifier(build_id):
     conn = RedisClient(settings.ROBOT_REDIS_URL).connector
-    redis_key = settings.TASK_RESULT_KEY_PREFIX + build_id
-    current_result = conn.hgetall(redis_key)
-    batch = current_result.pop('batch')
+    task_redis_key = settings.TASK_RESULT_KEY_PREFIX + build_id
+    current_result = conn.hgetall(task_redis_key)
+    queryset = Builder.objects.filter(id=int(build_id))
+    instance = queryset.first()
+    batch = instance.batch
     if len(current_result) != int(batch):
         return
     # all batch finish, merge xml output to html report/log file
@@ -40,8 +43,18 @@ def robot_notifier(build_id):
     output_path = make_path(settings.REPORT_PATH, build_id)
     rebot(*output_list, outputdir=output_path)
     build_result['report_path'] = output_path
-    queryset = Builder.objects.filter(id=int(build_id))
     queryset.update(**build_result)
+    if instance.debug:
+        return
+    case_redis_key = settings.CASE_RESULT_KEY_PREFIX + build_id
+    result_list = []
+    cases_result = conn.hgetall(case_redis_key)
+    for case_id, item in cases_result.items():
+        item['test_case_id'] = int(case_id)
+        item['start_time'] = datetime.fromtimestamp(item['start_time'])
+        item['end_time'] = datetime.fromtimestamp(item['end_time'])
+        result_list.append(item)
+    BuildDetail.objects.bulk_create(result_list)
 
 
 

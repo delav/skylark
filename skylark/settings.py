@@ -23,8 +23,8 @@ sys.path.insert(1, str(BASE_DIR / 'worker'))
 # Log setting
 server_log_file_path = BASE_DIR / 'log/server.log'
 error_log_file_path = BASE_DIR / 'log/error.log'
-logger.add(server_log_file_path, rotation="50 MB", encoding="utf-8", level="INFO")
-logger.add(error_log_file_path, rotation="50 MB", encoding="utf-8", level="ERROR")
+logger.add(server_log_file_path, rotation="100 MB", encoding="utf-8", level="INFO")
+logger.add(error_log_file_path, rotation="100 MB", encoding="utf-8", level="ERROR")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'django_celery_beat',
     'application.user.apps.UserConfig',
     'application.group.apps.GroupConfig',
     'application.tag.apps.TagConfig',
@@ -68,6 +69,8 @@ INSTALLED_APPS = [
     'application.environment.apps.EnvironmentConfig',
     'application.casepriority.apps.CasePriorityConfig',
     'application.pythonlib.apps.PythonlibConfig',
+    'application.timertask.apps.TimerTaskConfig',
+    'application.projectversion.apps.ProjectVersionConfig',
 ]
 
 MIDDLEWARE = [
@@ -170,7 +173,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 

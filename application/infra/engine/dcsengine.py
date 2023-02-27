@@ -20,9 +20,7 @@ class DcsEngine(object):
         max_batch_case = self.options.get('limit')
         for struct in structures:
             self.total_case += struct.case_count()
-
-        if self.options.get('distributed'):
-        # if self.options.get('distributed') and self.total_case > max_batch_case:
+        if self.options.get('distributed') and self.total_case > max_batch_case:
             self._multi_operator(structures)
         self._single_operator(structures)
 

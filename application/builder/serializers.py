@@ -16,10 +16,12 @@ class BuilderSerializers(serializers.ModelSerializer):
 
 class BuildDataSerializers(serializers.ModelSerializer):
 
-    project_id = serializers.IntegerField(required=True)
-    project_name = serializers.CharField(required=True)
-    run_data = serializers.ListField(required=True, help_text='detail data or module ids')
+    project_id = serializers.IntegerField()
+    env_id = serializers.IntegerField()
+    project_name = serializers.CharField()
+    run_data = serializers.ListField(help_text='detail data or module ids')
+    timer_info = serializers.DictField(required=False, help_text='timer task info')
 
     class Meta:
         model = Builder
-        fields = ('cron_job', 'debug', 'env', 'project_id', 'project_name', 'run_data')
+        fields = ('debug', 'env_id', 'project_id', 'project_name', 'run_data', 'timer_info')

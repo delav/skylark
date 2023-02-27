@@ -9,6 +9,7 @@ redis_port = settings.REDIS.get('PORT')
 imports = settings.CELERY_TASKS_PATH
 broker_url = f'redis://{redis_host}:{redis_port}/0'
 result_backend = f'redis://{redis_host}:{redis_port}/0'
+beat_schedule = 'django_celery_beat.schedulers:DatabaseScheduler'
 task_queues = (
     Queue(settings.NOTIFIER_QUEUE, routing_key=settings.NOTIFIER_ROUTING_KEY),
  )

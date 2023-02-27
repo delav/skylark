@@ -1,4 +1,3 @@
-import os
 import json
 from loguru import logger
 from django.conf import settings
@@ -9,7 +8,9 @@ from application.infra.client.redisclient import RedisClient
 from application.infra.engine.dcsengine import DcsEngine
 from application.builder.models import Builder
 from application.builder.serializers import BuilderSerializers, BuildDataSerializers
+from application.timertask.serializers import TimerTaskSerializers
 from application.common.parser.jsonparser import JsonParser
+from application.common.schedule.timer import DynamicTimer
 from skylark.celeryapp import app
 
 # Create your views here.
@@ -28,57 +29,72 @@ class BuilderViewSets(mixins.RetrieveModelMixin,
         logger.info(f'create build: {request.data}')
         serializer = BuildDataSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
-        env_id = serializer.data['env']
+        env_id = serializer.data['env_id']
         project_id = serializer.data['project_id']
         project_name = serializer.data['project_name']
         run_data = serializer.data['run_data']
-        conn = RedisClient(settings.ROBOT_REDIS_URL).connector
         common_struct, structure_list = JsonParser(project_id, project_name, run_data, env_id).parse()
         engine = DcsEngine(distributed=settings.DISTRIBUTED_BUILD, limit=settings.WORKER_MAX_CASE_LIMIT)
         engine.init_common_data(common_struct)
         engine.visit(structure_list)
         batch_data = engine.get_batch_data()
-        print(batch_data)
+        batch = len(batch_data)
         try:
             instance = Builder(
                 total_case=engine.get_case_count(),
                 build_by=request.user,
-                cron_job=serializer.data['cron_job'],
                 debug=serializer.data['debug'],
                 env_id=env_id,
                 project_id=project_id,
+                batch=batch,
                 build_data=json.dumps(batch_data)
             )
             instance.save()
         except (Exception,) as e:
-            logger.error(f'build task failed: {e}')
-            return JsonResponse(code=10100, msg='build task failed')
+            logger.error(f'build failed: {e}')
+            return JsonResponse(code=10100, msg='build failed')
         build_id = instance.id
         task_id_list = []
-        if not instance.cron_job:
-            batch = len(batch_data)
-            redis_key = f'{settings.TASK_RESULT_KEY_PREFIX}{build_id}'
-            conn.hset(redis_key, 'batch', batch)
-            conn.expire(redis_key, settings.REDIS_EXPIRE_TIME)
+        timer_info = serializer.data['timer_info']
+        if timer_info:
+            timer_serializer = TimerTaskSerializers(data=timer_info)
+            timer_serializer.is_valid(raise_exception=True)
             for batch_no, data in batch_data.items():
                 suites, sources = data[0], data[1]
-                task = app.send_task(
+                task_args = (str(build_id), str(batch_no), suites, sources)
+                task_name = f'{build_id}-{batch_no}'
+                periodic_id = DynamicTimer(
+                    timer_str=timer_serializer['timer_str'],
+                    timer_type=timer_serializer['timer_type']
+                ).save_task(task_name, settings.RUNNER_TASK, task_args, settings.RUNNER_QUEUE,
+                            settings.RUNNER_ROUTING_KEY)
+                task_id_list.append(periodic_id)
+            timer_serializer.save()
+            instance.timer_task_id = timer_serializer.data['id']
+        else:
+            for batch_no, data in batch_data.items():
+                suites, sources = data[0], data[1]
+                task_id = f'{build_id}-{batch_no}'
+                app.send_task(
                     settings.RUNNER_TASK,
+                    task_id=task_id,
                     queue=settings.RUNNER_QUEUE,
                     routing_key=settings.RUNNER_ROUTING_KEY,
                     args=(str(build_id), str(batch_no), suites, sources)
                 )
-                print(task)
-                task_id_list.append(task.id)
+                task_id_list.append(task_id)
             instance.task_id = ','.join(task_id_list)
-            instance.save()
-        else:
-            # todo, build with cron job
-            pass
-        return JsonResponse(data={'build_id': build_id, 'status': instance.status, 'total_case': engine.total_case})
+        instance.save()
+        return JsonResponse(data={'build_id': build_id, 'status': instance.status, 'total_case': instance.total_case})
 
     def retrieve(self, request, *args, **kwargs):
-        pass
+        logger.info(f'get build info: {kwargs.get("pk")}')
+        try:
+            instance = self.get_object()
+        except (Exception,):
+            return JsonResponse(code=10101, msg='build info not found')
+        serializer = self.get_serializer(instance)
+        return JsonResponse(serializer.data)
 
 
 class BuildEdgeViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
