@@ -9,7 +9,7 @@ class Project(models.Model):
     name = models.CharField(unique=True, max_length=255, help_text='project name')
     create_at = models.DateTimeField(auto_now_add=True,  help_text='create time')
     update_at = models.DateTimeField(auto_now=True, help_text='update time')
-    create_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL,
+    create_by = models.ForeignKey(User, null=True, on_delete=models.DO_NOTHING,
                                   related_name='user', help_text='create user')
     deleted = models.BooleanField(default=0, help_text='if deleted')
 

@@ -33,7 +33,7 @@ class BuilderViewSets(mixins.RetrieveModelMixin,
         project_id = serializer.data['project_id']
         project_name = serializer.data['project_name']
         run_data = serializer.data['run_data']
-        common_struct, structure_list = JsonParser(project_id, project_name, run_data, env_id).parse()
+        common_struct, structure_list = JsonParser(project_id, project_name, env_id, run_data).parse()
         engine = DcsEngine(distributed=settings.DISTRIBUTED_BUILD, limit=settings.WORKER_MAX_CASE_LIMIT)
         engine.init_common_data(common_struct)
         engine.visit(structure_list)
@@ -42,7 +42,7 @@ class BuilderViewSets(mixins.RetrieveModelMixin,
         try:
             instance = Builder(
                 total_case=engine.get_case_count(),
-                build_by=request.user,
+                create_by=request.user,
                 debug=serializer.data['debug'],
                 env_id=env_id,
                 project_id=project_id,
@@ -55,7 +55,7 @@ class BuilderViewSets(mixins.RetrieveModelMixin,
             return JsonResponse(code=10100, msg='build failed')
         build_id = instance.id
         task_id_list = []
-        timer_info = serializer.data['timer_info']
+        timer_info = serializer.data.get('timer_info' )
         if timer_info:
             timer_serializer = TimerTaskSerializers(data=timer_info)
             timer_serializer.is_valid(raise_exception=True)

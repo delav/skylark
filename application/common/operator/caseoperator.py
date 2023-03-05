@@ -23,9 +23,9 @@ class CaseOperator(object):
         instance = new_case.save()
         if case.category == 1:
             user_keyword_case_id = instance.id
-        case_entity = case.entity.all()
+        case_entities = case.entities.all()
         entity_list = []
-        for t in case_entity.iterator():
+        for t in case_entities.iterator():
             t.id = None
             t.test_case = instance
             entity_list.append(t)

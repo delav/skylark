@@ -11,13 +11,10 @@ class UserKeyword(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
     create_at = models.DateTimeField(default=datetime.now, help_text='create time')
     update_at = models.DateTimeField(default=datetime.now, help_text='update time')
-    group = models.ForeignKey(KeywordGroup, null=True, on_delete=models.CASCADE, help_text='associated group')
-    image = models.ImageField(default='icons/keyword/user.svg', upload_to='icons/keyword',
-                              blank=True, null=True, help_text='keyword icon')
-    test_case = models.ForeignKey(TestCase, null=True, on_delete=models.CASCADE, related_name='tcs',
-                                  help_text='associated test case')
-    project = models.ForeignKey(Project, null=True, on_delete=models.CASCADE, related_name='uks',
-                                help_text='associated project')
+    group = models.ForeignKey(KeywordGroup, on_delete=models.CASCADE, help_text='associated group')
+    image = models.ImageField(default='icons/keyword/user.svg', upload_to='icons/keyword', help_text='keyword icon')
+    test_case = models.ForeignKey(TestCase, on_delete=models.CASCADE, help_text='associated test case')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, help_text='associated project')
 
     class Meta:
         verbose_name = 'user keyword'

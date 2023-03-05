@@ -41,7 +41,7 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
                 test_case.update_by = request.user
                 test_case.save()
                 # delete old case entities
-                old_entities = test_case.entity.all()
+                old_entities = test_case.entities.all()
                 old_entities.delete()
                 # save new case entities
                 keyword_list = self.validate_keywords(case_id, entity_list)

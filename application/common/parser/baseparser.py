@@ -10,12 +10,33 @@ from .treeformat import list_to_tree, get_path_from_tree
 
 class BaseParser(object):
 
-    def __init__(self, project_id, project_name, run_data, env_id):
-        self.env_id = env_id
-        self.run_data = run_data
+    def __init__(self, project_id, project_name, env_id):
         self.project_id = project_id
         self.project_name = project_name
-        self.structures = []
+        self.env_id = env_id
+        self._variable_file_map = {}
+        self._resource_map = {}
+        self._project_file_map = {}
+
+    def init_sources(self, variable_files=None, resources=None):
+        if variable_files is None:
+            self._variable_file_map = self._get_common_variable_files()
+        else:
+            self._variable_file_map = variable_files
+        if resources is None:
+            self._resource_map = self._get_common_resources(self._variable_file_map)
+        else:
+            self._resource_map = resources
+        self._project_file_map = self._get_common_project_file()
+
+    def get_common_resources(self):
+        return self._resource_map
+
+    def get_common_variable_files(self):
+        return self._variable_file_map
+
+    def get_common_project_files(self):
+        return self._project_file_map
 
     def _get_suite_map(self, iterator, path, subfix, reader, **kwargs):
         suite_map = {}
@@ -68,14 +89,15 @@ class BaseParser(object):
             return {}
         return {common_file: common_text}
 
-    def get_common_variable_files(self):
+    def _get_common_variable_files(self):
         return self._recursion_suite_path(
             settings.CATEGORY_META.get('Resource'),
             VariablePyFileReader,
+            env_id=self.env_id,
             suite_id=None,
         )
 
-    def get_common_resources(self, common_variable_file_list):
+    def _get_common_resources(self, common_variable_file_list):
         resource_map = {}
         common_resource_map = self._get_common_variable_resources()
         resource_map.update(common_resource_map)
@@ -91,3 +113,10 @@ class BaseParser(object):
         resource_map.update(keyword_map)
         return resource_map
 
+    def _get_common_project_file(self):
+        return self._recursion_suite_path(
+            settings.CATEGORY_META.get('HelpFile'),
+            VariablePyFileReader,
+            env_id=self.env_id,
+            suite_id=None,
+        )

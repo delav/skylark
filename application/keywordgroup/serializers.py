@@ -18,5 +18,5 @@ class KeywordGroup2Serializers(serializers.ModelSerializer):
 
     class Meta:
         model = KeywordGroup
-        fields = ('id', 'group_name', 'image', 'keywords')
+        fields = ('id', 'name', 'image', 'keywords')
 

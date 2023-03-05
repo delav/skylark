@@ -12,9 +12,15 @@ from .treeformat import list_to_tree, get_path_from_tree
 class DBParser(BaseParser):
 
     def parse(self):
-        # handle resources first, will use to suite and init file
-        resources_map = self._get_keyword_resources()
-        self.robot_data.update(resources_map)
+        common_file_paths = []
+        common_file_sources = {}
+        # handle variable files, will use to suite and init file
+        variable_file_map = self.get_common_variable_files()
+        variable_file_list = list(variable_file_map.keys())
+        # handle resources, will use to suite and init file
+        resources_map = self.get_common_resources(variable_file_list)
+        common_file_sources.update(resources_map)
+        common_file_sources.update(variable_file_map)
         resource_list = list(resources_map.keys())
         # handle case file
         case_dirs_queryset = SuiteDir.objects.filter(

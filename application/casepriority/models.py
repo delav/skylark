@@ -5,7 +5,7 @@ from django.db import models
 
 class CasePriority(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary kwy id')
-    priority_name = models.CharField(max_length=255, help_text='priority name')
+    name = models.CharField(max_length=255, help_text='priority name')
 
     class Meta:
         verbose_name = 'case priority'

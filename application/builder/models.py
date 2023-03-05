@@ -13,10 +13,10 @@ class Builder(models.Model):
     failed_case = models.IntegerField(default=0, blank=True, help_text='failed cases number')
     passed_case = models.IntegerField(default=0, blank=True, help_text='passed cases number')
     skipped_case = models.IntegerField(default=0, blank=True, help_text='skipped cases number')
-    build_time = models.DateTimeField(auto_now_add=True, help_text='build time')
+    create_at = models.DateTimeField(auto_now_add=True, help_text='build time')
+    create_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.DO_NOTHING, help_text='build user')
     start_time = models.DateTimeField(default=None, blank=True, null=True, help_text='task start time')
     end_time = models.DateTimeField(default=None, blank=True, null=True, help_text='task end time')
-    build_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, help_text='build user')
     status = models.IntegerField(default=-1, blank=True,
                                  help_text='build status,-1:waiting, 0:normal, 1:abnormal')
     build_data = models.TextField(default=None, blank=True, null=True, help_text='build data')

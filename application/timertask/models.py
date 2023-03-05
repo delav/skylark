@@ -8,7 +8,7 @@ class TimerTask(models.Model):
     status = models.BooleanField(default=True, help_text='1: open 0: closed')
     timer_type = models.IntegerField(default=0, choices=((0, 'crontab'), (1, 'interval')),
                                      help_text='0: crontab type, 1: interval type')
-    periodic_ids = models.TextField(default=None, help_text='periodic task ids')
+    periodic_ids = models.TextField(default=None, blank=True, null=True, help_text='periodic task ids')
 
     class Meta:
         verbose_name = 'timer task'

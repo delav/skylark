@@ -6,7 +6,9 @@ class CaseEntitySerializers(serializers.ModelSerializer):
 
     class Meta:
         model = CaseEntity
-        fields = ('id', 'input_args', 'output_args', 'keyword_id', 'keyword_type')
+        fields = (
+            'id', 'input_args', 'output_args', 'keyword_id', 'keyword_type'
+        )
 
 
 class CaseEntityListSerializers(serializers.ModelSerializer):
@@ -16,4 +18,6 @@ class CaseEntityListSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = CaseEntity
-        fields = ('case_id', 'entity_list')
+        fields = (
+            'case_id', 'entity_list'
+        )

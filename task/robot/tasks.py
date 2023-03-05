@@ -41,7 +41,7 @@ def robot_notifier(build_id):
     build_result['start_time'] = datetime.fromtimestamp(build_result['start_time'])
     build_result['end_time'] = datetime.fromtimestamp(build_result['end_time'])
     output_path = make_path(settings.REPORT_PATH, build_id)
-    rebot(*output_list, outputdir=output_path)
+    rebot(*output_list, outputdir=output_path, console='quiet')
     build_result['report_path'] = output_path
     queryset.update(**build_result)
     if instance.debug:

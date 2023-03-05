@@ -8,14 +8,27 @@ from application.common.parser.treeformat import get_path_from_front_tree
 
 class JsonParser(BaseParser):
 
+    def __init__(self, project_id, project_name, env_id, run_data):
+        super(JsonParser, self).__init__(
+            project_id, project_name, env_id
+        )
+        self.run_data = run_data
+        self.structures = []
+
     def parse(self):
         common_file_paths = []
         common_file_sources = {}
+        # init variable files and resources
+        self.init_sources()
+        # handle project help file
+        project_file_map = self.get_common_project_files()
+        common_file_paths.extend(project_file_map.keys())
+        common_file_sources.update(project_file_map)
         # handle variable files, will use to suite and init file
         variable_file_map = self.get_common_variable_files()
         variable_file_list = list(variable_file_map.keys())
         # handle resources, will use to suite and init file
-        resources_map = self.get_common_resources(variable_file_list)
+        resources_map = self.get_common_resources()
         common_file_sources.update(resources_map)
         common_file_sources.update(variable_file_map)
         resource_list = list(resources_map.keys())

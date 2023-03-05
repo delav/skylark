@@ -15,10 +15,9 @@ class SuiteDir(models.Model):
     category = models.IntegerField(default=0, choices=settings.CATEGORY, help_text='model category')
     create_at = models.DateTimeField(auto_now_add=True, help_text='create time')
     update_at = models.DateTimeField(auto_now=True, help_text='end time')
-    tags = models.ManyToManyField(Tag, related_name='dtags', blank=True, help_text='dir tags')
-    project = models.ForeignKey(Project, null=True, related_name='dirs', on_delete=models.CASCADE,
-                                help_text='associated project')
-    parent_dir = models.ForeignKey('self', related_name='children', null=True, on_delete=models.CASCADE,
+    tags = models.ManyToManyField(Tag, blank=True, help_text='dir tags')
+    project = models.ForeignKey(Project, related_name='dirs', on_delete=models.CASCADE, help_text='associated project')
+    parent_dir = models.ForeignKey('self', related_name='children', blank=True, null=True, on_delete=models.CASCADE,
                                    help_text='parent dir')
     deleted = models.BooleanField(default=1, help_text='if deleted')
 

@@ -4,7 +4,8 @@ from application.infra.robot.variablefile import VariablePyFile
 
 class VariablePyFileReader(object):
 
-    def __init__(self, suite_id):
+    def __init__(self, env_id, suite_id):
+        self.env_id = env_id
         self.suite_id = suite_id
 
     def read(self):
@@ -13,7 +14,10 @@ class VariablePyFileReader(object):
         ).get_text()
 
     def _get_file_text(self):
-        file_queryset = VirtualFile.objects.filter(test_suite__id=self.suite_id)
+        file_queryset = VirtualFile.objects.filter(
+            env_id=self.env_id,
+            test_suite__id=self.suite_id,
+        )
         if not file_queryset.exists():
             return ''
         return file_queryset.first().file_text

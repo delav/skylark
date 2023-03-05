@@ -218,13 +218,17 @@ TASK_RESULT_KEY_PREFIX = 'robot:task:'
 # Celery task
 CELERY_TASKS_PATH = (
     'task.robot.tasks',
+    'task.version.tasks',
 )
+DEFAULT_QUEUE = 'default'
+DEFAULT_ROUTING_KEY = 'default'
 RUNNER_QUEUE = 'runner'
 RUNNER_TASK = 'task.robot.tasks.robot_runner'
 RUNNER_ROUTING_KEY = 'robot.runner'
 NOTIFIER_QUEUE = 'notifier'
 NOTIFIER_TASK = 'task.robot.tasks.robot_notifier'
 NOTIFIER_ROUTING_KEY = 'robot.notifier'
+VERSION_TASK = 'task_version.generate_version'
 
 # model data category. 0: test case, 1: resource(user keyword), 2: text/other file
 CATEGORY_META = {

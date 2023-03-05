@@ -10,11 +10,14 @@ imports = settings.CELERY_TASKS_PATH
 broker_url = f'redis://{redis_host}:{redis_port}/0'
 result_backend = f'redis://{redis_host}:{redis_port}/0'
 beat_schedule = 'django_celery_beat.schedulers:DatabaseScheduler'
+default_queue = 'default'
 task_queues = (
+    Queue(settings.DEFAULT_QUEUE, routing_key=settings.DEFAULT_ROUTING_KEY),
     Queue(settings.NOTIFIER_QUEUE, routing_key=settings.NOTIFIER_ROUTING_KEY),
  )
 task_routes = {
-    settings.NOTIFIER_TASK: {'queue': settings.NOTIFIER_QUEUE, 'routing_key': settings.NOTIFIER_ROUTING_KEY}
+    settings.NOTIFIER_TASK: {'queue': settings.NOTIFIER_QUEUE, 'routing_key': settings.NOTIFIER_ROUTING_KEY},
+    settings.VERSION_TASK: {'queue': settings.DEFAULT_QUEUE, 'routing_key': settings.DEFAULT_QUEUE}
  }
 # notify mq message is consumed only task finish, notifier not need
 # ack_late = True
