@@ -16,4 +16,4 @@ class BuildDetail(models.Model):
     class Meta:
         verbose_name = 'build detail'
         verbose_name_plural = verbose_name
-        db_table = 'buidl_detail'
+        db_table = 'build_detail'

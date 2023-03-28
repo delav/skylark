@@ -31,7 +31,9 @@ from application.setupteardown.views import SetupTeardownViewSets
 from application.keywordgroup.views import KeywordGroupViewSets
 from application.environment.views import EnvironmentViewSets
 from application.variable.views import VariableViewSets
-from application.builder.views import BuilderViewSets, BuildEdgeViewSets
+from application.builder.views import TestBuilderViewSets, DebugBuilderViewSets
+from application.buildplan.views import BuildPlanViewSets
+from application.buildhistory.views import BuildHistoryViewSets
 from application.projectversion.views import ProjectVersionViewSets
 
 router = routers.SimpleRouter(trailing_slash=False)
@@ -49,9 +51,11 @@ router.register('setup-teardown', SetupTeardownViewSets, basename='setup_teardow
 router.register('keyword-group', KeywordGroupViewSets, basename='keyword_group')
 router.register('environment', EnvironmentViewSets, basename='environment')
 router.register('variable', VariableViewSets, basename='variable')
-router.register('build', BuilderViewSets, basename='build')
-router.register('build-edge', BuildEdgeViewSets, basename='build_edge')
 router.register('project-version', ProjectVersionViewSets, basename='project_version')
+router.register('build/test', TestBuilderViewSets, basename='build_test')
+router.register('build/debug', DebugBuilderViewSets, basename='build_debug')
+router.register('build/plan', BuildPlanViewSets, basename='build_plan')
+router.register('build/history', BuildHistoryViewSets, basename='build_history')
 
 
 urlpatterns = [

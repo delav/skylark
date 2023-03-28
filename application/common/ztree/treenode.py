@@ -35,8 +35,9 @@ class Project2Tree(object):
         for dir_item in dir_queryset.iterator():
             dir_node = dir_node_map[dir_item.id]
             if not dir_item.parent_dir_id:
-                continue
-            parent_node = dir_node_map[dir_item.parent_dir_id]
+                parent_node = project_node
+            else:
+                parent_node = dir_node_map[dir_item.parent_dir_id]
             dir_node['pid'] = parent_node['id']
             tree_nodes.append(dir_node)
             suite_queryset = dir_item.suites

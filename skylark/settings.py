@@ -65,6 +65,8 @@ INSTALLED_APPS = [
     'application.variable.apps.VariableConfig',
     'application.virtualfile.apps.VirtualFileConfig',
     'application.builder.apps.BuilderConfig',
+    'application.buildplan.apps.BuildPlanConfig',
+    'application.buildhistory.apps.BuildHistoryConfig',
     'application.builddetail.apps.BuildDetailConfig',
     'application.environment.apps.EnvironmentConfig',
     'application.casepriority.apps.CasePriorityConfig',
@@ -228,7 +230,7 @@ RUNNER_ROUTING_KEY = 'robot.runner'
 NOTIFIER_QUEUE = 'notifier'
 NOTIFIER_TASK = 'task.robot.tasks.robot_notifier'
 NOTIFIER_ROUTING_KEY = 'robot.notifier'
-VERSION_TASK = 'task_version.generate_version'
+VERSION_TASK = 'task.version.tasks.generate_version'
 
 # model data category. 0: test case, 1: resource(user keyword), 2: text/other file
 CATEGORY_META = {

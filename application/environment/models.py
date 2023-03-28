@@ -5,7 +5,7 @@ from django.db import models
 
 class Environment(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
-    env_name = models.CharField(max_length=255, help_text='environment name')
+    name = models.CharField(max_length=255, help_text='environment name')
     default = models.BooleanField(default=False, help_text='if default')
 
     class Meta:
