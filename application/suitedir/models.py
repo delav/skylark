@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from application.project.models import Project
-from application.tag.models import Tag
+from application.user.models import User
 
 # Create your models here.
 
@@ -15,7 +15,10 @@ class SuiteDir(models.Model):
     category = models.IntegerField(default=0, choices=settings.CATEGORY, help_text='model category')
     create_at = models.DateTimeField(auto_now_add=True, help_text='create time')
     update_at = models.DateTimeField(auto_now=True, help_text='end time')
-    tags = models.ManyToManyField(Tag, blank=True, help_text='dir tags')
+    create_by = models.ForeignKey(User, blank=True, null=True, related_name='dir_cuser',
+                                  on_delete=models.DO_NOTHING, help_text='create user')
+    update_by = models.ForeignKey(User, blank=True, null=True, related_name='dir_muser',
+                                  on_delete=models.DO_NOTHING, help_text='last update user')
     project = models.ForeignKey(Project, related_name='dirs', on_delete=models.CASCADE, help_text='associated project')
     parent_dir = models.ForeignKey('self', related_name='children', blank=True, null=True, on_delete=models.CASCADE,
                                    help_text='parent dir')

@@ -3,14 +3,24 @@ from django_celery_beat.models import CrontabSchedule
 from django_celery_beat.models import PeriodicTask, IntervalSchedule
 
 
-class DynamicTimer(object):
+class PeriodicHandler(object):
 
     CRONTAB_TYPE = 0
     INTERVAL_TYPE = 1
 
-    def __init__(self, timer_str, timer_type=0):
-        self.timer_str = timer_str
-        self.timer_type = timer_type
+    def __init__(self, periodic_expr=''):
+        self.periodic_expr = periodic_expr
+        self.periodic_type = self.get_periodic_type
+
+    def get_periodic_type(self):
+        if len(self.periodic_expr.split()) != 5:
+            self.validate_interval(self.periodic_expr)
+            return self.INTERVAL_TYPE
+        try:
+            croniter(self.periodic_expr)
+        except Exception:
+            raise ValueError('Invalid crontab expr')
+        return self.CRONTAB_TYPE
 
     def save_task(self, task_name, task, task_args, queue, routing_key):
         kwargs = self._get_schedule_kwargs()
@@ -18,8 +28,8 @@ class DynamicTimer(object):
 
     def _get_schedule_kwargs(self):
         kwargs = {}
-        if self.timer_type == self.CRONTAB_TYPE:
-            cron = croniter(self.timer_str)
+        if self.periodic_type == self.CRONTAB_TYPE:
+            cron = croniter(self.periodic_expr)
             values = cron.expanded
             kwargs = {
                 'minute': values[0][0],
@@ -28,22 +38,22 @@ class DynamicTimer(object):
                 'day_of_month': values[3][0],
                 'month_of_year': values[4][0],
             }
-        elif self.timer_type == self.INTERVAL_TYPE:
-            values = self.handle_interval_str(self.timer_str)
+        elif self.periodic_type == self.INTERVAL_TYPE:
+            values = self.periodic_expr.split()
             kwargs = {
-                'every': values[0],
-                'period': values[1]
+                'every': int(values[0].strip()),
+                'period': values[1].strip()
             }
         return kwargs
 
     def create_periodic_task(self, name, task, args, queue, routing_key, schedule_kwargs):
         periodic_kwargs = {'name': name, 'task': task, 'args': args, 'queue': queue, 'routing_key': routing_key}
-        if self.timer_type == self.CRONTAB_TYPE:
+        if self.periodic_type == self.CRONTAB_TYPE:
             periodic_kwargs['crontab'] = CrontabSchedule.objects.get_or_create(
                 defaults=schedule_kwargs,
                 **schedule_kwargs
             )
-        elif self.timer_type == self.INTERVAL_TYPE:
+        elif self.periodic_type == self.INTERVAL_TYPE:
             periodic_kwargs['interval'] = IntervalSchedule.objects.get_or_create(
                 defaults=schedule_kwargs,
                 **schedule_kwargs
@@ -52,44 +62,48 @@ class DynamicTimer(object):
         periodic.save()
         return periodic.id
 
-    def handle_interval_str(self, interval_str):
-        values = [60, 'seconds']
-        periods = ('days', 'hours', 'minutes', 'seconds', 'microseconds')
-        str_list = interval_str.split()
-        if len(str_list) != 2:
-            return values
-        if str_list[0].isdigit():
-            values[0] = int(str_list[0])
-        if str_list[1].lower() in periods:
-            values[1] = str_list[1]
-        return values
-
     def get_periodic_task(self, task_name):
         periodic = []
         try:
-            task = PeriodicTask.objects.filter(name=task_name).select_related('interval', 'crontab')
+            task = PeriodicTask.objects.select_related('interval', 'crontab').get(name=task_name)
         except (Exception,):
             return {}
-        if self.timer_type == self.CRONTAB_TYPE:
+        periodic_type = None
+        if task.crontab_id:
             periodic = [
                 task.crontab.minute, task.crontab.hour, task.crontab.day_of_week,
                 task.crontab.day_of_month, task.crontab.month_of_year
             ]
-        elif self.timer_type == self.INTERVAL_TYPE:
+            periodic_type = self.CRONTAB_TYPE
+        elif task.interval_id:
             periodic = [
                 'every', str(task.interval.every), task.interval.period
             ]
+            periodic_type = self.INTERVAL_TYPE
         periodic_data = {
             'id': task.id,
             'name': task.name,
             'total_run': task.total_run_count,
             'last_run_at': str(task.last_run_at).replace('T', '')[:-7],
             'status': task.enabled,
-            'timer_str': ' '.join(periodic),
+            'expr': ' '.join(periodic),
+            'type': periodic_type
         }
         return periodic_data
 
-    def able_task(self, task_name, switch):
+    @staticmethod
+    def validate_interval(interval_str):
+        periods = ('days', 'hours', 'minutes', 'seconds', 'microseconds')
+        str_list = interval_str.split()
+        if len(str_list) != 2:
+            raise ValueError('Invalid interval expr')
+        if not str_list[0].strip().isdigit():
+            raise ValueError('Invalid interval expr')
+        if not str_list[1].strip().lower() in periods:
+            raise ValueError('Invalid interval expr')
+
+    @staticmethod
+    def able_task(task_name, switch):
         try:
             task = PeriodicTask.objects.get(name=task_name)
             task.enabled = switch
@@ -98,7 +112,8 @@ class DynamicTimer(object):
             return False
         return True
 
-    def remove_task(self, task_name):
+    @staticmethod
+    def remove_task(task_name):
         try:
             task = PeriodicTask.objects.get(name=task_name)
             task.delete()

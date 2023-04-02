@@ -8,6 +8,7 @@ from application.testcase.models import TestCase
 from application.testcase.serializers import TestCaseSerializers
 from application.userkeyword.models import UserKeyword
 from application.testsuite.models import TestSuite
+from application.common.handler import get_model_extra_data
 
 # Create your views here.
 
@@ -25,11 +26,14 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
         except (Exception,) as e:
             logger.error(f'get test case failed: {e}')
             return JsonResponse(code=10050, msg='get test case failed')
-        test_cases = suite_obj.cases.all().prefetch_related('tags')
+        test_cases = suite_obj.cases.all()
         case_list = []
         for item in test_cases.iterator():
             case_data = self.get_serializer(item).data
-            case_data['extra_data'] = {}
+            if item.category != settings.CATEGORY_META.get('TestCase'):
+                case_data['extra_data'] = {}
+            else:
+                case_data['extra_data'] = get_model_extra_data(item.id, settings.MODULE_TYPE_META.get('TestCase'))
             case_list.append(case_data)
         data_dict = {
             'cases': case_list

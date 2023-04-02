@@ -11,7 +11,7 @@ class CaseEntity(models.Model):
     input_args = models.TextField(default=None, blank=True, null=True,  help_text='input args')
     output_args = models.TextField(default=None, blank=True, null=True, help_text='output args')
     seq_number = models.IntegerField(help_text='entity sequence number')
-    test_case = models.ForeignKey(TestCase, null=True, related_name='entities', on_delete=models.CASCADE,
+    test_case = models.ForeignKey(TestCase, related_name='entities', on_delete=models.CASCADE,
                                   help_text='associated case')
     keyword_id = models.IntegerField(help_text='lib keyword or user keyword id')
     keyword_type = models.IntegerField(default=1, choices=((1, 'lib_keyword'), (2, 'user_keyword')),

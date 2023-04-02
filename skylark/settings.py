@@ -71,7 +71,6 @@ INSTALLED_APPS = [
     'application.environment.apps.EnvironmentConfig',
     'application.casepriority.apps.CasePriorityConfig',
     'application.pythonlib.apps.PythonlibConfig',
-    'application.timertask.apps.TimerTaskConfig',
     'application.projectversion.apps.ProjectVersionConfig',
 ]
 
@@ -221,6 +220,7 @@ TASK_RESULT_KEY_PREFIX = 'robot:task:'
 CELERY_TASKS_PATH = (
     'task.robot.tasks',
     'task.version.tasks',
+    'task.builder.tasks'
 )
 DEFAULT_QUEUE = 'default'
 DEFAULT_ROUTING_KEY = 'default'
@@ -231,6 +231,9 @@ NOTIFIER_QUEUE = 'notifier'
 NOTIFIER_TASK = 'task.robot.tasks.robot_notifier'
 NOTIFIER_ROUTING_KEY = 'robot.notifier'
 VERSION_TASK = 'task.version.tasks.generate_version'
+PERIODIC_QUEUE = 'builder'
+PERIODIC_ROUTING_KEY = 'periodic.builder'
+PERIODIC_TASK = 'task.builder.tasks.periodic_builder'
 
 # model data category. 0: test case, 1: resource(user keyword), 2: text/other file
 CATEGORY_META = {

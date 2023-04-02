@@ -18,9 +18,10 @@ class Project2Tree(object):
     def get_case_nodes(self):
         tree_nodes = []
         project = Project.objects.get(id=self.project_id)
-        project_data = ProjectSerializers(project).data
-        project_node = self.fill_node(project_data, self.root_id, 'root')
-        tree_nodes.append(project_node)
+        # not need to save project node
+        # project_data = ProjectSerializers(project).data
+        # project_node = self.fill_node(project_data, self.root_id, 'root')
+        # tree_nodes.append(project_node)
         dir_queryset = project.dirs.filter(category=settings.CATEGORY_META.get('TestCase'))
         dir_node_map = {}
         for dir_item in dir_queryset.iterator():
@@ -35,10 +36,10 @@ class Project2Tree(object):
         for dir_item in dir_queryset.iterator():
             dir_node = dir_node_map[dir_item.id]
             if not dir_item.parent_dir_id:
-                parent_node = project_node
+                dir_node['pid'] = self.root_id
             else:
                 parent_node = dir_node_map[dir_item.parent_dir_id]
-            dir_node['pid'] = parent_node['id']
+                dir_node['pid'] = parent_node['id']
             tree_nodes.append(dir_node)
             suite_queryset = dir_item.suites
             for suite_item in suite_queryset.iterator():

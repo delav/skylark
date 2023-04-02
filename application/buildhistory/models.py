@@ -14,7 +14,8 @@ class BuildHistory(models.Model):
     start_time = models.DateTimeField(default=None, blank=True, null=True, help_text='task start time')
     end_time = models.DateTimeField(default=None, blank=True, null=True, help_text='task end time')
     build_plan = models.ForeignKey(BuildPlan, on_delete=models.DO_NOTHING, help_text='associated build plan')
-    status = models.IntegerField(default=-1, help_text='build status,-1:waiting, 0:normal, 1:abnormal')
+    status = models.IntegerField(default=-1, help_text='build status,-1:running, 0:normal, 1:abnormal')
+    batch = models.IntegerField(default=1, help_text='task batch number')
     task_id = models.CharField(default=None, null=True, max_length=255, help_text='celery task id')
     report_path = models.CharField(default='', max_length=255, help_text='build report path')
 

@@ -14,10 +14,18 @@ default_queue = 'default'
 task_queues = (
     Queue(settings.DEFAULT_QUEUE, routing_key=settings.DEFAULT_ROUTING_KEY),
     Queue(settings.NOTIFIER_QUEUE, routing_key=settings.NOTIFIER_ROUTING_KEY),
+    Queue(settings.PERIODIC_QUEUE, routing_key=settings.PERIODIC_ROUTING_KEY),
  )
 task_routes = {
-    settings.NOTIFIER_TASK: {'queue': settings.NOTIFIER_QUEUE, 'routing_key': settings.NOTIFIER_ROUTING_KEY},
-    settings.VERSION_TASK: {'queue': settings.DEFAULT_QUEUE, 'routing_key': settings.DEFAULT_QUEUE}
+    settings.NOTIFIER_TASK: {
+        'queue': settings.NOTIFIER_QUEUE, 'routing_key': settings.NOTIFIER_ROUTING_KEY
+    },
+    settings.VERSION_TASK: {
+        'queue': settings.DEFAULT_QUEUE, 'routing_key': settings.DEFAULT_QUEUE
+    },
+    settings.PERIODIC_TASK: {
+        'queue': settings.PERIODIC_QUEUE, 'routing_key': settings.PERIODIC_ROUTING_KEY
+    },
  }
 # notify mq message is consumed only task finish, notifier not need
 # ack_late = True

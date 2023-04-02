@@ -11,7 +11,7 @@ class LibKeyword(models.Model):
     update_at = models.DateTimeField(auto_now=True, help_text='update time')
     ext_name = models.CharField(default=None, max_length=255, help_text='external name')
     desc = models.TextField(default=None, blank=True, null=True, help_text='keyword desc')
-    group = models.ForeignKey(KeywordGroup, null=True, on_delete=models.CASCADE,
+    group = models.ForeignKey(KeywordGroup, blank=True, null=True, on_delete=models.CASCADE,
                               related_name='keywords', help_text='associated group')
     input_params = models.TextField(default=None, blank=True, null=True, help_text='input params')
     input_desc = models.TextField(default=None, blank=True, null=True, help_text='input params desc')
@@ -21,7 +21,7 @@ class LibKeyword(models.Model):
         (0, 'None'), (1, 'single'), (2, 'multi'), (3, 'list'), (4, 'dict')), help_text='input arg type')
     image = models.ImageField(default='icons/keyword/default.svg', upload_to='icons/keyword',
                               blank=True, null=True, help_text='keyword icon')
-    mark = models.CharField(default=None, null=True, max_length=255, help_text='keyword other mark')
+    mark = models.CharField(default=None, blank=True, null=True, max_length=255, help_text='keyword other mark')
 
     class Meta:
         verbose_name = 'lib keyword'

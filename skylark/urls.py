@@ -35,6 +35,8 @@ from application.builder.views import TestBuilderViewSets, DebugBuilderViewSets
 from application.buildplan.views import BuildPlanViewSets
 from application.buildhistory.views import BuildHistoryViewSets
 from application.projectversion.views import ProjectVersionViewSets
+from application.tag.views import TagViewSets
+from application.casepriority.views import CasePriorityViewSets
 
 router = routers.SimpleRouter(trailing_slash=False)
 router.register('user/info', NormalUserViewSets, basename='user_info')
@@ -56,6 +58,8 @@ router.register('build/test', TestBuilderViewSets, basename='build_test')
 router.register('build/debug', DebugBuilderViewSets, basename='build_debug')
 router.register('build/plan', BuildPlanViewSets, basename='build_plan')
 router.register('build/history', BuildHistoryViewSets, basename='build_history')
+router.register('tag', TagViewSets, basename='tag')
+router.register('case-priority', CasePriorityViewSets, basename='case_priority')
 
 
 urlpatterns = [

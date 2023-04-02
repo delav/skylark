@@ -2,7 +2,6 @@ from django.db import models
 from django.conf import settings
 from application.user.models import User
 from application.testsuite.models import TestSuite
-from application.tag.models import Tag
 from application.casepriority.models import CasePriority
 
 # Create your models here.
@@ -21,7 +20,6 @@ class TestCase(models.Model):
                                   on_delete=models.DO_NOTHING, help_text='last update user')
     priority = models.ForeignKey(CasePriority, blank=True, null=True, on_delete=models.SET_NULL,
                                  help_text='test case priority')
-    tags = models.ManyToManyField(Tag, blank=True, help_text='test case tags')
     test_suite = models.ForeignKey(TestSuite, related_name='cases', on_delete=models.CASCADE,
                                    help_text='associated test suite')
     inputs = models.TextField(default=None, blank=True, null=True, help_text='input args for keyword')

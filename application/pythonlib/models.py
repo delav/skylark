@@ -9,7 +9,7 @@ class PythonLib(models.Model):
     lib_type = models.IntegerField(default=1, choices=((1, 'builtin'), (2, 'customize')),
                                    help_text='python library type')
     lib_path = models.CharField(max_length=255, help_text='library path')
-    lib_desc = models.TextField(default=None, null=True, help_text='lib description')
+    lib_desc = models.TextField(default=None, blank=True, null=True, help_text='lib description')
 
     class Meta:
         verbose_name = 'python lib'

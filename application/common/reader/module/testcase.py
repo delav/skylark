@@ -6,22 +6,32 @@ from application.infra.constant.constants import FRONT_ENTITY_KEY
 
 class CaseReader(object):
 
-    @staticmethod
-    def _get_case_from_db(queryset):
+    def __init__(self, include_cases=None):
+        self.is_filter = False
+        if include_cases is not None:
+            self.is_filter = True
+        self.include_cases = include_cases
+
+    def _get_case_from_db(self, queryset):
         testcase_list = []
         entity_reader = EntityReader()
         for item in queryset.iterator():
+            if self.is_filter:
+                if item.id not in self.include_cases:
+                    continue
             case_info = TestCaseSerializers(item).data
             entity_list = entity_reader.get_by_case_id(item.id)
             case_info.update({'entity': entity_list})
             testcase_list.append(case_info)
         return testcase_list
 
-    @staticmethod
-    def get_by_case_data(case_data):
+    def get_by_case_data(self, case_data):
         testcase_list = []
         entity_reader = EntityReader()
         for item in case_data:
+            if self.is_filter:
+                if item['id'] not in self.include_cases:
+                    continue
             extra_data = item.pop('extra_data')
             if FRONT_ENTITY_KEY in extra_data:
                 entity_list = entity_reader.get_by_entity_data(extra_data[FRONT_ENTITY_KEY])

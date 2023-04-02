@@ -9,8 +9,8 @@ from application.common.reader.module.testcase import CaseReader
 class JsonSuiteReader(object):
     lib_path = settings.LIB_PATH
 
-    def __init__(self, setup_teardown_data, suite_timeout,
-                 variable_list, resource_list, variable_files, tag_list, case_data):
+    def __init__(self, setup_teardown_data, suite_timeout, variable_list,
+                 resource_list, variable_files, tag_list, case_data, include_cases):
         self.head_text_str = ''
         self.body_text_list = []
         self.file_text = ''
@@ -21,6 +21,7 @@ class JsonSuiteReader(object):
         self.variable_files = variable_files
         self.tag_list = tag_list
         self.case_data = case_data
+        self.include_cases = include_cases
 
     def read(self):
         file = SuiteFile(
@@ -41,8 +42,7 @@ class JsonSuiteReader(object):
         return self.file_text
 
     def _get_testcase_list(self):
-        cases = CaseReader().get_by_case_data(self.case_data)
-        return cases
+        return CaseReader(self.include_cases).get_by_case_data(self.case_data)
 
 
 class DBSuiteReader(object):

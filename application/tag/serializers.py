@@ -3,7 +3,8 @@ from application.tag.models import Tag
 
 
 class TagSerializers(serializers.ModelSerializer):
+    project_id = serializers.IntegerField()
 
     class Meta:
         model = Tag
-        fields = '__all__'
+        fields = ('id', 'name', 'project_id', 'module_id', 'module_type')

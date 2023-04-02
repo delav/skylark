@@ -8,7 +8,7 @@ from application.common.reader.resourcereader import ResourceKeywordReader, Reso
 from .treeformat import list_to_tree, get_path_from_tree
 
 
-class BaseParser(object):
+class CommonParser(object):
 
     def __init__(self, project_id, project_name, env_id):
         self.project_id = project_id
@@ -18,24 +18,21 @@ class BaseParser(object):
         self._resource_map = {}
         self._project_file_map = {}
 
-    def init_sources(self, variable_files=None, resources=None):
-        if variable_files is None:
-            self._variable_file_map = self._get_common_variable_files()
-        else:
-            self._variable_file_map = variable_files
-        if resources is None:
-            self._resource_map = self._get_common_resources(self._variable_file_map)
-        else:
-            self._resource_map = resources
+    def init_sources(self):
+        self._variable_file_map = self._get_common_variable_files()
+        self._resource_map = self._get_common_resources(self._variable_file_map)
         self._project_file_map = self._get_common_project_file()
 
-    def get_common_resources(self):
+    @property
+    def common_resources(self):
         return self._resource_map
 
-    def get_common_variable_files(self):
+    @property
+    def common_variable_files(self):
         return self._variable_file_map
 
-    def get_common_project_files(self):
+    @property
+    def common_project_files(self):
         return self._project_file_map
 
     def _get_suite_map(self, iterator, path, subfix, reader, **kwargs):

@@ -2,38 +2,39 @@ from application.infra.constant.constants import PATH_SEP, ROBOT_FILE_SUBFIX, IN
 from application.infra.engine.structure import SuiteStructure, CommonStructure
 from application.common.reader.initreader import JsonDirInitReader
 from application.common.reader.suitereader import JsonSuiteReader
-from application.common.parser.baseparser import BaseParser
+from application.common.parser.baseparser import CommonParser
 from application.common.parser.treeformat import get_path_from_front_tree
 
 
-class JsonParser(BaseParser):
+class JsonParser(CommonParser):
 
-    def __init__(self, project_id, project_name, env_id, run_data):
+    def __init__(self, project_id, project_name, env_id, include_cases=None):
         super(JsonParser, self).__init__(
             project_id, project_name, env_id
         )
-        self.run_data = run_data
+        self.build_cases = include_cases
         self.structures = []
 
-    def parse(self):
+    def parse(self, run_data, common=None):
         common_file_paths = []
         common_file_sources = {}
-        # init variable files and resources
-        self.init_sources()
+        # common sources
+        if common is None:
+            common = self.get_common_from_parse()
         # handle project help file
-        project_file_map = self.get_common_project_files()
+        project_file_map = common.get('project_files')
         common_file_paths.extend(project_file_map.keys())
         common_file_sources.update(project_file_map)
         # handle variable files, will use to suite and init file
-        variable_file_map = self.get_common_variable_files()
+        variable_file_map = common.get('variable_files')
         variable_file_list = list(variable_file_map.keys())
         # handle resources, will use to suite and init file
-        resources_map = self.get_common_resources()
+        resources_map = common.get('resources')
         common_file_sources.update(resources_map)
         common_file_sources.update(variable_file_map)
         resource_list = list(resources_map.keys())
         # handle front run data
-        format_data = self._parse_run_data()
+        format_data = get_path_from_front_tree(run_data, PATH_SEP)
         for dir_id, dir_data in format_data['dirs'].items():
             dir_path = dir_data['path']
             dir_extra_data = dir_data['data']['extra_data']
@@ -63,14 +64,22 @@ class JsonParser(BaseParser):
                 resource_list=resource_list,
                 variable_files=variable_file_list,
                 tag_list=suite_extra_data['tags'],
-                case_data=suite_case_data
+                case_data=suite_case_data,
+                include_cases=self.build_cases,
             )
+            if len(suite_reader.body_text_list) == 0:
+                continue
             self._extract(suite_file, suite_reader)
         common = CommonStructure(common_file_paths, common_file_sources)
         return common, self.structures
 
-    def _parse_run_data(self):
-        return get_path_from_front_tree(self.run_data, PATH_SEP)
+    def get_common_from_parse(self):
+        self.init_sources()
+        return {
+            'variable_files': self.common_variable_files(),
+            'resources': self.common_resources(),
+            'project_files': self.common_project_files(),
+        }
 
     def _extract(self, path, reader):
         file_text = reader.read()
