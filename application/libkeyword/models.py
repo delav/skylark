@@ -1,5 +1,4 @@
 from django.db import models
-from application.keywordgroup.models import KeywordGroup
 
 # Create your models here.
 
@@ -11,8 +10,7 @@ class LibKeyword(models.Model):
     update_at = models.DateTimeField(auto_now=True, help_text='update time')
     ext_name = models.CharField(default=None, max_length=255, help_text='external name')
     desc = models.TextField(default=None, blank=True, null=True, help_text='keyword desc')
-    group = models.ForeignKey(KeywordGroup, blank=True, null=True, on_delete=models.CASCADE,
-                              related_name='keywords', help_text='associated group')
+    group_id = models.IntegerField(help_text='associated keyword group')
     input_params = models.TextField(default=None, blank=True, null=True, help_text='input params')
     input_desc = models.TextField(default=None, blank=True, null=True, help_text='input params desc')
     output_params = models.TextField(default=None, blank=True, null=True, help_text='output params')

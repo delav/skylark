@@ -1,9 +1,11 @@
+import logging
+
 from loguru import logger
 from django.conf import settings
 from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
-from application.infra.response import JsonResponse
+from application.infra.django.response import JsonResponse
 from application.testsuite.models import TestSuite
 from application.testsuite.serializers import TestSuiteSerializers
 from application.suitedir.models import SuiteDir
@@ -85,7 +87,8 @@ class TestSuiteViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixi
         logger.info(f'delete test suite: {kwargs.get("pk")}')
         try:
             instance = self.get_object()
-        except (Exception,):
-            return JsonResponse(code=10064, msg='test suite not found')
-        self.perform_destroy(instance)
+            self.perform_destroy(instance)
+        except (Exception,) as e:
+            logger.error(f'delete test suite error: {e}')
+            return JsonResponse(code=10064, msg='delete test suite failed')
         return JsonResponse()

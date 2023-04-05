@@ -3,7 +3,6 @@ from application.tag.models import Tag
 
 
 class TagSerializers(serializers.ModelSerializer):
-    project_id = serializers.IntegerField()
 
     class Meta:
         model = Tag

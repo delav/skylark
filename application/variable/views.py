@@ -1,7 +1,7 @@
 from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
-from application.infra.response import JsonResponse
+from application.infra.django.response import JsonResponse
 from application.variable.models import Variable
 from application.variable.serializers import VariableSerializers
 
@@ -62,8 +62,8 @@ class VariableViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
         logger.info(f'delete variable: {kwargs.get("pk")}')
         try:
             instance = self.get_object()
+            self.perform_destroy(instance)
         except (Exception,) as e:
             logger.error(f'delete variable error: {e}')
             return JsonResponse(code=10505, msg='delete variable failed')
-        self.perform_destroy(instance)
         return JsonResponse(data=instance.id)

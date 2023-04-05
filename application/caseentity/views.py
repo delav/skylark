@@ -3,7 +3,7 @@ from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
 from django.db import transaction
-from application.infra.response import JsonResponse
+from application.infra.django.response import JsonResponse
 from application.testcase.models import TestCase
 from application.caseentity.models import CaseEntity
 from application.caseentity.serializers import CaseEntitySerializers, CaseEntityListSerializers
@@ -38,7 +38,7 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
         try:
             with transaction.atomic():
                 test_case = TestCase.objects.get(id=case_id)
-                test_case.update_by = request.user
+                test_case.update_by = request.user.email
                 test_case.save()
                 # delete old case entities
                 old_entities = test_case.entities.all()

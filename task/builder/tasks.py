@@ -2,6 +2,7 @@ import json
 from django.conf import settings
 from application.infra.engine.dcsengine import DcsEngine
 from application.infra.utils.buildhandler import generate_test_build_id
+from application.infra.utils.transform import id_str_to_set
 from application.buildplan.models import BuildPlan
 from application.projectversion.models import ProjectVersion
 from application.buildhistory.models import BuildHistory
@@ -17,15 +18,16 @@ def periodic_builder(plan_id):
         project_id=plan.project_id,
         branch=plan.branch
     )
-    env_list = [plan.envs]
+    str_env_id_list = [plan.envs]
     if ',' in plan.envs:
-        env_list = plan.envs.split(',')
+        str_env_id_list = plan.envs.split(',')
     project_id = plan.project_id
     project_name = plan.project.name
     run_data = version.content
     common_sources = version.sources
-    build_cases = dict.fromkeys(plan.build_cases.split(','), True)
-    for env_id in env_list:
+    build_cases = id_str_to_set(plan.build_cases)
+    for str_env_id in str_env_id_list:
+        env_id = int(str_env_id)
         common = json.loads(common_sources)
         env_common = common.get(env_id)
         common_struct, structure_list = JsonParser(

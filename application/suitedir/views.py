@@ -2,7 +2,7 @@ from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
 from django.conf import settings
-from application.infra.response import JsonResponse
+from application.infra.django.response import JsonResponse
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers
 from application.project.models import Project
@@ -76,7 +76,10 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
         logger.info(f'delete suite dir: {kwargs.get("pk")}')
         try:
             instance = self.get_object()
-        except (Exception,):
-            return JsonResponse(code=10074, msg='suite dir not found')
-        self.perform_destroy(instance)
+            if not instance.parent_dir:
+                return JsonResponse(code=10074, msg='dir not allowed delete')
+            self.perform_destroy(instance)
+        except (Exception,) as e:
+            logger.error(f'delete suite dir error: {e}')
+            return JsonResponse(code=10075, msg='delete suite dir failed')
         return JsonResponse()

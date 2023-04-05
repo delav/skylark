@@ -67,7 +67,6 @@ INSTALLED_APPS = [
     'application.builder.apps.BuilderConfig',
     'application.buildplan.apps.BuildPlanConfig',
     'application.buildhistory.apps.BuildHistoryConfig',
-    'application.builddetail.apps.BuildDetailConfig',
     'application.environment.apps.EnvironmentConfig',
     'application.casepriority.apps.CasePriorityConfig',
     'application.pythonlib.apps.PythonlibConfig',
@@ -83,7 +82,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'application.infra.middleware.loghandler.OpLogs',
+    'application.infra.django.middleware.loghandler.OpLogs',
 ]
 
 ROOT_URLCONF = 'skylark.urls'
@@ -135,10 +134,10 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'application.infra.permission.LoginAuth',
+        'application.infra.django.permission.LoginAuth',
     ),
     'DATETIME_FORMAT': '%Y-%m-%d %H:%M:%S',
-    'EXCEPTION_HANDLER': 'application.infra.exception.exception_handler',
+    'EXCEPTION_HANDLER': 'application.infra.django.exception.exception_handler',
 }
 
 SIMPLE_JWT = {
@@ -260,5 +259,10 @@ VALUE_TYPE_META = {
 }
 VALUE_TYPE = [(v, k) for k, v in VALUE_TYPE_META.items()]
 
-
+MODULE_STATUS_META = {
+    'Normal': 0,
+    'Discarded': 1,
+    'Deleted': 2,
+}
+MODULE_STATUS = [(v, k) for k, v in CATEGORY_META.items()]
 

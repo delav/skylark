@@ -5,11 +5,11 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
-from application.infra.response import JsonResponse
+from application.infra.django.response import JsonResponse
 from application.user.models import User
 from application.user.serializers import UserSerializer, RegisterSerializer, UserAdminSerializer
 from application.group.models import Group
-from application.infra.pagination.paginator import PagePagination
+from application.infra.django.pagination.paginator import PagePagination
 
 # Create your views here.
 
@@ -120,8 +120,8 @@ class AdminUserViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         logger.info(f'delete user: {kwargs.get("pk")}')
         try:
             instance = self.get_object()
+            self.perform_destroy(instance)
         except (Exception,) as e:
             logger.error(f'delete user error: {e}')
             return JsonResponse(code=10012, msg='delete user failed')
-        self.perform_destroy(instance)
         return JsonResponse(msg=instance.id)

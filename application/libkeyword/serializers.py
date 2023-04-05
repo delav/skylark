@@ -3,8 +3,6 @@ from application.libkeyword.models import LibKeyword
 
 
 class LibKeywordSerializers(serializers.ModelSerializer):
-
-    group_id = serializers.IntegerField()
     image = serializers.ImageField(required=False)
 
     class Meta:

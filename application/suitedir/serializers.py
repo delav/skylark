@@ -6,8 +6,8 @@ class SuiteDirSerializers(serializers.ModelSerializer):
 
     parent_dir_id = serializers.IntegerField(allow_null=True)
     project_id = serializers.IntegerField()
-    create_by = serializers.CharField(source='create_by.email')
-    update_by = serializers.CharField(source='update_by.email')
+    create_by = serializers.CharField(read_only=True)
+    update_by = serializers.CharField(read_only=True)
 
     class Meta:
         model = SuiteDir
@@ -19,6 +19,6 @@ class SuiteDirSerializers(serializers.ModelSerializer):
     def validate(self, attrs):
         request = self.context['request']
         if request.method == 'POST':
-            attrs['create_by'] = request.user
-        attrs['update_by'] = request.user
+            attrs['create_by'] = request.user.email
+        attrs['update_by'] = request.user.email
         return attrs

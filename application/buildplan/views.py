@@ -3,7 +3,7 @@ from django.conf import settings
 from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
-from application.infra.response import JsonResponse
+from application.infra.django.response import JsonResponse
 from application.infra.utils.buildhandler import generate_task_name
 from application.buildplan.models import BuildPlan
 from application.buildplan.serializers import BuildPlanSerializers

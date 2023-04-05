@@ -16,9 +16,9 @@ def generate_version(project_id, version_kwargs):
         parser = CommonParser(project_id, project_name, env.id)
         parser.init_sources()
         env_resource_dict[env.id] = {
-            'variable_files': parser.common_variable_files(),
-            'resources': parser.common_resources(),
-            'project_files': parser.common_project_files(),
+            'variable_files': parser.common_variable_files,
+            'resources': parser.common_resources,
+            'project_files': parser.common_project_files,
         }
     version_kwargs['content'] = json.dumps(node_content)
     version_kwargs['sources'] = json.dumps(env_resource_dict)

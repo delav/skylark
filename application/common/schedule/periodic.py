@@ -10,7 +10,7 @@ class PeriodicHandler(object):
 
     def __init__(self, periodic_expr=''):
         self.periodic_expr = periodic_expr
-        self.periodic_type = self.get_periodic_type
+        self.periodic_type = self.get_periodic_type()
 
     def get_periodic_type(self):
         if len(self.periodic_expr.split()) != 5:

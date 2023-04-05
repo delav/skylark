@@ -76,9 +76,9 @@ class JsonParser(CommonParser):
     def get_common_from_parse(self):
         self.init_sources()
         return {
-            'variable_files': self.common_variable_files(),
-            'resources': self.common_resources(),
-            'project_files': self.common_project_files(),
+            'variable_files': self.common_variable_files,
+            'resources': self.common_resources,
+            'project_files': self.common_project_files,
         }
 
     def _extract(self, path, reader):

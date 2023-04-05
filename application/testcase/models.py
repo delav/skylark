@@ -14,18 +14,15 @@ class TestCase(models.Model):
     document = models.TextField(default=None, blank=True, null=True, help_text='test case desc')
     create_at = models.DateTimeField(auto_now_add=True, help_text='create time')
     update_at = models.DateTimeField(auto_now=True, help_text='update time')
-    create_by = models.ForeignKey(User, blank=True, null=True, related_name='case_cuser',
-                                  on_delete=models.DO_NOTHING, help_text='create user')
-    update_by = models.ForeignKey(User, blank=True, null=True, related_name='case_muser',
-                                  on_delete=models.DO_NOTHING, help_text='last update user')
-    priority = models.ForeignKey(CasePriority, blank=True, null=True, on_delete=models.SET_NULL,
-                                 help_text='test case priority')
+    create_by = models.CharField(max_length=255, help_text='create user')
+    update_by = models.CharField(max_length=255, help_text='last update user')
+    priority_id = models.IntegerField(default=None, null=True, blank=True, help_text='test case priority')
     test_suite = models.ForeignKey(TestSuite, related_name='cases', on_delete=models.CASCADE,
                                    help_text='associated test suite')
     inputs = models.TextField(default=None, blank=True, null=True, help_text='input args for keyword')
     outputs = models.TextField(default=None, blank=True, null=True, help_text='output args for keyword')
     timeout = models.CharField(default=None, max_length=255, blank=True, null=True, help_text='case timeout')
-    deleted = models.BooleanField(default=0, help_text='if deleted')
+    status = models.IntegerField(default=0, choices=settings.MODULE_STATUS, help_text='test case status')
 
     class Meta:
         verbose_name = 'test case'

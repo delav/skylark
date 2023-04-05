@@ -3,7 +3,7 @@ from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
 from django.conf import settings
-from application.infra.response import JsonResponse
+from application.infra.django.response import JsonResponse
 from application.testcase.models import TestCase
 from application.testcase.serializers import TestCaseSerializers
 from application.userkeyword.models import UserKeyword
@@ -59,7 +59,7 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
             return JsonResponse(code=10051, msg='create test case failed')
         result = serializer.data
         result['extra_data'] = {}
-        return JsonResponse(data=serializer.data)
+        return JsonResponse(data=result)
 
     def retrieve(self, request, *args, **kwargs):
         pass
@@ -88,8 +88,9 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
         logger.info(f'delete test case: {kwargs.get("pk")}')
         try:
             instance = self.get_object()
-        except (Exception,):
-            return JsonResponse(code=10054, msg='test case not found')
-        self.perform_destroy(instance)
+            self.perform_destroy(instance)
+        except (Exception,) as e:
+            logger.error(f'delete test case error: {e}')
+            return JsonResponse(code=10054, msg='delete test case failed')
         return JsonResponse()
 

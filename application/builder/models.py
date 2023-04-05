@@ -9,8 +9,7 @@ from application.environment.models import Environment
 class Builder(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
     create_at = models.DateTimeField(auto_now_add=True, help_text='build time')
-    create_by = models.ForeignKey(User, related_name='build_user',
-                                  on_delete=models.DO_NOTHING, help_text='create user')
+    create_by = models.CharField(max_length=255, help_text='create user')
 
     class Meta:
         verbose_name = 'builder'

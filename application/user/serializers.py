@@ -4,7 +4,7 @@ from django.db.models import Q
 from django.contrib.auth.hashers import make_password, check_password
 from application.infra.common import ecb_decrypt
 from application.user.models import User
-from application.infra.exception import ValidationException
+from application.infra.django.exception import ValidationException
 
 
 class UserAdminSerializer(serializers.ModelSerializer):

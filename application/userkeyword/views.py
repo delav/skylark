@@ -1,7 +1,7 @@
 from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
-from application.infra.response import JsonResponse
+from application.infra.django.response import JsonResponse
 from application.userkeyword.models import UserKeyword
 from application.userkeyword.serializers import UserKeywordSerializers
 

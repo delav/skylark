@@ -19,6 +19,7 @@ from django.conf.urls import include, url
 from django.views.static import serve
 from rest_framework import routers
 from application.user.views import NoAuthUserViewSets, AdminUserViewSets, NormalUserViewSets
+from application.project.views import AdminProjectViewSets
 from application.group.views import GroupViewSets
 from application.libkeyword.views import LibKeywordViewSets
 from application.userkeyword.views import UserKeywordViewSets
@@ -39,9 +40,11 @@ from application.tag.views import TagViewSets
 from application.casepriority.views import CasePriorityViewSets
 
 router = routers.SimpleRouter(trailing_slash=False)
+router.register('admin/user/info', AdminUserViewSets, basename='admin_uio')
+router.register('admin/user/group', AdminUserViewSets, basename='admin_ugp')
+router.register('admin/project', AdminProjectViewSets, basename='admin_project')
 router.register('user/info', NormalUserViewSets, basename='user_info')
-router.register('user/admin', AdminUserViewSets, basename='user')
-router.register('user/group', GroupViewSets, basename='group')
+router.register('user/group', GroupViewSets, basename='user_group')
 router.register('keyword/lib-keyword', LibKeywordViewSets, basename='lib_keyword')
 router.register('keyword/user-keyword', UserKeywordViewSets, basename='user_keyword')
 router.register('project', ProjectViewSets, basename='project')

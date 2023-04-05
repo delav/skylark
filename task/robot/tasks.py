@@ -1,11 +1,10 @@
 import json
 from datetime import datetime
 from django.conf import settings
-from application.buildhistory.models import BuildHistory
-from application.builddetail.models import BuildDetail
+from application.buildhistory.models import BuildHistory, HistoryDetail
 from application.infra.client.redisclient import RedisClient
 from application.infra.utils.makedir import make_path
-from application.infra.utils.buildhandler import is_test_mode
+from application.infra.utils.buildhandler import is_test_mode, convert_test_build_id
 from worker.robot.rebot import rebot
 from skylark.celeryapp import app
 
@@ -34,7 +33,8 @@ def robot_notifier(build_id):
         rebot(*output_list, outputdir=output_path, quiet=True)
         return
     # test mode operate
-    queryset = BuildHistory.objects.filter(id=int(build_id))
+    history_id = convert_test_build_id(build_id)
+    queryset = BuildHistory.objects.filter(id=history_id)
     instance = queryset.first()
     batch = instance.batch
     if len(current_result) != int(batch):
@@ -56,16 +56,18 @@ def robot_notifier(build_id):
     output_path = make_path(settings.REPORT_PATH, build_id)
     rebot(*output_list, outputdir=output_path, quiet=True)
     build_result['report_path'] = output_path
+    # build_result['report_content'] = str(output_list)
     queryset.update(**build_result)
     case_redis_key = settings.CASE_RESULT_KEY_PREFIX + build_id
-    result_list = []
+    case_detail_list = []
     cases_result = conn.hgetall(case_redis_key)
     for case_id, item in cases_result.items():
         item['test_case_id'] = int(case_id)
         item['start_time'] = datetime.fromtimestamp(item['start_time'])
         item['end_time'] = datetime.fromtimestamp(item['end_time'])
-        result_list.append(item)
-    BuildDetail.objects.bulk_create(result_list)
+        item['build_history_id'] = history_id
+        case_detail_list.append(item)
+    HistoryDetail.objects.bulk_create(case_detail_list)
 
 
 

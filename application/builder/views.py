@@ -2,7 +2,7 @@ from loguru import logger
 from django.conf import settings
 from rest_framework import mixins
 from rest_framework import viewsets
-from application.infra.response import JsonResponse
+from application.infra.django.response import JsonResponse
 from application.infra.client.redisclient import RedisClient
 from application.infra.engine.dcsengine import DcsEngine
 from application.infra.utils.buildhandler import *

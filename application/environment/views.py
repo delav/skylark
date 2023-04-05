@@ -2,7 +2,7 @@ from loguru import logger
 from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
-from application.infra.response import JsonResponse
+from application.infra.django.response import JsonResponse
 from application.environment.models import Environment
 from application.environment.serializers import EnvironmentSerializers
 

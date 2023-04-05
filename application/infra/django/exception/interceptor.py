@@ -1,8 +1,8 @@
 from loguru import logger
 from rest_framework.views import exception_handler as rest_handler
 from rest_framework.status import HTTP_500_INTERNAL_SERVER_ERROR
-from application.infra.response import JsonResponse
-from application.infra.exception import DetailError
+from application.infra.django.response import JsonResponse
+from application.infra.django.exception import DetailError
 
 
 def exception_handler(exc, context):

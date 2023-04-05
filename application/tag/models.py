@@ -1,6 +1,5 @@
 from django.db import models
 from django.conf import settings
-from application.project.models import Project
 
 # Create your models here.
 
@@ -8,8 +7,7 @@ from application.project.models import Project
 class Tag(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
     name = models.CharField(max_length=255, help_text='tag name')
-    project = models.ForeignKey(Project, related_name='tags', on_delete=models.DO_NOTHING,
-                                blank=True, null=True, help_text='associated project')
+    project_id = models.IntegerField(help_text='associated project')
     module_id = models.IntegerField(help_text='associated module id')
     module_type = models.IntegerField(default=0, choices=settings.MODULE_TYPE, help_text='associated module type')
 
@@ -17,4 +15,3 @@ class Tag(models.Model):
         verbose_name = 'tag'
         verbose_name_plural = verbose_name
         db_table = 'tag'
-        unique_together = ['name', 'project']

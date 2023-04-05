@@ -2,7 +2,7 @@ from loguru import logger
 from django.conf import settings
 from rest_framework import mixins
 from rest_framework import viewsets
-from application.infra.response import JsonResponse
+from application.infra.django.response import JsonResponse
 from application.projectversion.models import ProjectVersion
 from application.projectversion.serializers import ProjectVersionSerializers
 from skylark.celeryapp import app
@@ -27,7 +27,8 @@ class ProjectVersionViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
         if flag and flag.isdigit() and int(flag) != 0:
             queryset = ProjectVersion.objects.filter(
                 project_id=project_id).values(
-                'id', 'project_id', 'update_at', 'update_by', 'branch', 'version', 'remark'
+                'id', 'project_id', 'create_at', 'update_at',
+                'create_by',  'update_by', 'branch', 'version', 'remark'
             )
         else:
             queryset = ProjectVersion.objects.filter(project_id=project_id)
@@ -39,18 +40,17 @@ class ProjectVersionViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         project_id = serializer.data['project_id']
-        save_kwargs = {
-            'project_id': project_id,
-            'branch': serializer.data['branch'],
-            'remark': serializer.data['remark'],
-            'update_by_id': request.user.id
-        }
-        print(save_kwargs)
+        # save_kwargs = {
+        #     'project_id': project_id,
+        #     'branch': serializer.data['branch'],
+        #     'remark': serializer.data['remark'],
+        # }
+        print(serializer.data)
         app.send_task(
             settings.VERSION_TASK,
             queue=settings.DEFAULT_QUEUE,
             routing_key=settings.DEFAULT_ROUTING_KEY,
-            args=(project_id, save_kwargs)
+            args=(project_id, serializer.data)
         )
         return JsonResponse(data='send task success')
 

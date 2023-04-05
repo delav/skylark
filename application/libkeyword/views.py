@@ -2,7 +2,7 @@ from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
-from application.infra.response import JsonResponse
+from application.infra.django.response import JsonResponse
 from application.libkeyword.models import LibKeyword
 from application.libkeyword.serializers import LibKeywordSerializers
 from application.keywordgroup.models import KeywordGroup
@@ -50,10 +50,10 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         logger.info(f'delete lib keyword: {kwargs.get("pk")}')
         try:
             instance = self.get_object()
+            self.perform_destroy(instance)
         except (Exception,) as e:
             logger.error(f'delete lib keyword error: {e}')
             return JsonResponse(code=10022, msg='delete lib keyword failed')
-        self.perform_destroy(instance)
         return JsonResponse(data=instance.id)
 
     def get_permissions(self):

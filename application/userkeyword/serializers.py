@@ -9,7 +9,3 @@ class UserKeywordSerializers(serializers.ModelSerializer):
     class Meta:
         model = UserKeyword
         fields = '__all__'
-        extra_kwargs = {
-            'create_at': {'read_only': True},
-            'update_at': {'read_only': True},
-        }

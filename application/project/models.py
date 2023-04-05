@@ -1,5 +1,5 @@
 from django.db import models
-from application.user.models import User
+from django.conf import settings
 
 # Create your models here.
 
@@ -9,11 +9,9 @@ class Project(models.Model):
     name = models.CharField(unique=True, max_length=255, help_text='project name')
     create_at = models.DateTimeField(auto_now_add=True,  help_text='create time')
     update_at = models.DateTimeField(auto_now=True, help_text='update time')
-    create_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.DO_NOTHING,
-                                  related_name='pro_cuser', help_text='create user')
-    update_by = models.ForeignKey(User, blank=True, null=True, related_name='pro_muser',
-                                  on_delete=models.DO_NOTHING, help_text='last update user')
-    deleted = models.BooleanField(default=0, help_text='if deleted')
+    create_by = models.CharField(max_length=255, help_text='create user')
+    update_by = models.CharField(max_length=255, help_text='last update user')
+    status = models.IntegerField(default=0, choices=settings.MODULE_STATUS, help_text='project status')
 
     class Meta:
         verbose_name = 'project'

@@ -5,8 +5,8 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from application.user.models import User
 from application.group.models import Group
-from application.infra.pagination.paginator import PagePagination
-from application.infra.response import JsonResponse
+from application.infra.django.pagination.paginator import PagePagination
+from application.infra.django.response import JsonResponse
 from application.project.models import Project
 from application.project.serializers import ProjectSerializers
 from application.common.operator import ProjectOperator
@@ -15,65 +15,60 @@ from application.common.operator import ProjectOperator
 
 
 class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin,
-                      mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+                      mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializers
-    pagination_class = PagePagination
 
     def list(self, request, *args, **kwargs):
         logger.info('get project list by current user')
-        gps = Group.objects.filter(user=request.user)
-        gp_users = User.objects.none()
-        for gp in gps:
-            gp_users |= gp.user_set.all()
-        queryset = Project.objects.filter(create_by__in=gp_users)
-        pg_queryset = self.paginate_queryset(queryset)
-        ser = self.get_serializer(pg_queryset, many=True)
-        return JsonResponse(data=ser.data)
+        groups_queryset = Group.objects.filter(user=request.user)
+        users = User.objects.none()
+        for group in groups_queryset:
+            users |= group.user_set.all()
+        group_emails = [user.email for user in users]
+        queryset = Project.objects.filter(create_by__in=group_emails, status=0)
+        serializer = self.get_serializer(queryset, many=True)
+        return JsonResponse(data=serializer.data)
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         logger.info(f'create project: {request.data}')
+        cname = request.data.get('cname')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = serializer.data
-        project_name = data.get('name')
+        project_name = serializer.data.get('name')
         project_q = Project.objects.filter(name=project_name)
         if project_q.exists():
-            return JsonResponse(code=10080, data='project name had exists')
-        copy_project_id = data.get('copy_pid')
-        if copy_project_id and isinstance(copy_project_id, int):
-            try:
-                copy_project = Project.objects.get(id=copy_project_id)
-                with transaction.atomic():
-                    operator = ProjectOperator(project_name, copy_project, request.user)
-                    operator.copy_project_action()
-                    project = operator.get_new_project()
-            except (Exception,) as e:
-                logger.error(f'create project error: {e}')
-                return JsonResponse(code=10081, msg='create project failed')
-            logger.info(f'copied project: {copy_project.name}')
-            return JsonResponse(data={'project_id': project.id, 'name': project.name})
+            return JsonResponse(code=10080, data='project name already exists')
         default_project_name = settings.PROJECT_MODULE
-        default_project = Project.objects.get(name=default_project_name)
+        copied_project_name = cname or default_project_name
         try:
+            copied_project = Project.objects.get(name=copied_project_name)
+            operator = ProjectOperator(project_name, copied_project, request.user)
             with transaction.atomic():
-                operator = ProjectOperator(project_name, default_project, request.user)
-                operator.new_project_action()
+                operator.copy_project_action() if cname else operator.new_project_action()
                 project = operator.get_new_project()
-        except Exception as e:
+        except (Exception,) as e:
             logger.error(f'create project error: {e}')
             return JsonResponse(code=10081, msg='create project failed')
-        return JsonResponse(data={'id': project.id, 'name': project.name})
+        logger.info(f'copied project: {copied_project_name}')
+        result_serializer = self.get_serializer(project)
+        return JsonResponse(data=result_serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
         pass
 
     def update(self, request, *args, **kwargs):
         logger.info(f'update project: {request.data}')
-
-    def destroy(self, request, *args, **kwargs):
-        logger.info(f'delete project: {kwargs.get("pk")}')
+        try:
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+        except (Exception,) as e:
+            logger.error(f'update project failed: {e}')
+            return JsonResponse(code=10087, msg='update project failed')
+        return JsonResponse(serializer.data)
 
 
 class AdminProjectViewSets(mixins.ListModelMixin, mixins.RetrieveModelMixin,
@@ -81,3 +76,20 @@ class AdminProjectViewSets(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     queryset = Project.objects.all()
     serializer_class = ProjectSerializers
     pagination_class = PagePagination
+
+    def list(self, request, *args, **kwargs):
+        logger.info('get project list by admin')
+        queryset = self.get_queryset()
+        pg_queryset = self.paginate_queryset(queryset)
+        ser = self.get_serializer(pg_queryset, many=True)
+        return JsonResponse(data=ser.data)
+
+    def destroy(self, request, *args, **kwargs):
+        logger.info(f'delete project by admin: {kwargs.get("pk")}')
+        try:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+        except (Exception,) as e:
+            logger.error(f'delete project error: {e}')
+            return JsonResponse(code=10086, msg='delete project failed')
+        return JsonResponse(data=instance.id)

@@ -1,7 +1,7 @@
 from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
-from application.infra.response import JsonResponse
+from application.infra.django.response import JsonResponse
 from application.buildhistory.models import BuildHistory
 from application.buildhistory.serializers import BuildHistorySerializers
 
