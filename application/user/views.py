@@ -63,9 +63,14 @@ class NormalUserViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, vie
 
     def update(self, request, *args, **kwargs):
         logger.info(f'update current user info: {request.data}')
-        serializer = self.get_serializer(request.user, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
+        try:
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+        except (Exception,) as e:
+            logger.error(f'update user failed: {e}')
+            return JsonResponse(code=10013, msg='update user failed')
         return JsonResponse(data=serializer.data)
 
 
@@ -108,12 +113,12 @@ class AdminUserViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         update_data = request.data
         try:
             instance = self.get_object()
+            serializer = self.get_serializer(instance, data=update_data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
         except (Exception,) as e:
             logger.error(f'update user info error: {e}')
             return JsonResponse(code=10011, msg='user not found')
-        serializer = self.get_serializer(instance, data=update_data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
         return JsonResponse(data=serializer.data)
 
     def destroy(self, request, *args, **kwargs):

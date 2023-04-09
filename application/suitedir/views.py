@@ -61,11 +61,8 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
         logger.info(f'update suite dir: {request.data}')
         try:
             instance = self.get_object()
-        except (Exception,):
-            return JsonResponse(code=10072, msg='suite dir not found')
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        try:
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
         except (Exception,) as e:
             logger.error(f'update suite dir failed: {e}')

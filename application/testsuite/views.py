@@ -71,11 +71,8 @@ class TestSuiteViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixi
         logger.info(f'update test suite: {request.data}')
         try:
             instance = self.get_object()
-        except (Exception,):
-            return JsonResponse(code=10062, msg='test suite not found')
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        try:
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
         except (Exception,) as e:
             logger.error(f'update test suite failed: {e}')

@@ -3,17 +3,18 @@ from application.infra.constant.constants import PATH_SEP, COMMON_RESOURCE_PREFI
 from application.testsuite.models import TestSuite
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers
-from application.common.reader.variablefilereader import VariablePyFileReader
+from application.common.reader.filereader import FileReader
 from application.common.reader.resourcereader import ResourceKeywordReader, ResourceCommonReader
 from .treeformat import list_to_tree, get_path_from_tree
 
 
 class CommonParser(object):
 
-    def __init__(self, project_id, project_name, env_id):
+    def __init__(self, project_id, project_name, env_id, region_id=None):
         self.project_id = project_id
         self.project_name = project_name
         self.env_id = env_id
+        self.region_id = region_id
         self._variable_file_map = {}
         self._resource_map = {}
         self._project_file_map = {}
@@ -75,10 +76,12 @@ class CommonParser(object):
         """
         handle common variable file. belong resource file, too
         """
-        common_name = f'{COMMON_RESOURCE_PREFIX}{self.env_id}{RESOURCE_FILE_SUBFIX}'
+        un_name = f'{self.env_id}-{self.region_id}' if self.region_id else f'{self.env_id}'
+        common_name = f'{COMMON_RESOURCE_PREFIX}{un_name}{RESOURCE_FILE_SUBFIX}'
         common_file = PATH_SEP.join([self.project_name, common_name])
         common_text = ResourceCommonReader(
             env_id=self.env_id,
+            region_id=self.region_id,
             project_id=self.project_id,
             module_type=settings.MODULE_TYPE_META.get('Project')
         ).read()
@@ -89,9 +92,10 @@ class CommonParser(object):
     def _get_common_variable_files(self):
         return self._recursion_suite_path(
             settings.CATEGORY_META.get('Resource'),
-            VariablePyFileReader,
+            FileReader,
             env_id=self.env_id,
-            suite_id=None,
+            region_id=self.region_id,
+            suite_id=True,
         )
 
     def _get_common_resources(self, common_variable_file_list):
@@ -102,7 +106,7 @@ class CommonParser(object):
         keyword_map = self._recursion_suite_path(
             settings.CATEGORY_META.get('Keyword'),
             ResourceKeywordReader,
-            suite_id=None,
+            suite_id=True,
             module_type=settings.MODULE_TYPE_META.get('TestSuite'),
             resource_list=common_resource_list,
             variable_files=common_variable_file_list
@@ -113,7 +117,8 @@ class CommonParser(object):
     def _get_common_project_file(self):
         return self._recursion_suite_path(
             settings.CATEGORY_META.get('HelpFile'),
-            VariablePyFileReader,
+            FileReader,
             env_id=self.env_id,
-            suite_id=None,
+            region_id=self.region_id,
+            suite_id=True,
         )

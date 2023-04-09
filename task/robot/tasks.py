@@ -30,7 +30,7 @@ def robot_notifier(build_id):
         for _, data in current_result.items():
             batch_result = json.loads(data)
             output_list.append(batch_result['output'].encode())
-        rebot(*output_list, outputdir=output_path, quiet=True)
+        rebot(*output_list, outputdir=output_path)
         return
     # test mode operate
     history_id = convert_test_build_id(build_id)
@@ -54,7 +54,7 @@ def robot_notifier(build_id):
     build_result['start_time'] = datetime.fromtimestamp(build_result['start_time'])
     build_result['end_time'] = datetime.fromtimestamp(build_result['end_time'])
     output_path = make_path(settings.REPORT_PATH, build_id)
-    rebot(*output_list, outputdir=output_path, quiet=True)
+    rebot(*output_list, outputdir=output_path)
     build_result['report_path'] = output_path
     # build_result['report_content'] = str(output_list)
     queryset.update(**build_result)

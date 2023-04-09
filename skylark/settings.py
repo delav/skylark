@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'application.buildplan.apps.BuildPlanConfig',
     'application.buildhistory.apps.BuildHistoryConfig',
     'application.environment.apps.EnvironmentConfig',
+    'application.region.apps.RegionConfig',
     'application.casepriority.apps.CasePriorityConfig',
     'application.pythonlib.apps.PythonlibConfig',
     'application.projectversion.apps.ProjectVersionConfig',
@@ -233,6 +234,9 @@ VERSION_TASK = 'task.version.tasks.generate_version'
 PERIODIC_QUEUE = 'builder'
 PERIODIC_ROUTING_KEY = 'periodic.builder'
 PERIODIC_TASK = 'task.builder.tasks.periodic_builder'
+
+# user customize keyword group
+CUSTOMIZE_KEYWORD_GROUP = 99
 
 # model data category. 0: test case, 1: resource(user keyword), 2: text/other file
 CATEGORY_META = {

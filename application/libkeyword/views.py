@@ -38,12 +38,12 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         update_data = self.request.data
         try:
             instance = self.get_object()
+            serializer = self.get_serializer(instance, data=update_data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
         except (Exception,) as e:
             logger.error(f'update lib keyword error: {e}')
             return JsonResponse(code=10023, msg='update lib keyword failed')
-        serializer = self.get_serializer(instance, data=update_data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
         return JsonResponse(data=serializer.data)
 
     def destroy(self, request, *args, **kwargs):

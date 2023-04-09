@@ -81,8 +81,8 @@ class AdminProjectViewSets(mixins.ListModelMixin, mixins.RetrieveModelMixin,
         logger.info('get project list by admin')
         queryset = self.get_queryset()
         pg_queryset = self.paginate_queryset(queryset)
-        ser = self.get_serializer(pg_queryset, many=True)
-        return JsonResponse(data=ser.data)
+        serializer = self.get_serializer(pg_queryset, many=True)
+        return JsonResponse(data=serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         logger.info(f'delete project by admin: {kwargs.get("pk")}')

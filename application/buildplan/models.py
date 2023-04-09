@@ -13,12 +13,12 @@ class BuildPlan(models.Model):
     update_by = models.CharField(max_length=255, help_text='last update user')
     build_cases = models.TextField(default='',  help_text='build case id list')
     periodic_expr = models.CharField(default='', max_length=255, help_text='periodic expr')
-    periodic_task_id = models.IntegerField(help_text='associated periodic task')
+    periodic_task_id = models.IntegerField(null=True, blank=True, help_text='associated periodic task')
     periodic_switch = models.BooleanField(default=False, help_text='periodic task switch')
     envs = models.CharField(max_length=255, help_text='associated env id list')
     project_id = models.IntegerField(help_text='associated project')
     branch = models.CharField(max_length=255, help_text='project branch')
-    expect_pass = models.FloatField(default=1.0, help_text='expected pass rate')
+    expect_pass = models.FloatField(default=100, help_text='expected pass rate')
     extra_data = models.TextField(default='{}',  help_text='build extra data of json')
 
     class Meta:

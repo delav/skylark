@@ -6,12 +6,13 @@ class TestBuildSerializers(serializers.ModelSerializer):
 
     plan_id = serializers.IntegerField(help_text='build plan id')
     env_id = serializers.IntegerField(help_text='build env id')
+    region_id = serializers.IntegerField(required=False, help_text='build region id')
     action_type = serializers.CharField(help_text='start or stop')
 
     class Meta:
         model = Builder
         fields = (
-            'plan_id', 'env_id', 'action_type'
+            'plan_id', 'env_id', 'region_id', 'action_type'
         )
 
 
@@ -20,11 +21,12 @@ class DebugBuildSerializers(serializers.ModelSerializer):
     action_type = serializers.CharField(help_text='start or stop')
     project_id = serializers.IntegerField(help_text='build project id')
     env_id = serializers.IntegerField(help_text='build env id')
+    region_id = serializers.IntegerField(required=False, help_text='build region')
     project_name = serializers.CharField(help_text='build project name')
     run_data = serializers.ListField(help_text='detail data or module ids')
 
     class Meta:
         model = Builder
         fields = (
-            'action_type', 'env_id', 'project_id', 'project_name', 'run_data'
+            'action_type', 'env_id', 'region_id', 'project_id', 'project_name', 'run_data'
         )

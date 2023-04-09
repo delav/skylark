@@ -21,6 +21,9 @@ def periodic_builder(plan_id):
     str_env_id_list = [plan.envs]
     if ',' in plan.envs:
         str_env_id_list = plan.envs.split(',')
+    str_region_id_list = [plan.regions]
+    if ',' in plan.regions:
+        str_region_id_list = plan.regions.split(',')
     project_id = plan.project_id
     project_name = plan.project.name
     run_data = version.content
@@ -34,6 +37,7 @@ def periodic_builder(plan_id):
             project_id=project_id,
             project_name=project_name,
             env_id=env_id,
+            region_id=region_id,
             include_cases=build_cases
         ).parse(run_data, env_common)
         engine = DcsEngine(

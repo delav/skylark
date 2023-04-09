@@ -33,11 +33,11 @@ class SetupTeardownViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
         logger.info(f'update setup teardown: {request.data}')
         try:
             instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
         except (Exception,):
             return JsonResponse(code=10092, msg='setup teardown not found')
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
         return JsonResponse()
 
     def retrieve(self, request, *args, **kwargs):

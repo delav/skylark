@@ -8,9 +8,9 @@ from application.common.parser.treeformat import get_path_from_front_tree
 
 class JsonParser(CommonParser):
 
-    def __init__(self, project_id, project_name, env_id, include_cases=None):
+    def __init__(self, project_id, project_name, env_id, region_id, include_cases=None):
         super(JsonParser, self).__init__(
-            project_id, project_name, env_id
+            project_id, project_name, env_id, region_id
         )
         self.build_cases = include_cases
         self.structures = []
@@ -67,8 +67,6 @@ class JsonParser(CommonParser):
                 case_data=suite_case_data,
                 include_cases=self.build_cases,
             )
-            if len(suite_reader.body_text_list) == 0:
-                continue
             self._extract(suite_file, suite_reader)
         common = CommonStructure(common_file_paths, common_file_sources)
         return common, self.structures
@@ -83,6 +81,8 @@ class JsonParser(CommonParser):
 
     def _extract(self, path, reader):
         file_text = reader.read()
+        if len(reader.body_text_list) == 0:
+            return
         struct = SuiteStructure()
         struct.set_path(path)
         struct.set_header(reader.head_text_str)

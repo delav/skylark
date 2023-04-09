@@ -49,47 +49,18 @@ class PeriodicHandler(object):
     def create_periodic_task(self, name, task, args, queue, routing_key, schedule_kwargs):
         periodic_kwargs = {'name': name, 'task': task, 'args': args, 'queue': queue, 'routing_key': routing_key}
         if self.periodic_type == self.CRONTAB_TYPE:
-            periodic_kwargs['crontab'] = CrontabSchedule.objects.get_or_create(
+            periodic_kwargs['crontab'], _ = CrontabSchedule.objects.get_or_create(
                 defaults=schedule_kwargs,
                 **schedule_kwargs
             )
         elif self.periodic_type == self.INTERVAL_TYPE:
-            periodic_kwargs['interval'] = IntervalSchedule.objects.get_or_create(
+            periodic_kwargs['interval'], _ = IntervalSchedule.objects.get_or_create(
                 defaults=schedule_kwargs,
                 **schedule_kwargs
             )
         periodic = PeriodicTask.objects.create(**periodic_kwargs)
         periodic.save()
         return periodic.id
-
-    def get_periodic_task(self, task_name):
-        periodic = []
-        try:
-            task = PeriodicTask.objects.select_related('interval', 'crontab').get(name=task_name)
-        except (Exception,):
-            return {}
-        periodic_type = None
-        if task.crontab_id:
-            periodic = [
-                task.crontab.minute, task.crontab.hour, task.crontab.day_of_week,
-                task.crontab.day_of_month, task.crontab.month_of_year
-            ]
-            periodic_type = self.CRONTAB_TYPE
-        elif task.interval_id:
-            periodic = [
-                'every', str(task.interval.every), task.interval.period
-            ]
-            periodic_type = self.INTERVAL_TYPE
-        periodic_data = {
-            'id': task.id,
-            'name': task.name,
-            'total_run': task.total_run_count,
-            'last_run_at': str(task.last_run_at).replace('T', '')[:-7],
-            'status': task.enabled,
-            'expr': ' '.join(periodic),
-            'type': periodic_type
-        }
-        return periodic_data
 
     @staticmethod
     def validate_interval(interval_str):
@@ -102,21 +73,36 @@ class PeriodicHandler(object):
         if not str_list[1].strip().lower() in periods:
             raise ValueError('Invalid interval expr')
 
-    @staticmethod
-    def able_task(task_name, switch):
-        try:
-            task = PeriodicTask.objects.get(name=task_name)
-            task.enabled = switch
-            task.save()
-        except (Exception,):
-            return False
-        return True
 
-    @staticmethod
-    def remove_task(task_name):
-        try:
-            task = PeriodicTask.objects.get(name=task_name)
-            task.delete()
-        except (Exception,):
-            return False
-        return True
+def get_periodic_task(task_name):
+    try:
+        task = PeriodicTask.objects.get(name=task_name)
+    except (Exception,):
+        return {}
+    periodic_data = {
+        'id': task.id,
+        'name': task.name,
+        'total_run': task.total_run_count,
+        'last_run_at': str(task.last_run_at).replace('T', '')[:-7],
+        'status': task.enabled,
+    }
+    return periodic_data
+
+
+def able_task(task_name, switch):
+    try:
+        task = PeriodicTask.objects.get(name=task_name)
+        task.enabled = switch
+        task.save()
+    except (Exception,):
+        return False
+    return True
+
+
+def remove_task(task_name):
+    try:
+        task = PeriodicTask.objects.get(name=task_name)
+        task.delete()
+    except (Exception,):
+        return False
+    return True

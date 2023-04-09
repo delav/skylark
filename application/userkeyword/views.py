@@ -22,18 +22,18 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
             return JsonResponse(code=1000030, msg='request params error')
         user_keywords = []
         for item in queryset.iterator():
-            ser = self.get_serializer(item).data
+            serializer = self.get_serializer(item).data
             keyword_data = {
-                'id': ser['id'],
+                'id': serializer['id'],
                 'name': item.test_case.name,
                 'ext_name': item.test_case.name,
                 'desc': item.test_case.document,
-                'group': ser['group'],
+                'group_id': serializer['group_id'],
                 'input_arg': item.test_case.inputs,
                 'output_arg': item.test_case.outputs,
                 'input_desc': '',
                 'output_desc': '',
-                'image': ser['image']}
+                'image': serializer['image']}
             user_keywords.append(keyword_data)
         return JsonResponse(data=user_keywords)
 

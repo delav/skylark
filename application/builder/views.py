@@ -1,3 +1,4 @@
+from datetime import date
 from loguru import logger
 from django.conf import settings
 from rest_framework import mixins
@@ -23,7 +24,7 @@ class TestBuilderViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
         logger.info(f'create test run: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        plan_id = serializer.data['plan_id']
+        plan_id = serializer.data.get('plan_id')
         app.send_task(
             settings.PERIODIC_TASK,
             queue=settings.PERIODIC_QUEUE,
@@ -43,11 +44,12 @@ class DebugBuilderViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, v
         serializer.is_valid(raise_exception=True)
         try:
             # debug mode don't save build data
-            env_id = serializer.data['env_id']
-            project_id = serializer.data['project_id']
-            project_name = serializer.data['project_name']
-            run_data = serializer.data['run_data']
-            common_struct, structure_list = JsonParser(project_id, project_name, env_id).parse(run_data)
+            env_id = serializer.data.get('env_id')
+            region_id = serializer.data.get('region_id')
+            project_id = serializer.data.get('project_id')
+            project_name = serializer.data.get('project_name')
+            run_data = serializer.data.get('run_data')
+            common_struct, structure_list = JsonParser(project_id, project_name, env_id, region_id).parse(run_data)
             engine = DcsEngine(distributed=settings.DISTRIBUTED_BUILD, limit=settings.WORKER_MAX_CASE_LIMIT)
             engine.init_common_data(common_struct)
             engine.visit(structure_list)
@@ -68,7 +70,14 @@ class DebugBuilderViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, v
         except (Exception,) as e:
             logger.error(f'build failed: {e}')
             return JsonResponse(code=10100, msg='build failed')
-        return JsonResponse(data={'build_id': build_id, 'total_case': engine.get_case_count()})
+        child_dir = date.today().strftime('%Y/%m/%d')
+        report_path = str(settings.REPORT_PATH) + f'/{child_dir}/' + build_id
+        build_result = {
+            'build_id': build_id,
+            'total_case': engine.get_case_count(),
+            'report_path': report_path
+        }
+        return JsonResponse(data=build_result)
 
     def retrieve(self, request, *args, **kwargs):
         build_id = kwargs.get('pk')

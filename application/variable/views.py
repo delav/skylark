@@ -42,11 +42,11 @@ class VariableViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
         logger.info(f'update variable: {request.data}')
         try:
             instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
         except (Exception,):
-            return JsonResponse(code=10503, msg='variable not found')
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
+            return JsonResponse(code=10503, msg='update variable failed')
         return JsonResponse(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):

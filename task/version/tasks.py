@@ -2,6 +2,7 @@ import json
 from skylark.celeryapp import app
 from application.projectversion.models import ProjectVersion
 from application.environment.models import Environment
+from application.region.models import Region
 from application.common.ztree.treenode import Project2Tree
 from application.common.parser.baseparser import CommonParser
 
@@ -12,14 +13,24 @@ def generate_version(project_id, version_kwargs):
         project_id).get_case_nodes()
     env_resource_dict = {}
     env_queryset = Environment.objects.all()
-    for env in env_queryset.iterator():
-        parser = CommonParser(project_id, project_name, env.id)
+    region_queryset = Region.objects.all()
+    for env in env_queryset:
+        parser = CommonParser(project_id, project_name, env.id, None)
         parser.init_sources()
         env_resource_dict[env.id] = {
             'variable_files': parser.common_variable_files,
             'resources': parser.common_resources,
             'project_files': parser.common_project_files,
         }
+        for region in region_queryset:
+            parser = CommonParser(project_id, project_name, env.id, region.id)
+            parser.init_sources()
+            region_resource = {region.id: {
+                'variable_files': parser.common_variable_files,
+                'resources': parser.common_resources,
+                'project_files': parser.common_project_files,
+            }}
+            env_resource_dict[env.id].update(region_resource)
     version_kwargs['content'] = json.dumps(node_content)
     version_kwargs['sources'] = json.dumps(env_resource_dict)
     version = ProjectVersion.objects.filter(

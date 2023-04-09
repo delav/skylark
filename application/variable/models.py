@@ -13,6 +13,7 @@ class Variable(models.Model):
     value = models.TextField(default=None, blank=True, null=True, help_text='variable value')
     value_type = models.IntegerField(default=0, choices=settings.VALUE_TYPE, help_text='variable value type')
     env_id = models.IntegerField(help_text='associated environment')
+    region_id = models.IntegerField(default=None, blank=True, null=True, help_text='associated region')
     seq_number = models.IntegerField(default=None, blank=True, null=True, help_text='variable sequence number')
     edit = models.BooleanField(default=False, help_text='variable if can edit')
     remark = models.TextField(default=None, blank=True, null=True, help_text='remark')

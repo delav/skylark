@@ -31,6 +31,7 @@ from application.project.views import ProjectViewSets
 from application.setupteardown.views import SetupTeardownViewSets
 from application.keywordgroup.views import KeywordGroupViewSets
 from application.environment.views import EnvironmentViewSets
+from application.region.views import RegionViewSets
 from application.variable.views import VariableViewSets
 from application.builder.views import TestBuilderViewSets, DebugBuilderViewSets
 from application.buildplan.views import BuildPlanViewSets
@@ -55,6 +56,7 @@ router.register('case-entity', CaseEntityViewSets, basename='case_entity')
 router.register('setup-teardown', SetupTeardownViewSets, basename='setup_teardown')
 router.register('keyword-group', KeywordGroupViewSets, basename='keyword_group')
 router.register('environment', EnvironmentViewSets, basename='environment')
+router.register('region', RegionViewSets, basename='region')
 router.register('variable', VariableViewSets, basename='variable')
 router.register('project-version', ProjectVersionViewSets, basename='project_version')
 router.register('build/test', TestBuilderViewSets, basename='build_test')

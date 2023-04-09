@@ -39,13 +39,7 @@ class ProjectVersionViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
         logger.info(f'create project version: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        project_id = serializer.data['project_id']
-        # save_kwargs = {
-        #     'project_id': project_id,
-        #     'branch': serializer.data['branch'],
-        #     'remark': serializer.data['remark'],
-        # }
-        print(serializer.data)
+        project_id = serializer.data.get('project_id')
         app.send_task(
             settings.VERSION_TASK,
             queue=settings.DEFAULT_QUEUE,

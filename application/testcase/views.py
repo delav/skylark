@@ -48,12 +48,16 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
         try:
             with transaction.atomic():
                 self.perform_create(serializer)
-                case_id = serializer.data['id']
-                suite_id = serializer.data['test_suite_id']
-                if serializer.data['category'] == settings.CATEGORY_META.get('Keyword'):
+                case_id = serializer.data.get('id')
+                suite_id = serializer.data.get('test_suite_id')
+                if serializer.data.get('category') == settings.CATEGORY_META.get('Keyword'):
                     suite = TestSuite.objects.select_related('suite_dir__project').get(id=suite_id)
                     project_id = suite.suite_dir.project_id
-                    UserKeyword.objects.create(test_case_id=case_id, project_id=project_id)
+                    UserKeyword.objects.create(
+                        test_case_id=case_id,
+                        group_id=settings.CUSTOMIZE_KEYWORD_GROUP,
+                        project_id=project_id
+                    )
         except Exception as e:
             logger.error(f'create test case failed: {e}')
             return JsonResponse(code=10051, msg='create test case failed')
@@ -69,15 +73,12 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
         logger.info(f'update test case: {request.data}')
         try:
             instance = self.get_object()
-        except (Exception,):
-            return JsonResponse(code=10052, msg='test case not found')
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        try:
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
             with transaction.atomic():
                 self.perform_update(serializer)
-                case_id = serializer.data['id']
-                if serializer.data['category'] == settings.CATEGORY_META.get('Keyword'):
+                case_id = serializer.data.get('id')
+                if serializer.data.get('category') == settings.CATEGORY_META.get('Keyword'):
                     UserKeyword.objects.get(test_case_id=case_id).save()
         except Exception as e:
             logger.error(f'create test case failed: {e}')

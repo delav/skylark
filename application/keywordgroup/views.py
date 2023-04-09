@@ -34,11 +34,11 @@ class KeywordGroupViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, m
         logger.info(f'update keyword group: {request.data}')
         try:
             instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
         except (Exception,):
             return JsonResponse(code=10102, msg='keyword group not found')
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
         return JsonResponse(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
