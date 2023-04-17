@@ -66,7 +66,9 @@ class ResourceCommonReader(object):
         return library_list
 
     def _get_variable_list(self):
-        variable_list = []
+        variable_list, name_dict = self._get_non_region_variables()
+        if self.region_id is not None:
+            return variable_list
         var_queryset = Variable.objects.filter(
             env_id=self.env_id,
             region_id=self.region_id,
@@ -74,5 +76,27 @@ class ResourceCommonReader(object):
             module_type=self.module_type
         )
         for item in var_queryset.iterator():
-            variable_list.append({'name': item.name, 'value': item.value})
+            var = {'name': item.name, 'value': item.value}
+            if item.name in name_dict:
+                repeat_index = name_dict[item.name]
+                variable_list[repeat_index] = var
+            else:
+                variable_list.append(var)
         return variable_list
+
+    def _get_non_region_variables(self):
+        variable_name_map = {}
+        non_region_variable_list = []
+        non_region_variable = Variable.objects.filter(
+            env_id=self.env_id,
+            region_id=None,
+            module_id=self.project_id,
+            module_type=self.module_type
+        )
+        index = 0
+        for item in non_region_variable.iterator():
+            var = {'name': item.name, 'value': item.value}
+            non_region_variable_list.append(var)
+            variable_name_map[item.name] = index
+            index += 1
+        return non_region_variable_list, variable_name_map

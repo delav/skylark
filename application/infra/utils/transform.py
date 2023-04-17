@@ -13,3 +13,14 @@ def id_str_to_set(strings, sep=','):
             result.add(int(val_str))
         index = i + 1
     return result
+
+
+def join_id_to_str(id_iter, sep=','):
+    result = ''
+    length = len(id_iter)
+    for i in range(length):
+        if i != length - 1:
+            result += str(i) + sep
+            continue
+        result += str(i)
+    return result

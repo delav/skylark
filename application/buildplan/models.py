@@ -5,7 +5,7 @@ from django.db import models
 
 class BuildPlan(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
-    title = models.TextField(default='', help_text='buidl title')
+    title = models.TextField(default='', help_text='build plan title')
     total_case = models.IntegerField(default=0, help_text='total cases number')
     create_at = models.DateTimeField(auto_now_add=True, help_text='build time')
     update_at = models.DateTimeField(auto_now=True, help_text='last update time')
@@ -16,6 +16,8 @@ class BuildPlan(models.Model):
     periodic_task_id = models.IntegerField(null=True, blank=True, help_text='associated periodic task')
     periodic_switch = models.BooleanField(default=False, help_text='periodic task switch')
     envs = models.CharField(max_length=255, help_text='associated env id list')
+    regions = models.CharField(max_length=255, default=None, blank=True, null=True,
+                               help_text='associated region id list')
     project_id = models.IntegerField(help_text='associated project')
     branch = models.CharField(max_length=255, help_text='project branch')
     expect_pass = models.FloatField(default=100, help_text='expected pass rate')

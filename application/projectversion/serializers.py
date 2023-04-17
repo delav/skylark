@@ -4,18 +4,13 @@ from application.projectversion.models import ProjectVersion
 
 class ProjectVersionSerializers(serializers.ModelSerializer):
 
-    content = serializers.CharField(read_only=True)
-    sources = serializers.CharField(read_only=True)
-    project_id = serializers.IntegerField()
-    create_by = serializers.CharField(read_only=True)
-    update_by = serializers.CharField(read_only=True)
-
     class Meta:
         model = ProjectVersion
         fields = (
             'id', 'project_id', 'branch', 'version', 'content',
             'sources', 'remark', 'create_at', 'update_at', 'create_by', 'update_by'
         )
+        read_only_fields = ('create_by', 'update_by', 'content', 'sources')
 
     def validate(self, attrs):
         request = self.context['request']

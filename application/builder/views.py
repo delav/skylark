@@ -7,31 +7,106 @@ from application.infra.django.response import JsonResponse
 from application.infra.client.redisclient import RedisClient
 from application.infra.engine.dcsengine import DcsEngine
 from application.infra.utils.buildhandler import *
+from application.infra.utils.transform import id_str_to_set, join_id_to_str
+from application.projectversion.models import ProjectVersion
+from application.buildplan.models import BuildPlan
+from application.buildrecord.models import BuildRecord
+from application.buildrecord.serializers import BuildRecordSerializers
 from application.builder.models import Builder
-from application.builder.serializers import TestBuildSerializers, DebugBuildSerializers
+from application.builder.serializers import DebugBuildSerializers
+from application.builder.serializers import TestInstantBuildSerializers, TestQuickBuildSerializers
 from application.common.parser.jsonparser import JsonParser
 from skylark.celeryapp import app
 
 # Create your views here.
 
 
-class TestBuilderViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
-                          mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+class TestInstantBuilderViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = Builder.objects.all()
-    serializer_class = TestBuildSerializers
+    serializer_class = TestInstantBuildSerializers
 
     def create(self, request, *args, **kwargs):
-        logger.info(f'create test run: {request.data}')
+        logger.info(f'test instant build: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        plan_id = serializer.data.get('plan_id')
+        try:
+            plan_id = serializer.data.get('plan_id')
+            env_list = serializer.data.get('env_list')
+            region_list = serializer.data.get('region_list')
+            plan = BuildPlan.objects.select_related('project').get(id=plan_id)
+            version = ProjectVersion.objects.get(
+                project_id=plan.project_id,
+                branch=plan.branch
+            )
+            run_data = version.content
+            common_sources = version.sources
+            build_cases = id_str_to_set(plan.build_cases)
+            record = BuildRecord.objects.create(
+                create_by=plan.create_by,
+                plan_id=plan.id,
+                project_id=plan.project_id,
+                branch=plan.branch,
+                envs=join_id_to_str(env_list),
+                regions=join_id_to_str(region_list),
+            )
+        except (Exception,) as e:
+            logger.error(f'instant build error: {e}')
+            return JsonResponse(code=10200)
         app.send_task(
-            settings.PERIODIC_TASK,
-            queue=settings.PERIODIC_QUEUE,
-            routing_key=settings.PERIODIC_ROUTING_KEY,
-            args=(plan_id,)
+            settings.INSTANT_TASK,
+            queue=settings.BUILDER_QUEUE,
+            routing_key=settings.BUILDER_ROUTING_KEY,
+            args=(
+                record.id, plan.project_id, plan.project.name,
+                env_list, region_list, run_data, common_sources, build_cases
+            )
         )
-        return JsonResponse(data={'status': 'success'})
+        result = BuildRecordSerializers(record).data
+        return JsonResponse(data=result)
+
+
+class TestQuickBuilderViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    queryset = Builder.objects.all()
+    serializer_class = TestQuickBuildSerializers
+
+    def create(self, request, *args, **kwargs):
+        logger.info(f'test quick build: {request.data}')
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            project_id = serializer.data.get('project_id')
+            project_name = serializer.data.get('project_name')
+            branch = serializer.data.get('branch')
+            env_list = serializer.data.get('env_list')
+            region_list = serializer.data.get('region_list')
+            version = ProjectVersion.objects.get(
+                project_id=project_id,
+                branch=branch
+            )
+            run_data = version.content
+            common_sources = version.sources
+            build_cases = set(serializer.data.get('case_list'))
+            record = BuildRecord.objects.create(
+                create_by=request.user.email,
+                project_id=project_id,
+                branch=branch,
+                envs=join_id_to_str(env_list),
+                regions=join_id_to_str(region_list),
+            )
+        except (Exception,) as e:
+            logger.error(f'quick build error: {e}')
+            return JsonResponse(code=10201)
+        app.send_task(
+            settings.INSTANT_TASK,
+            queue=settings.BUILDER_QUEUE,
+            routing_key=settings.BUILDER_ROUTING_KEY,
+            args=(
+                record.id, project_id, project_name,
+                env_list, region_list, run_data, common_sources, build_cases
+            )
+        )
+        result = BuildRecordSerializers(record).data
+        return JsonResponse(data=result)
 
 
 class DebugBuilderViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -54,10 +129,10 @@ class DebugBuilderViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, v
             engine.init_common_data(common_struct)
             engine.visit(structure_list)
             batch_data = engine.get_batch_data()
-            build_id = generate_debug_build_id()
+            task_id = generate_debug_task_id()
             # debug mode save batch to redis
             conn = RedisClient(settings.ROBOT_REDIS_URL).connector
-            task_redis_key = settings.TASK_RESULT_KEY_PREFIX + build_id
+            task_redis_key = settings.TASK_RESULT_KEY_PREFIX + task_id
             conn.hset(task_redis_key, 'batch', len(batch_data))
             for batch_no, data in batch_data.items():
                 suites, sources = data[0], data[1]
@@ -65,15 +140,15 @@ class DebugBuilderViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, v
                     settings.RUNNER_TASK,
                     queue=settings.RUNNER_QUEUE,
                     routing_key=settings.RUNNER_ROUTING_KEY,
-                    args=(build_id, str(batch_no), suites, sources)
+                    args=(task_id, str(batch_no), suites, sources)
                 )
         except (Exception,) as e:
             logger.error(f'build failed: {e}')
             return JsonResponse(code=10100, msg='build failed')
         child_dir = date.today().strftime('%Y/%m/%d')
-        report_path = str(settings.REPORT_PATH) + f'/{child_dir}/' + build_id
+        report_path = str(settings.REPORT_PATH) + f'/{child_dir}/' + task_id
         build_result = {
-            'build_id': build_id,
+            'build_id': task_id,
             'total_case': engine.get_case_count(),
             'report_path': report_path
         }

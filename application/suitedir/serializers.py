@@ -6,8 +6,6 @@ class SuiteDirSerializers(serializers.ModelSerializer):
 
     parent_dir_id = serializers.IntegerField(allow_null=True)
     project_id = serializers.IntegerField()
-    create_by = serializers.CharField(read_only=True)
-    update_by = serializers.CharField(read_only=True)
 
     class Meta:
         model = SuiteDir
@@ -15,6 +13,7 @@ class SuiteDirSerializers(serializers.ModelSerializer):
             'id', 'name', 'document', 'category', 'create_at',
             'update_at', 'create_by', 'update_by', 'parent_dir_id', 'project_id'
         )
+        read_only_fields = ('create_by', 'update_by')
 
     def validate(self, attrs):
         request = self.context['request']

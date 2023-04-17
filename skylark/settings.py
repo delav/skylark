@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'application.virtualfile.apps.VirtualFileConfig',
     'application.builder.apps.BuilderConfig',
     'application.buildplan.apps.BuildPlanConfig',
+    'application.buildrecord.apps.BuildRecordConfig',
     'application.buildhistory.apps.BuildHistoryConfig',
     'application.environment.apps.EnvironmentConfig',
     'application.region.apps.RegionConfig',
@@ -231,8 +232,9 @@ NOTIFIER_QUEUE = 'notifier'
 NOTIFIER_TASK = 'task.robot.tasks.robot_notifier'
 NOTIFIER_ROUTING_KEY = 'robot.notifier'
 VERSION_TASK = 'task.version.tasks.generate_version'
-PERIODIC_QUEUE = 'builder'
-PERIODIC_ROUTING_KEY = 'periodic.builder'
+BUILDER_QUEUE = 'builder'
+BUILDER_ROUTING_KEY = 'periodic.builder'
+INSTANT_TASK = 'task.builder.tasks.instant_builder'
 PERIODIC_TASK = 'task.builder.tasks.periodic_builder'
 
 # user customize keyword group

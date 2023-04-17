@@ -2,17 +2,34 @@ from rest_framework import serializers
 from application.builder.models import Builder
 
 
-class TestBuildSerializers(serializers.ModelSerializer):
+class TestInstantBuildSerializers(serializers.ModelSerializer):
 
     plan_id = serializers.IntegerField(help_text='build plan id')
-    env_id = serializers.IntegerField(help_text='build env id')
-    region_id = serializers.IntegerField(required=False, help_text='build region id')
+    env_list = serializers.ListField(help_text='build env ids')
+    region_list = serializers.ListField(help_text='build region ids')
     action_type = serializers.CharField(help_text='start or stop')
 
     class Meta:
         model = Builder
         fields = (
-            'plan_id', 'env_id', 'region_id', 'action_type'
+            'plan_id', 'env_list', 'region_list', 'action_type'
+        )
+
+
+class TestQuickBuildSerializers(serializers.ModelSerializer):
+
+    project_id = serializers.IntegerField(help_text='build plan id')
+    project_name = serializers.IntegerField(help_text='build env id')
+    branch = serializers.IntegerField(help_text='build region id')
+    env_list = serializers.ListField(help_text='build env ids')
+    region_list = serializers.ListField(help_text='build region ids')
+    case_list = serializers.ListField(help_text='build case ids')
+    action_type = serializers.CharField(help_text='start or stop')
+
+    class Meta:
+        model = Builder
+        fields = (
+            'project_id', 'project_name', 'branch', 'env_list', 'region_list', 'case_list', 'action_type'
         )
 
 

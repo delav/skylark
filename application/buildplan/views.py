@@ -6,6 +6,9 @@ from rest_framework import viewsets
 from application.infra.django.pagination.paginator import PagePagination
 from application.infra.django.response import JsonResponse
 from application.infra.utils.buildhandler import generate_task_name
+from application.group.models import Group
+from application.user.models import User
+from application.project.models import Project
 from application.buildplan.models import BuildPlan
 from application.buildplan.serializers import BuildPlanSerializers
 from application.common.schedule.periodic import PeriodicHandler, get_periodic_task
@@ -21,7 +24,15 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
 
     def list(self, request, *args, **kwargs):
         logger.info(f'get build plan list: {request.query_params}')
-        queryset = self.get_queryset().order_by('create_at')
+        groups_queryset = Group.objects.filter(user=request.user)
+        users = User.objects.none()
+        for group in groups_queryset:
+            users |= group.user_set.all()
+        group_emails = [user.email for user in users]
+        projects = Project.objects.filter(create_by__in=group_emails, status=0)
+        project_ids = [item.id for item in projects]
+        queryset = self.get_queryset().filter(
+            project_id__in=project_ids).order_by('-create_at')
         pg_queryset = self.paginate_queryset(queryset)
         result = []
         for item in pg_queryset:

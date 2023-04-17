@@ -1,15 +1,15 @@
 import uuid
 
 
-def generate_debug_build_id():
+def generate_debug_task_id():
     return str(uuid.uuid1())
 
 
-def generate_test_build_id(id_digit):
+def generate_test_task_id(id_digit):
     return str(id_digit)
 
 
-def convert_test_build_id(build_id):
+def convert_test_task_id(build_id):
     return int(build_id)
 
 

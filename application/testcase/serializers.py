@@ -4,8 +4,6 @@ from application.testcase.models import TestCase
 
 class TestCaseSerializers(serializers.ModelSerializer):
     test_suite_id = serializers.IntegerField()
-    create_by = serializers.CharField(read_only=True)
-    update_by = serializers.CharField(read_only=True)
 
     class Meta:
         model = TestCase
@@ -13,6 +11,7 @@ class TestCaseSerializers(serializers.ModelSerializer):
             'id', 'name', 'category', 'document', 'priority_id',
             'create_at', 'update_at', 'create_by', 'update_by', 'test_suite_id', 'inputs', 'outputs', 'timeout'
         )
+        read_only_fields = ('create_by', 'update_by')
 
     def validate(self, attrs):
         request = self.context['request']

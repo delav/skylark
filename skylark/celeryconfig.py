@@ -14,7 +14,7 @@ default_queue = 'default'
 task_queues = (
     Queue(settings.DEFAULT_QUEUE, routing_key=settings.DEFAULT_ROUTING_KEY),
     Queue(settings.NOTIFIER_QUEUE, routing_key=settings.NOTIFIER_ROUTING_KEY),
-    Queue(settings.PERIODIC_QUEUE, routing_key=settings.PERIODIC_ROUTING_KEY),
+    Queue(settings.BUILDER_QUEUE, routing_key=settings.BUILDER_ROUTING_KEY),
  )
 task_routes = {
     settings.NOTIFIER_TASK: {
@@ -23,8 +23,11 @@ task_routes = {
     settings.VERSION_TASK: {
         'queue': settings.DEFAULT_QUEUE, 'routing_key': settings.DEFAULT_QUEUE
     },
+    settings.INSTANT_TASK: {
+        'queue': settings.BUILDER_QUEUE, 'routing_key': settings.BUILDER_ROUTING_KEY
+    },
     settings.PERIODIC_TASK: {
-        'queue': settings.PERIODIC_QUEUE, 'routing_key': settings.PERIODIC_ROUTING_KEY
+        'queue': settings.BUILDER_QUEUE, 'routing_key': settings.BUILDER_ROUTING_KEY
     },
  }
 # notify mq message is consumed only task finish, notifier not need
@@ -43,7 +46,7 @@ disable_rate_limits = True
 # result not send to broker
 # ignore_result = True
 # disable prefetch task, default 4
-worker_prefetch_multiplier = 1
+# worker_prefetch_multiplier = 1
 # worker concurrency num
 worker_concurrency = 2
 # max execute task num will die

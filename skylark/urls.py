@@ -33,7 +33,8 @@ from application.keywordgroup.views import KeywordGroupViewSets
 from application.environment.views import EnvironmentViewSets
 from application.region.views import RegionViewSets
 from application.variable.views import VariableViewSets
-from application.builder.views import TestBuilderViewSets, DebugBuilderViewSets
+from application.builder.views import DebugBuilderViewSets
+from application.builder.views import TestInstantBuilderViewSets, TestQuickBuilderViewSets
 from application.buildplan.views import BuildPlanViewSets
 from application.buildhistory.views import BuildHistoryViewSets
 from application.projectversion.views import ProjectVersionViewSets
@@ -59,7 +60,8 @@ router.register('environment', EnvironmentViewSets, basename='environment')
 router.register('region', RegionViewSets, basename='region')
 router.register('variable', VariableViewSets, basename='variable')
 router.register('project-version', ProjectVersionViewSets, basename='project_version')
-router.register('build/test', TestBuilderViewSets, basename='build_test')
+router.register('build/test/instant', TestInstantBuilderViewSets, basename='test_instant')
+router.register('build/test/quick', TestQuickBuilderViewSets, basename='test_quick')
 router.register('build/debug', DebugBuilderViewSets, basename='build_debug')
 router.register('build/plan', BuildPlanViewSets, basename='build_plan')
 router.register('build/history', BuildHistoryViewSets, basename='build_history')
