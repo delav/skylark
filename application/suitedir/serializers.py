@@ -15,9 +15,11 @@ class SuiteDirSerializers(serializers.ModelSerializer):
         )
         read_only_fields = ('create_by', 'update_by')
 
-    def validate(self, attrs):
+    def to_internal_value(self, data):
+        ret = super().to_internal_value(data)
         request = self.context['request']
+        user_email = request.user.email
         if request.method == 'POST':
-            attrs['create_by'] = request.user.email
-        attrs['update_by'] = request.user.email
-        return attrs
+            ret['create_by'] = user_email
+        ret['update_by'] = user_email
+        return ret

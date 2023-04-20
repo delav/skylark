@@ -32,8 +32,8 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
         serializer = CaseEntityListSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        case_id = serializer.data.get('case_id')
-        entity_list = serializer.data.get('entity_list')
+        case_id = serializer.validated_data.get('case_id')
+        entity_list = serializer.validated_data.get('entity_list')
 
         try:
             with transaction.atomic():

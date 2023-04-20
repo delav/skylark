@@ -18,7 +18,7 @@ class SetupTeardownViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            data = serializer.data
+            data = serializer.validated_data
             SetupTeardown.objects.update_or_create(
                 defaults=data,
                 module_id=data['module_id'],

@@ -49,10 +49,11 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
         serializer.is_valid(raise_exception=True)
         try:
             with transaction.atomic():
-                plan = BuildPlan.objects.create(**serializer.data)
+                valid_data = serializer.validated_data
+                plan = BuildPlan.objects.create(**valid_data)
                 plan_id = plan.id
-                periodic_expr = serializer.data.get('periodic_expr')
-                if not serializer.data.get('periodic_switch'):
+                periodic_expr = valid_data.get('periodic_expr', '')
+                if not valid_data.get('periodic_switch'):
                     result = self.get_serializer(plan).data
                     result['periodic'] = {}
                     return JsonResponse(data=result)

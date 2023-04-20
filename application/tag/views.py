@@ -27,9 +27,9 @@ class TagViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.Lis
         serializer.is_valid(raise_exception=True)
         try:
             queryset = Tag.objects.filter(
-                name=serializer.data.get('name'),
-                module_id=serializer.data.get('module_id'),
-                module_type=serializer.data.get('module_type')
+                name=serializer.validated_data.get('name'),
+                module_id=serializer.validated_data.get('module_id'),
+                module_type=serializer.validated_data.get('module_type')
             )
             if not queryset.exists():
                 self.perform_create(serializer)

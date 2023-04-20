@@ -1,3 +1,4 @@
+import json
 from datetime import date
 from loguru import logger
 from django.conf import settings
@@ -10,11 +11,12 @@ from application.infra.utils.buildhandler import *
 from application.infra.utils.transform import id_str_to_set, join_id_to_str
 from application.projectversion.models import ProjectVersion
 from application.buildplan.models import BuildPlan
+from application.buildplan.serializers import BuildPlanSerializers
 from application.buildrecord.models import BuildRecord
 from application.buildrecord.serializers import BuildRecordSerializers
 from application.builder.models import Builder
 from application.builder.serializers import DebugBuildSerializers
-from application.builder.serializers import TestInstantBuildSerializers, TestQuickBuildSerializers
+from application.builder.serializers import TestQuickBuildSerializers
 from application.common.parser.jsonparser import JsonParser
 from skylark.celeryapp import app
 
@@ -23,29 +25,32 @@ from skylark.celeryapp import app
 
 class TestInstantBuilderViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = Builder.objects.all()
-    serializer_class = TestInstantBuildSerializers
+    serializer_class = BuildPlanSerializers
 
     def create(self, request, *args, **kwargs):
         logger.info(f'test instant build: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        plan_id = request.data.get('id')
         try:
-            plan_id = serializer.data.get('plan_id')
-            env_list = serializer.data.get('env_list')
-            region_list = serializer.data.get('region_list')
-            plan = BuildPlan.objects.select_related('project').get(id=plan_id)
+            data = serializer.validated_data
+            print(data)
+            project_id = data.get('project_id')
+            project_name = data.get('project_name')
+            env_list = data.get('envs')
+            region_list = data.get('regions')
             version = ProjectVersion.objects.get(
-                project_id=plan.project_id,
-                branch=plan.branch
+                project_id=project_id,
+                branch=data.get('branch')
             )
-            run_data = version.content
-            common_sources = version.sources
-            build_cases = id_str_to_set(plan.build_cases)
+            run_data = json.loads(version.content)
+            common_sources = json.loads(version.sources)
+            build_cases = id_str_to_set(data.get('build_cases'))
             record = BuildRecord.objects.create(
-                create_by=plan.create_by,
-                plan_id=plan.id,
-                project_id=plan.project_id,
-                branch=plan.branch,
+                create_by=request.user.email,
+                plan_id=plan_id,
+                project_id=project_id,
+                branch=data.get('branch'),
                 envs=join_id_to_str(env_list),
                 regions=join_id_to_str(region_list),
             )
@@ -57,7 +62,7 @@ class TestInstantBuilderViewSets(mixins.CreateModelMixin, viewsets.GenericViewSe
             queue=settings.BUILDER_QUEUE,
             routing_key=settings.BUILDER_ROUTING_KEY,
             args=(
-                record.id, plan.project_id, plan.project.name,
+                record.id, project_id, project_name,
                 env_list, region_list, run_data, common_sources, build_cases
             )
         )
@@ -74,18 +79,18 @@ class TestQuickBuilderViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            project_id = serializer.data.get('project_id')
-            project_name = serializer.data.get('project_name')
-            branch = serializer.data.get('branch')
-            env_list = serializer.data.get('env_list')
-            region_list = serializer.data.get('region_list')
+            project_id = serializer.validated_data.get('project_id')
+            project_name = serializer.validated_data.get('project_name')
+            branch = serializer.validated_data.get('branch')
+            env_list = serializer.validated_data.get('env_list')
+            region_list = serializer.validated_data.get('region_list')
             version = ProjectVersion.objects.get(
                 project_id=project_id,
                 branch=branch
             )
             run_data = version.content
             common_sources = version.sources
-            build_cases = set(serializer.data.get('case_list'))
+            build_cases = set(serializer.validated_data.get('case_list'))
             record = BuildRecord.objects.create(
                 create_by=request.user.email,
                 project_id=project_id,
@@ -119,11 +124,11 @@ class DebugBuilderViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, v
         serializer.is_valid(raise_exception=True)
         try:
             # debug mode don't save build data
-            env_id = serializer.data.get('env_id')
-            region_id = serializer.data.get('region_id')
-            project_id = serializer.data.get('project_id')
-            project_name = serializer.data.get('project_name')
-            run_data = serializer.data.get('run_data')
+            env_id = serializer.validated_data.get('env_id')
+            region_id = serializer.validated_data.get('region_id')
+            project_id = serializer.validated_data.get('project_id')
+            project_name = serializer.validated_data.get('project_name')
+            run_data = serializer.validated_data.get('run_data')
             common_struct, structure_list = JsonParser(project_id, project_name, env_id, region_id).parse(run_data)
             engine = DcsEngine(distributed=settings.DISTRIBUTED_BUILD, limit=settings.WORKER_MAX_CASE_LIMIT)
             engine.init_common_data(common_struct)

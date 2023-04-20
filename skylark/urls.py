@@ -60,13 +60,13 @@ router.register('environment', EnvironmentViewSets, basename='environment')
 router.register('region', RegionViewSets, basename='region')
 router.register('variable', VariableViewSets, basename='variable')
 router.register('project-version', ProjectVersionViewSets, basename='project_version')
-router.register('build/test/instant', TestInstantBuilderViewSets, basename='test_instant')
-router.register('build/test/quick', TestQuickBuilderViewSets, basename='test_quick')
-router.register('build/debug', DebugBuilderViewSets, basename='build_debug')
 router.register('build/plan', BuildPlanViewSets, basename='build_plan')
 router.register('build/history', BuildHistoryViewSets, basename='build_history')
 router.register('tag', TagViewSets, basename='tag')
 router.register('case-priority', CasePriorityViewSets, basename='case_priority')
+router.register('builder/test/instant', TestInstantBuilderViewSets, basename='test_instant')
+router.register('builder/test/quick', TestQuickBuilderViewSets, basename='test_quick')
+router.register('builder/debug', DebugBuilderViewSets, basename='build_debug')
 
 
 urlpatterns = [

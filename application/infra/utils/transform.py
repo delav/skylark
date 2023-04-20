@@ -20,7 +20,7 @@ def join_id_to_str(id_iter, sep=','):
     length = len(id_iter)
     for i in range(length):
         if i != length - 1:
-            result += str(i) + sep
+            result += str(id_iter[i]) + sep
             continue
-        result += str(i)
+        result += str(id_iter[i])
     return result

@@ -1,42 +1,40 @@
 from rest_framework import serializers
 from application.infra.django.exception import ValidationException
 from application.buildplan.models import BuildPlan
+from application.infra.utils.transform import id_str_to_set, join_id_to_str
 
 
 class BuildPlanSerializers(serializers.ModelSerializer):
-    project_id = serializers.IntegerField()
     extra_data = serializers.JSONField(required=False)
     env_list = serializers.ListField()
     region_list = serializers.ListField(required=False)
 
     class Meta:
         model = BuildPlan
-        fields = (
-            'id', 'title', 'total_case', 'create_at', 'update_at', 'create_by',
-            'update_by', 'build_cases', 'periodic_expr', 'periodic_switch',
-            'env_list', 'region_list', 'project_id', 'branch', 'expect_pass', 'extra_data'
-        )
+        exclude = ('periodic_task_id', )
         read_only_fields = ('create_by', 'update_by')
 
     def validate(self, attrs):
-        request = self.context['request']
-        if request.method == 'POST':
-            attrs['create_by'] = request.user.email
-        attrs['update_by'] = request.user.email
         # validate periodic
         if attrs.get('periodic_switch') and not attrs.get('periodic_expr'):
             raise ValidationException(detail='Params error', code=10110)
         return attrs
 
-    def to_representation(self, instance: BuildPlan):
-        instance.env_list = [int(i) for i in instance.envs.split(',')]
-        instance.region_list = [int(i) for i in instance.regions.split(',')]
-        return super(BuildPlanSerializers, self).to_representation(instance)
+    def to_representation(self, instance):
+        instance.env_list = list(id_str_to_set(instance.envs))
+        if instance.regions is None:
+            instance.region_list = []
+        else:
+            instance.region_list = list(id_str_to_set(instance.regions))
+        return super().to_representation(instance)
 
     def to_internal_value(self, data):
-        ret = super(BuildPlanSerializers, self).to_internal_value(data)
-        if ret.get('env_list'):
-            ret['envs'] = ','.join(str(i) for i in ret['env_list'])
+        ret = super().to_internal_value(data)
+        ret['envs'] = join_id_to_str(ret.pop('env_list'))
         if ret.get('region_list'):
-            ret['regions'] = ','.join(str(i) for i in ret['region_list'])
+            ret['regions'] = join_id_to_str(ret.pop('region_list'))
+        request = self.context['request']
+        if request.method == 'POST':
+            ret['create_by'] = request.user.email
+        ret['update_by'] = request.user.email
         return ret

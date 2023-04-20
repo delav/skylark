@@ -36,7 +36,7 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Ret
         cname = request.data.get('cname')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        project_name = serializer.data.get('name')
+        project_name = serializer.validated_data.get('name')
         project_q = Project.objects.filter(name=project_name)
         if project_q.exists():
             return JsonResponse(code=10080, data='project name already exists')

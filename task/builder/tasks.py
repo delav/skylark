@@ -14,15 +14,15 @@ from skylark.celeryapp import app
 @app.task
 def periodic_builder(plan_id):
     """period task will execute real build task to run case"""
-    plan = BuildPlan.objects.select_related('project').get(id=plan_id)
+    plan = BuildPlan.objects.get(id=plan_id)
     version = ProjectVersion.objects.get(
         project_id=plan.project_id,
         branch=plan.branch
     )
     env_ids = id_str_to_set(plan.envs)
     region_ids = id_str_to_set(plan.regions)
-    run_data = version.content
-    common_sources = version.sources
+    run_data = json.loads(version.content)
+    common_sources = json.loads(version.sources)
     build_cases = id_str_to_set(plan.build_cases)
     record = BuildRecord.objects.create(
         create_by=plan.create_by,
@@ -34,7 +34,7 @@ def periodic_builder(plan_id):
         periodic=True,
     )
     _create_task(
-        record.id, plan.project_id, plan.project.name, env_ids,
+        record.id, plan.project_id, plan.project_name, env_ids,
         region_ids, run_data, common_sources, build_cases
     )
 
@@ -51,8 +51,7 @@ def instant_builder(record_id, project_id, project_name,
 def _create_task(record_id, project_id, project_name,
                  env_id_list, region_id_list, run_data, common_sources, build_cases):
     for env_id in env_id_list:
-        common = json.loads(common_sources)
-        env_common = common.get(env_id)
+        env_common = common_sources.get(env_id)
         if not region_id_list:
             region_id = None
             env_region_common = env_common.get('base')

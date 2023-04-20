@@ -39,12 +39,12 @@ class ProjectVersionViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
         logger.info(f'create project version: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        project_id = serializer.data.get('project_id')
+        project_id = serializer.validated_data.get('project_id')
         app.send_task(
             settings.VERSION_TASK,
             queue=settings.DEFAULT_QUEUE,
             routing_key=settings.DEFAULT_ROUTING_KEY,
-            args=(project_id, serializer.data)
+            args=(project_id, serializer.validated_data)
         )
         return JsonResponse(data='send task success')
 

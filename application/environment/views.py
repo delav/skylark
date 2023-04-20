@@ -39,7 +39,7 @@ class EnvironmentViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mi
             serializer = self.get_serializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             with transaction.atomic():
-                if serializer.data.get('default'):
+                if serializer.validated_data.get('default'):
                     Environment.objects.filter(default=1).update(default=0)
                 self.perform_update(serializer)
         except Exception as e:

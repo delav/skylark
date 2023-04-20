@@ -11,8 +11,8 @@ def exception_handler(exc, context):
     deal with the response exception
     """
     response = rest_handler(exc, context)
+    logger.warning(exc)
     # if response is None:
-    #     logger.error(exc)
     #     return JsonResponse(
     #         code=99999,
     #         msg='System Error',
