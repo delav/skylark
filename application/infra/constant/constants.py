@@ -17,7 +17,3 @@ RESOURCE_FILE_SUBFIX = '.resource'
 ROBOT_FILE_SUBFIX = '.robot'
 INIT_FILE_NAME = '__init__'
 
-# front tree node desc
-FRONT_NODE_DESC = {'case': 'C', 'suite': 'S', 'dir': 'D', 'root': 'P'}
-# extra entity key
-FRONT_ENTITY_KEY = 'entity'

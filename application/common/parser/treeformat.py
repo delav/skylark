@@ -1,4 +1,4 @@
-from application.infra.constant.constants import FRONT_NODE_DESC
+from application.common.ztree.constant import NODE_DESC
 
 
 def list_to_tree(node_list):
@@ -48,10 +48,10 @@ def get_path_from_front_tree(tree_data, split='.'):
             if parent_name:
                 node_name = split.join([parent_name, node_name])
             _data = {'path': node_name, 'data': item['meta']}
-            if item['desc'] == FRONT_NODE_DESC['dir']:
+            if item['desc'] == NODE_DESC['dir']:
                 result['dirs'][item['mid']] = _data
                 parse_tree(item['children'], node_name)
-            if item['desc'] == FRONT_NODE_DESC['suite']:
+            if item['desc'] == NODE_DESC['suite']:
                 result['suites'][item['mid']] = _data
                 result['cases'][item['mid']] = [mc['meta'] for mc in item['children']]
         return result

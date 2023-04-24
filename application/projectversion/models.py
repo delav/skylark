@@ -11,9 +11,10 @@ class ProjectVersion(models.Model):
     branch = models.CharField(max_length=255, help_text='project branch')
     create_by = models.CharField(max_length=255, help_text='create user')
     update_by = models.CharField(max_length=255, help_text='update user')
-    version = models.CharField(default=None, null=True, blank=True, max_length=255, help_text='project version')
-    content = models.TextField(help_text='project tree data')
+    version = models.CharField(default='1.0.0', max_length=255, help_text='version')
+    run_data = models.TextField(help_text='run data for build')
     sources = models.TextField(help_text='project source data')
+    nodes = models.TextField(help_text='project tree nodes for front')
     remark = models.TextField(help_text='commit remark')
     status = models.IntegerField(default=0, help_text='version status')
 

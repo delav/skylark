@@ -8,7 +8,7 @@ from application.infra.django.response import JsonResponse
 from application.infra.client.redisclient import RedisClient
 from application.infra.engine.dcsengine import DcsEngine
 from application.infra.utils.buildhandler import *
-from application.infra.utils.transform import id_str_to_set, join_id_to_str
+from application.infra.utils.typetransform import join_id_to_str
 from application.projectversion.models import ProjectVersion
 from application.buildplan.models import BuildPlan
 from application.buildplan.serializers import BuildPlanSerializers
@@ -43,9 +43,9 @@ class TestInstantBuilderViewSets(mixins.CreateModelMixin, viewsets.GenericViewSe
                 project_id=project_id,
                 branch=data.get('branch')
             )
-            run_data = json.loads(version.content)
-            common_sources = json.loads(version.sources)
-            build_cases = id_str_to_set(data.get('build_cases'))
+            run_data = version.run_data
+            common_sources = version.sources
+            build_cases = data.get('build_cases')
             record = BuildRecord.objects.create(
                 create_by=request.user.email,
                 plan_id=plan_id,
@@ -88,7 +88,7 @@ class TestQuickBuilderViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet)
                 project_id=project_id,
                 branch=branch
             )
-            run_data = version.content
+            run_data = version.run_data
             common_sources = version.sources
             build_cases = set(serializer.validated_data.get('case_list'))
             record = BuildRecord.objects.create(

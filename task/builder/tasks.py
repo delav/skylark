@@ -2,7 +2,7 @@ import json
 from django.conf import settings
 from application.infra.engine.dcsengine import DcsEngine
 from application.infra.utils.buildhandler import generate_test_task_id
-from application.infra.utils.transform import id_str_to_set
+from application.infra.utils.typetransform import id_str_to_set
 from application.buildplan.models import BuildPlan
 from application.buildrecord.models import BuildRecord
 from application.projectversion.models import ProjectVersion
@@ -21,7 +21,7 @@ def periodic_builder(plan_id):
     )
     env_ids = id_str_to_set(plan.envs)
     region_ids = id_str_to_set(plan.regions)
-    run_data = json.loads(version.content)
+    run_data = json.loads(version.run_data)
     common_sources = json.loads(version.sources)
     build_cases = id_str_to_set(plan.build_cases)
     record = BuildRecord.objects.create(
@@ -42,6 +42,13 @@ def periodic_builder(plan_id):
 @app.task
 def instant_builder(record_id, project_id, project_name,
                     env_ids, region_ids, run_data, common_sources, build_cases):
+    print(run_data)
+    print("run data type:", type(run_data))
+    run_data = json.loads(run_data)
+    common_sources = json.loads(common_sources)
+    build_cases = id_str_to_set(build_cases)
+    print(region_ids)
+    print("region type:", type(region_ids))
     _create_task(
         record_id, project_id, project_name, env_ids,
         region_ids, run_data, common_sources, build_cases

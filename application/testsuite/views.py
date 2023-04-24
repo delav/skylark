@@ -1,5 +1,3 @@
-import logging
-
 from loguru import logger
 from django.conf import settings
 from django.db import transaction
@@ -11,6 +9,7 @@ from application.testsuite.serializers import TestSuiteSerializers
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers
 from application.common.handler import get_model_extra_data
+from application.common.ztree.generatenode import handler_dir_node, handler_suite_node
 
 # Create your views here.
 
@@ -30,26 +29,22 @@ class TestSuiteViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixi
             return JsonResponse(code=10060, msg='get dir child info failed')
         child_dirs = dir_obj.children.all()
         child_suites = dir_obj.suites.all()
-        dir_list, suite_list = [], []
+        node_list = []
         for item in child_dirs.iterator():
             dir_data = SuiteDirSerializers(item).data
             if item.category != settings.CATEGORY_META.get('TestCase'):
                 dir_data['extra_data'] = {}
             else:
                 dir_data['extra_data'] = get_model_extra_data(item.id, settings.MODULE_TYPE_META.get('SuiteDir'))
-            dir_list.append(dir_data)
+            node_list.append(handler_dir_node(dir_data))
         for item in child_suites.iterator():
-            dir_data = self.get_serializer(item).data
+            suite_data = self.get_serializer(item).data
             if item.category != settings.CATEGORY_META.get('TestCase'):
-                dir_data['extra_data'] = {}
+                suite_data['extra_data'] = {}
             else:
-                dir_data['extra_data'] = get_model_extra_data(item.id, settings.MODULE_TYPE_META.get('TestSuite'))
-            suite_list.append(dir_data)
-        data_dict = {
-            'dirs': dir_list,
-            'suites': suite_list
-        }
-        return JsonResponse(data=data_dict)
+                suite_data['extra_data'] = get_model_extra_data(item.id, settings.MODULE_TYPE_META.get('TestSuite'))
+            node_list.append(handler_suite_node(suite_data))
+        return JsonResponse(data=node_list)
 
     def create(self, request, *args, **kwargs):
         logger.info(f'create test suite: {request.data}')
@@ -60,9 +55,10 @@ class TestSuiteViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixi
         except (Exception,) as e:
             logger.error(f'save test suite failed: {e}')
             return JsonResponse(code=10061, msg='create test suite failed')
-        result = serializer.data
-        result['extra_data'] = {}
-        return JsonResponse(data=serializer.data)
+        suite_data = serializer.data
+        suite_data['extra_data'] = {}
+        result = handler_suite_node(suite_data)
+        return JsonResponse(data=result)
 
     def retrieve(self, request, *args, **kwargs):
         pass

@@ -1,7 +1,7 @@
 from application.testcase.models import TestCase
 from application.testcase.serializers import TestCaseSerializers
 from application.common.reader.module.entity import EntityReader
-from application.infra.constant.constants import FRONT_ENTITY_KEY
+from application.common.ztree.constant import FRONT_ENTITY_KEY
 
 
 class CaseReader(object):

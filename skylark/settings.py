@@ -245,7 +245,7 @@ CATEGORY_META = {
     'TestCase': 0,
     'Keyword': 1,
     'Resource': 2,
-    'HelpFile': 3,
+    'ProjectFile': 3,
 }
 CATEGORY = [(v, k) for k, v in CATEGORY_META.items()]
 # related model data type
@@ -270,5 +270,5 @@ MODULE_STATUS_META = {
     'Discarded': 1,
     'Deleted': 2,
 }
-MODULE_STATUS = [(v, k) for k, v in CATEGORY_META.items()]
+MODULE_STATUS = [(v, k) for k, v in MODULE_STATUS_META.items()]
 

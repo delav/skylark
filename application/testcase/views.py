@@ -9,6 +9,7 @@ from application.testcase.serializers import TestCaseSerializers
 from application.userkeyword.models import UserKeyword
 from application.testsuite.models import TestSuite
 from application.common.handler import get_model_extra_data
+from application.common.ztree.generatenode import handler_case_node
 
 # Create your views here.
 
@@ -34,11 +35,8 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
                 case_data['extra_data'] = {}
             else:
                 case_data['extra_data'] = get_model_extra_data(item.id, settings.MODULE_TYPE_META.get('TestCase'))
-            case_list.append(case_data)
-        data_dict = {
-            'cases': case_list
-        }
-        return JsonResponse(data=data_dict)
+            case_list.append(handler_case_node(case_data))
+        return JsonResponse(data=case_list)
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -61,8 +59,9 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
         except Exception as e:
             logger.error(f'create test case failed: {e}')
             return JsonResponse(code=10051, msg='create test case failed')
-        result = serializer.data
-        result['extra_data'] = {}
+        case_data = serializer.data
+        case_data['extra_data'] = {}
+        result = handler_case_node(case_data)
         return JsonResponse(data=result)
 
     def retrieve(self, request, *args, **kwargs):

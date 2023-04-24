@@ -116,7 +116,7 @@ class CommonParser(object):
 
     def _get_common_project_file(self):
         return self._recursion_suite_path(
-            settings.CATEGORY_META.get('HelpFile'),
+            settings.CATEGORY_META.get('ProjectFile'),
             FileReader,
             env_id=self.env_id,
             region_id=self.region_id,

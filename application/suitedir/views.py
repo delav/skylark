@@ -8,6 +8,7 @@ from application.suitedir.serializers import SuiteDirSerializers
 from application.project.models import Project
 from application.project.serializers import ProjectSerializers
 from application.common.handler import get_model_extra_data
+from application.common.ztree.generatenode import handler_dir_node
 
 # Create your views here.
 
@@ -25,21 +26,16 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
         except (Exception,) as e:
             logger.error(f'get base dir info failed: {e}')
             return JsonResponse(code=10070, msg='get base dir failed')
-        dirs = project.dirs.filter(parent_dir=None)
+        dirs = project.dirs.filter(parent_dir=None).order_by('category')
         dir_list = []
-        pro_data = ProjectSerializers(project).data
         for item in dirs.iterator():
             dir_data = self.get_serializer(item).data
             if item.category != settings.CATEGORY_META.get('TestCase'):
                 dir_data['extra_data'] = {}
             else:
                 dir_data['extra_data'] = get_model_extra_data(item.id, settings.MODULE_TYPE_META.get('SuiteDir'))
-            dir_list.append(dir_data)
-        data_dict = {
-            'root': pro_data,
-            'dirs': dir_list
-        }
-        return JsonResponse(data=data_dict)
+            dir_list.append(handler_dir_node(dir_data))
+        return JsonResponse(data=dir_list)
 
     def create(self, request, *args, **kwargs):
         logger.info(f'create suite dir: {request.data}')
@@ -50,8 +46,9 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
         except (Exception,) as e:
             logger.error(f'save suite dir failed: {e}')
             return JsonResponse(code=10071, msg='create suite dir failed')
-        result = serializer.data
-        result['extra_data'] = {}
+        dir_data = serializer.data
+        dir_data['extra_data'] = {}
+        result = handler_dir_node(dir_data)
         return JsonResponse(data=result)
 
     def retrieve(self, request, *args, **kwargs):
