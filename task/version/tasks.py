@@ -5,15 +5,15 @@ from application.projectversion.models import ProjectVersion
 from application.environment.models import Environment
 from application.region.models import Region
 from application.common.parser.baseparser import CommonParser
-from application.common.ztree.treetransform import format_build_data
+from application.common.ztree.treetransform import generate_build_data
 
 
 @app.task
 def generate_version(project_id, version_kwargs):
-    project_name, run_data, nodes = format_build_data(project_id)
+    project_name, run_data, nodes = generate_build_data(project_id)
     env_resource_dict = {}
     env_queryset = Environment.objects.all()
-    region_queryset = Region.objects.all()
+    region_queryset = Region.objects.filter(status=0)
     for env in env_queryset:
         if not region_queryset.exists():
             parser = CommonParser(project_id, project_name, env.id, None)

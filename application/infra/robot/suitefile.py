@@ -1,3 +1,4 @@
+from application.infra.constant.constants import ENTITY_KEY
 from application.infra.robot.assembler.setting import ResourceSetting, VariableSetting, TagSetting
 from application.infra.robot.assembler.setting import SetupTeardownSetting, TimeoutSetting
 from application.infra.robot.assembler.variable import VariableAssembler
@@ -55,14 +56,15 @@ class SuiteFile(BaseFile):
     def _get_testcases(self):
         """
         [*** Test Cases ***] filed content
+        item is test case model dict. include entities
         """
         result = ''
         for item in self.testcases:
             case_text = TestcaseAssembler(
-                case_name=item['name'],
-                case_id=item['id'],
-                case_timeout=item['timeout'],
-                entity_list=item['entity']
+                case_name=item.get('name'),
+                case_id=item.get('id'),
+                case_timeout=item.get('timeout'),
+                entity_list=item.get(ENTITY_KEY)
             ).get_case_content()
             result += case_text
             self.case_text_list.append(case_text)

@@ -1,6 +1,6 @@
 
 
-def id_str_to_set(strings, sep=','):
+def id_str_to_set(strings, sep=',', to_int=False):
     result = set()
     strings = strings + sep
     length = len(strings)
@@ -10,7 +10,8 @@ def id_str_to_set(strings, sep=','):
             continue
         val_str = strings[index:i].strip()
         if val_str.isdigit():
-            result.add(int(val_str))
+            val_str = int(val_str) if to_int else val_str
+            result.add(val_str)
         index = i + 1
     return result
 

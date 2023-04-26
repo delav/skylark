@@ -1,7 +1,7 @@
 from application.testcase.models import TestCase
 from application.testcase.serializers import TestCaseSerializers
 from application.common.reader.module.entity import EntityReader
-from application.common.ztree.constant import FRONT_ENTITY_KEY
+from application.infra.constant.constants import ENTITY_KEY
 
 
 class CaseReader(object):
@@ -21,7 +21,7 @@ class CaseReader(object):
                     continue
             case_info = TestCaseSerializers(item).data
             entity_list = entity_reader.get_by_case_id(item.id)
-            case_info.update({'entity': entity_list})
+            case_info.update({ENTITY_KEY: entity_list})
             testcase_list.append(case_info)
         return testcase_list
 
@@ -33,11 +33,11 @@ class CaseReader(object):
                 if item['id'] not in self.include_cases:
                     continue
             extra_data = item.pop('extra_data')
-            if FRONT_ENTITY_KEY in extra_data:
-                entity_list = entity_reader.get_by_entity_data(extra_data[FRONT_ENTITY_KEY])
+            if ENTITY_KEY in extra_data:
+                entity_list = entity_reader.get_by_entity_data(extra_data[ENTITY_KEY])
             else:
                 entity_list = entity_reader.get_by_case_id(item['id'])
-            item.update({'entity': entity_list})
+            item.update({ENTITY_KEY: entity_list})
             testcase_list.append(item)
         return testcase_list
 

@@ -8,6 +8,9 @@ class LibKeywordManager(object):
     """
 
     def __init__(self, keyword):
+        """
+        keyword: lib_keyword serializer dict
+        """
         self.keyword = keyword
         self.__callback__()
 
@@ -18,22 +21,22 @@ class LibKeywordManager(object):
         getattr(self, func_name)()
 
     def _get_func_name(self):
-        keyword_id = self.keyword['keyword_id']
+        keyword_id = self.keyword.get('keyword_id')
         name = keyword_map[keyword_id]['name']
         self.keyword['keyword_name'] = name
         return '_' + name.lower()
 
     @property
     def keyword_name(self):
-        return self.keyword['keyword_name']
+        return self.keyword.get('keyword_name', '')
 
     @property
     def entity_input(self):
-        return self.keyword['input_args']
+        return self.keyword.get('input_args', '')
 
     @property
     def entity_output(self):
-        return self.keyword['output_args']
+        return self.keyword.get('output_args', '')
 
     def _end(self):
         # special keyword 'end' of 'for' loop finish, must be upper
@@ -45,7 +48,7 @@ class LibKeywordManager(object):
 
     def _run_keyword_if(self):
         # replace alias name to real keyword name in the args
-        input_args = self.keyword['input_args']
+        input_args = self.keyword.get('input_args')
         args_list = input_args.split(SPECIAL_SEP)
         for i in range(len(args_list)):
             alias = args_list[i]
@@ -57,7 +60,7 @@ class LibKeywordManager(object):
 
     def _run_keyword_and_continue_on_failure(self):
         # replace alias name to real keyword name in the args
-        input_args = self.keyword['input_args']
+        input_args = self.keyword.get('input_args')
         args_list = input_args.split(SPECIAL_SEP)
         alias = args_list[0]
         args_list[0] = alias_map[alias]

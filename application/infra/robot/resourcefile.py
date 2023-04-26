@@ -2,6 +2,7 @@ from application.infra.robot.assembler.setting import LibrarySetting, ResourceSe
 from application.infra.robot.assembler.variable import VariableAssembler
 from application.infra.robot.assembler.testcase import KeywordAssembler
 from application.infra.robot.basefile import BaseFile
+from application.infra.constant.constants import ENTITY_KEY
 
 
 class ResourceKeywordFile(BaseFile):
@@ -39,15 +40,16 @@ class ResourceKeywordFile(BaseFile):
     def _get_keywords(self):
         """
         [*** Keywords ***] filed content, these keywords actually is customized test cases
+        item is test case model dict, include entities
         """
         result = ''
 
         for item in self.keywords:
             result += KeywordAssembler(
-                keyword_name=item['name'],
-                keyword_inputs=item['inputs'],
-                keyword_outputs=item['outputs'],
-                entity_list=item['entity']
+                keyword_name=item.get('name'),
+                keyword_inputs=item.get('inputs'),
+                keyword_outputs=item.get('outputs'),
+                entity_list=item.get(ENTITY_KEY)
             ).get_keyword_content()
         return result
 

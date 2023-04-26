@@ -1,10 +1,10 @@
-import os
+from os.path import join
 from django.conf import settings
 from application.pythonlib.models import PythonLib
 from application.variable.models import Variable
-from application.userkeyword.models import UserKeyword
-from application.infra.robot.resourcefile import ResourceKeywordFile, ResourceCommonFile
 from application.common.reader.module.testcase import CaseReader
+from application.infra.robot.resourcefile import ResourceKeywordFile, ResourceCommonFile
+from application.infra.constant.constants import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
 
 
 class ResourceKeywordReader(object):
@@ -30,7 +30,9 @@ class ResourceKeywordReader(object):
             module_type=self.module_type
         )
         for item in var_queryset.iterator():
-            variable_list.append({'name': item['name'], 'value': item['value']})
+            variable_list.append({
+                VARIABLE_NAME_KEY: item['name'], VARIABLE_VALUE_KEY: item['value']
+            })
         return variable_list
 
     def _get_keyword_list(self):
@@ -61,7 +63,7 @@ class ResourceCommonReader(object):
                 library = item['lib_name']
             else:
                 # customize python file
-                library = os.path.join(self.lib_path, item['lib_name'])
+                library = join(self.lib_path, item['lib_name'])
             library_list.append(library)
         return library_list
 
@@ -76,7 +78,7 @@ class ResourceCommonReader(object):
             module_type=self.module_type
         )
         for item in var_queryset.iterator():
-            var = {'name': item.name, 'value': item.value}
+            var = {VARIABLE_NAME_KEY: item.name, VARIABLE_VALUE_KEY: item.value}
             if item.name in name_dict:
                 repeat_index = name_dict[item.name]
                 variable_list[repeat_index] = var
@@ -95,7 +97,7 @@ class ResourceCommonReader(object):
         )
         index = 0
         for item in non_region_variable.iterator():
-            var = {'name': item.name, 'value': item.value}
+            var = {VARIABLE_NAME_KEY: item.name, VARIABLE_VALUE_KEY: item.value}
             non_region_variable_list.append(var)
             variable_name_map[item.name] = index
             index += 1

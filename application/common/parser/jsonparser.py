@@ -1,4 +1,5 @@
 from application.infra.constant.constants import PATH_SEP, ROBOT_FILE_SUBFIX, INIT_FILE_NAME
+from application.infra.constant.constants import VARIABLE_KEY, FIXTURE_KEY, TAG_KEY
 from application.infra.engine.structure import SuiteStructure, CommonStructure
 from application.common.reader.initreader import JsonDirInitReader
 from application.common.reader.suitereader import JsonSuiteReader
@@ -22,14 +23,14 @@ class JsonParser(CommonParser):
         if common is None:
             common = self.get_common_from_parse()
         # handle project help file
-        project_file_map = common.get('project_files')
+        project_file_map = common.get('project_files', {})
         common_file_paths.extend(project_file_map.keys())
         common_file_sources.update(project_file_map)
         # handle variable files, will use to suite and init file
-        variable_file_map = common.get('variable_files')
+        variable_file_map = common.get('variable_files', {})
         variable_file_list = list(variable_file_map.keys())
         # handle resources, will use to suite and init file
-        resources_map = common.get('resources')
+        resources_map = common.get('resources', {})
         common_file_sources.update(resources_map)
         common_file_sources.update(variable_file_map)
         resource_list = list(resources_map.keys())
@@ -38,14 +39,14 @@ class JsonParser(CommonParser):
         for dir_id, dir_data in format_data['dirs'].items():
             dir_path = dir_data['path']
             dir_extra_data = dir_data['data']['extra_data']
-            if dir_extra_data['variables'] or dir_extra_data['fixtures']:
+            if dir_extra_data.get(VARIABLE_KEY) or dir_extra_data.get(FIXTURE_KEY):
                 init_file = PATH_SEP.join([self.project_name, dir_path, INIT_FILE_NAME + ROBOT_FILE_SUBFIX])
                 init_text = JsonDirInitReader(
-                    setup_teardown_data=dir_extra_data['fixtures'],
-                    variable_list=dir_extra_data['variables'],
+                    setup_teardown_data=dir_extra_data.get(FIXTURE_KEY),
+                    variable_list=dir_extra_data.get(VARIABLE_KEY),
                     resource_list=resource_list,
                     variable_files=variable_file_list,
-                    tag_list=dir_extra_data['tags']
+                    tag_list=dir_extra_data.get(TAG_KEY, [])
                 ).read()
                 if not init_text:
                     continue
@@ -58,12 +59,12 @@ class JsonParser(CommonParser):
                 continue
             suite_case_data = format_data['cases'][suite_id]
             suite_reader = JsonSuiteReader(
-                setup_teardown_data=suite_extra_data['fixtures'],
+                setup_teardown_data=suite_extra_data.get(FIXTURE_KEY),
                 suite_timeout=suite_data['data']['timeout'],
-                variable_list=suite_extra_data['variables'],
+                variable_list=suite_extra_data.get(VARIABLE_KEY),
                 resource_list=resource_list,
                 variable_files=variable_file_list,
-                tag_list=suite_extra_data['tags'],
+                tag_list=suite_extra_data.get(TAG_KEY),
                 case_data=suite_case_data,
                 include_cases=self.build_cases,
             )

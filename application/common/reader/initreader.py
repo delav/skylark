@@ -2,6 +2,7 @@ from application.setupteardown.models import SetupTeardown
 from application.tag.models import Tag
 from application.variable.models import Variable
 from application.infra.robot.initfile import DirInitFile
+from application.infra.constant.constants import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
 
 
 class JsonDirInitReader(object):
@@ -17,10 +18,10 @@ class JsonDirInitReader(object):
         if not any([self.setup_teardown_data, self.tag_list, self.variable_list]):
             return ''
         return DirInitFile(
-            self.setup_teardown_data['test_setup'],
-            self.setup_teardown_data['test_teardown'],
-            self.setup_teardown_data['suite_setup'],
-            self.setup_teardown_data['suite_teardown'],
+            self.setup_teardown_data.get('test_setup', ''),
+            self.setup_teardown_data.get('test_teardown', ''),
+            self.setup_teardown_data.get('suite_setup', ''),
+            self.setup_teardown_data.get('suite_teardown', ''),
             self.resource_list,
             self.variable_files,
             self._get_tag_list(),
@@ -28,7 +29,7 @@ class JsonDirInitReader(object):
         ).get_text()
 
     def _get_tag_list(self):
-        return [item['name'] for item in self.tag_list]
+        return [item.get('name') for item in self.tag_list]
 
 
 class DBDirInitReader(object):
@@ -90,7 +91,9 @@ class DBDirInitReader(object):
             module_type=self.module_type
         )
         for item in var_queryset.iterator():
-            variable_list.append({'name': item.name, 'value': item.value})
+            variable_list.append({
+                VARIABLE_NAME_KEY: item.name, VARIABLE_VALUE_KEY: item.value
+            })
         return variable_list
 
 

@@ -23,7 +23,7 @@ def periodic_builder(plan_id):
     region_ids = id_str_to_set(plan.regions)
     run_data = json.loads(version.run_data)
     common_sources = json.loads(version.sources)
-    build_cases = id_str_to_set(plan.build_cases)
+    build_cases = id_str_to_set(plan.build_cases, to_int=True)
     record = BuildRecord.objects.create(
         create_by=plan.create_by,
         plan_id=plan.id,
@@ -42,13 +42,11 @@ def periodic_builder(plan_id):
 @app.task
 def instant_builder(record_id, project_id, project_name,
                     env_ids, region_ids, run_data, common_sources, build_cases):
-    print(run_data)
-    print("run data type:", type(run_data))
+    env_ids = id_str_to_set(env_ids)
+    region_ids = id_str_to_set(region_ids)
     run_data = json.loads(run_data)
     common_sources = json.loads(common_sources)
-    build_cases = id_str_to_set(build_cases)
-    print(region_ids)
-    print("region type:", type(region_ids))
+    build_cases = id_str_to_set(build_cases, to_int=True)
     _create_task(
         record_id, project_id, project_name, env_ids,
         region_ids, run_data, common_sources, build_cases
@@ -104,6 +102,8 @@ def _execute(record_id, project_id, project_name, env_id,
     celery_task_list = []
     for batch_no, data in batch_data.items():
         suites, sources = data[0], data[1]
+        print(f"{batch_no}: {suites}")
+        print(f"{batch_no}: {sources}")
         celery_task = app.send_task(
             settings.RUNNER_TASK,
             queue=settings.RUNNER_QUEUE,

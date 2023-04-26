@@ -1,6 +1,15 @@
 # robot input split chars
 SPECIAL_SEP = '#@#'
 
+# extra data variables key
+VARIABLE_KEY = 'variables'
+# extra data fixture key
+FIXTURE_KEY = 'fixtures'
+# extra data tag key
+TAG_KEY = 'tags'
+# extra data entity key
+ENTITY_KEY = 'entities'
+
 # case entity dict key
 ENTITY_NAME_KEY = 'entity_name'
 ENTITY_PARAMS_KEY = 'entity_input'

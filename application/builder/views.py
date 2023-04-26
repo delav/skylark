@@ -34,11 +34,10 @@ class TestInstantBuilderViewSets(mixins.CreateModelMixin, viewsets.GenericViewSe
         plan_id = request.data.get('id')
         try:
             data = serializer.validated_data
-            print(data)
             project_id = data.get('project_id')
             project_name = data.get('project_name')
-            env_list = data.get('envs')
-            region_list = data.get('regions')
+            str_envs = data.get('envs')
+            str_regions = data.get('regions')
             version = ProjectVersion.objects.get(
                 project_id=project_id,
                 branch=data.get('branch')
@@ -51,8 +50,8 @@ class TestInstantBuilderViewSets(mixins.CreateModelMixin, viewsets.GenericViewSe
                 plan_id=plan_id,
                 project_id=project_id,
                 branch=data.get('branch'),
-                envs=join_id_to_str(env_list),
-                regions=join_id_to_str(region_list),
+                envs=str_envs,
+                regions=str_regions,
             )
         except (Exception,) as e:
             logger.error(f'instant build error: {e}')
@@ -63,7 +62,7 @@ class TestInstantBuilderViewSets(mixins.CreateModelMixin, viewsets.GenericViewSe
             routing_key=settings.BUILDER_ROUTING_KEY,
             args=(
                 record.id, project_id, project_name,
-                env_list, region_list, run_data, common_sources, build_cases
+                str_envs, str_regions, run_data, common_sources, build_cases
             )
         )
         result = BuildRecordSerializers(record).data

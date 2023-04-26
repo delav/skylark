@@ -46,7 +46,7 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
         try:
             with transaction.atomic():
                 self.perform_create(serializer)
-                case_id = serializer.validated_data.get('id')
+                case_id = serializer.data.get('id')
                 suite_id = serializer.validated_data.get('test_suite_id')
                 if serializer.validated_data.get('category') == settings.CATEGORY_META.get('Keyword'):
                     suite = TestSuite.objects.select_related('suite_dir__project').get(id=suite_id)

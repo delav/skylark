@@ -2,8 +2,9 @@ from django.conf import settings
 from application.variable.models import Variable
 from application.setupteardown.models import SetupTeardown
 from application.tag.models import Tag
-from application.infra.robot.suitefile import SuiteFile
 from application.common.reader.module.testcase import CaseReader
+from application.infra.robot.suitefile import SuiteFile
+from application.infra.constant.constants import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
 
 
 class JsonSuiteReader(object):
@@ -106,7 +107,9 @@ class DBSuiteReader(object):
             module_type=self.module_type
         )
         for item in var_queryset.iterator():
-            variable_list.append({'name': item.name, 'value': item.value})
+            variable_list.append({
+                VARIABLE_NAME_KEY: item.name, VARIABLE_VALUE_KEY: item.value
+            })
         return variable_list
 
     def _get_testcase_list(self):
