@@ -1,6 +1,5 @@
 from django.db import models
 from django.conf import settings
-from application.user.models import User
 from application.testsuite.models import TestSuite
 from application.casepriority.models import CasePriority
 

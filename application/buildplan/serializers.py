@@ -11,7 +11,11 @@ class BuildPlanSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = BuildPlan
-        exclude = ('periodic_task_id', )
+        fields = (
+            'id', 'title', 'total_case', 'create_at', 'update_at', 'create_by',
+            'update_by', 'build_cases', 'periodic_expr', 'periodic_switch',
+            'env_list', 'region_list', 'project_id', 'project_name', 'branch', 'expect_pass', 'extra_data'
+        )
         read_only_fields = ('create_by', 'update_by')
 
     def validate(self, attrs):
@@ -21,11 +25,11 @@ class BuildPlanSerializers(serializers.ModelSerializer):
         return attrs
 
     def to_representation(self, instance):
-        instance.env_list = list(id_str_to_set(instance.envs))
+        instance.env_list = id_str_to_set(instance.envs, to_int=True)
         if instance.regions is None:
             instance.region_list = []
         else:
-            instance.region_list = list(id_str_to_set(instance.regions))
+            instance.region_list = id_str_to_set(instance.regions, to_int=True)
         return super().to_representation(instance)
 
     def to_internal_value(self, data):

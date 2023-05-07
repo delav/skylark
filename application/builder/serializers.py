@@ -19,8 +19,8 @@ class TestInstantBuildSerializers(serializers.ModelSerializer):
 class TestQuickBuildSerializers(serializers.ModelSerializer):
 
     project_id = serializers.IntegerField(help_text='build plan id')
-    project_name = serializers.IntegerField(help_text='build env id')
-    branch = serializers.IntegerField(help_text='build region id')
+    project_name = serializers.CharField(help_text='build env id')
+    branch = serializers.CharField(help_text='build region id')
     env_list = serializers.ListField(help_text='build env ids')
     region_list = serializers.ListField(help_text='build region ids')
     case_list = serializers.ListField(help_text='build case ids')
