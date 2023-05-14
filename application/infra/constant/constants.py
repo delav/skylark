@@ -21,8 +21,9 @@ VARIABLE_VALUE_KEY = 'value'
 
 # robot file path config
 PATH_SEP = '/'
-COMMON_RESOURCE_PREFIX = 'common-'
-RESOURCE_FILE_SUBFIX = '.resource'
-ROBOT_FILE_SUBFIX = '.robot'
 INIT_FILE_NAME = '__init__'
+COMMON_RESOURCE_PREFIX = 'common-'
+ROBOT_FILE_SUBFIX = '.robot'
+RESOURCE_FILE_SUBFIX = '.resource'
+
 

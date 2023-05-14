@@ -36,13 +36,17 @@ class CommonParser(object):
     def common_project_files(self):
         return self._project_file_map
 
-    def _get_suite_map(self, iterator, path, subfix, reader, **kwargs):
+    def _get_suite_map(self, iterator, path, reader, **kwargs):
         suite_map = {}
         for suite in iterator:
+            subfix = RESOURCE_FILE_SUBFIX
             if kwargs.get('suite_id'):
                 kwargs['suite_id'] = suite.id
+            rd = reader(**kwargs)
+            if suite.category != settings.CATEGORY_META.get('Keyword'):
+                subfix = rd.subfix()
             file = PATH_SEP.join([self.project_name, path, suite.name + subfix])
-            text = reader(**kwargs).read()
+            text = rd.read()
             suite_map[file] = text
         return suite_map
 
@@ -68,7 +72,7 @@ class CommonParser(object):
             if suite_dir_id not in path_map:
                 continue
             dir_path = path_map[suite_dir_id]
-            suite_map = self._get_suite_map(suite_queryset.iterator(), dir_path, RESOURCE_FILE_SUBFIX, reader, **kwargs)
+            suite_map = self._get_suite_map(suite_queryset.iterator(), dir_path, reader, **kwargs)
             result_map.update(suite_map)
         return result_map
 

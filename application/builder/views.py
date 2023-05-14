@@ -1,16 +1,15 @@
-import json
 from datetime import date
 from loguru import logger
 from django.conf import settings
 from rest_framework import mixins
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from application.infra.django.response import JsonResponse
 from application.infra.client.redisclient import RedisClient
 from application.infra.engine.dcsengine import DcsEngine
 from application.infra.utils.buildhandler import *
 from application.infra.utils.typetransform import join_id_to_str
 from application.projectversion.models import ProjectVersion
-from application.buildplan.models import BuildPlan
 from application.buildplan.serializers import BuildPlanSerializers
 from application.buildrecord.models import BuildRecord
 from application.buildrecord.serializers import BuildRecordSerializers
@@ -23,13 +22,12 @@ from skylark.celeryapp import app
 # Create your views here.
 
 
-class TestInstantBuilderViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    queryset = Builder.objects.all()
-    serializer_class = BuildPlanSerializers
+class BuilderViewSets(viewsets.GenericViewSet):
 
-    def create(self, request, *args, **kwargs):
+    @action(methods=['post'], detail=False)
+    def instant(self, request, *args, **kwargs):
         logger.info(f'test instant build: {request.data}')
-        serializer = self.get_serializer(data=request.data)
+        serializer = BuildPlanSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
         plan_id = request.data.get('id')
         try:
@@ -68,14 +66,10 @@ class TestInstantBuilderViewSets(mixins.CreateModelMixin, viewsets.GenericViewSe
         result = BuildRecordSerializers(record).data
         return JsonResponse(data=result)
 
-
-class TestQuickBuilderViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    queryset = Builder.objects.all()
-    serializer_class = TestQuickBuildSerializers
-
-    def create(self, request, *args, **kwargs):
+    @action(methods=['post'], detail=False)
+    def quick(self, request, *args, **kwargs):
         logger.info(f'test quick build: {request.data}')
-        serializer = self.get_serializer(data=request.data)
+        serializer = TestQuickBuildSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
             project_id = serializer.validated_data.get('project_id')
@@ -112,14 +106,10 @@ class TestQuickBuilderViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet)
         result = BuildRecordSerializers(record).data
         return JsonResponse(data=result)
 
-
-class DebugBuilderViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
-    queryset = Builder.objects.all()
-    serializer_class = DebugBuildSerializers
-
-    def create(self, request, *args, **kwargs):
+    @action(methods=['post'], detail=False)
+    def debug(self, request, *args, **kwargs):
         logger.info(f'create debug run: {request.data}')
-        serializer = self.get_serializer(data=request.data)
+        serializer = DebugBuildSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
             # debug mode don't save build data
@@ -158,7 +148,8 @@ class DebugBuilderViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, v
         }
         return JsonResponse(data=build_result)
 
-    def retrieve(self, request, *args, **kwargs):
+    @action(methods=['get'], detail=False)
+    def progress(self, request, *args, **kwargs):
         build_id = kwargs.get('pk')
         conn = RedisClient(settings.ROBOT_REDIS_URL).connector
         current_build_result = conn.hgetall(settings.CASE_RESULT_KEY_PREFIX+build_id)

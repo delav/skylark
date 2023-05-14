@@ -3,7 +3,7 @@ from application.projectversion.models import ProjectVersion
 
 
 class ProjectVersionSerializers(serializers.ModelSerializer):
-    version = serializers.CharField(required=False)
+    version = serializers.CharField(required=False, help_text='commit version')
 
     class Meta:
         model = ProjectVersion

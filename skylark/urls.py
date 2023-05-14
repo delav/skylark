@@ -33,13 +33,13 @@ from application.keywordgroup.views import KeywordGroupViewSets
 from application.environment.views import EnvironmentViewSets
 from application.region.views import RegionViewSets
 from application.variable.views import VariableViewSets, BatchVariableViewSets
-from application.builder.views import DebugBuilderViewSets
-from application.builder.views import TestInstantBuilderViewSets, TestQuickBuilderViewSets
+from application.builder.views import BuilderViewSets
 from application.buildplan.views import BuildPlanViewSets
 from application.buildhistory.views import BuildHistoryViewSets
 from application.projectversion.views import ProjectVersionViewSets
 from application.tag.views import TagViewSets
 from application.casepriority.views import CasePriorityViewSets
+from application.virtualfile.views import VirtualFileViewSets, FileViewSets
 
 router = routers.SimpleRouter(trailing_slash=False)
 router.register('admin/user/info', AdminUserViewSets, basename='admin_uio')
@@ -65,9 +65,9 @@ router.register('build/plan', BuildPlanViewSets, basename='build_plan')
 router.register('build/history', BuildHistoryViewSets, basename='build_history')
 router.register('tag', TagViewSets, basename='tag')
 router.register('case-priority', CasePriorityViewSets, basename='case_priority')
-router.register('builder/test/instant', TestInstantBuilderViewSets, basename='test_instant')
-router.register('builder/test/quick', TestQuickBuilderViewSets, basename='test_quick')
-router.register('builder/debug', DebugBuilderViewSets, basename='build_debug')
+router.register('builder', BuilderViewSets, basename='builder')
+router.register('virtual-file', VirtualFileViewSets, basename='virtual_file')
+router.register('project-file', FileViewSets, basename='project_file')
 
 
 urlpatterns = [

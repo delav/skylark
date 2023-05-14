@@ -1,6 +1,6 @@
 
 
-class VariablePyFile(object):
+class VariableFile(object):
     """
     python variable file, as common variable
     """

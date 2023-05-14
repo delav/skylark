@@ -55,14 +55,14 @@ def handler_suite_node(suite_data):
     elif node['type'] == settings.CATEGORY_META.get('Resource'):
         node['nocheck'] = True
         node['isParent'] = False
-        node['action'] = [NODE_ACTION_MAP.get('create_resource_file')]
+        node['action'] = []
         rename_menu['action'] = MENU_ACTION_MAP.get('rename_resource_file')
         delete_menu['action'] = MENU_ACTION_MAP.get('delete_resource_file')
         node['menu'] = [NODE_MENU.get('copy'), NODE_MENU.get('paste'), rename_menu, delete_menu]
     elif node['type'] == settings.CATEGORY_META.get('ProjectFile'):
         node['nocheck'] = True
         node['isParent'] = False
-        node['action'] = [NODE_ACTION_MAP.get('upload_project_file'), NODE_ACTION_MAP.get('download_project_file')]
+        node['action'] = [NODE_ACTION_MAP.get('download_project_file')]
         rename_menu['action'] = MENU_ACTION_MAP.get('rename_project_file')
         delete_menu['action'] = MENU_ACTION_MAP.get('delete_project_file')
         node['menu'] = [rename_menu, delete_menu]
@@ -74,13 +74,15 @@ def handler_dir_node(dir_data):
     node['desc'] = NODE_DESC['dir']
     node['action'] = [NODE_ACTION_MAP.get('create_dir')]
     node['isParent'] = True
-    # is child dir
-    if dir_data.get('parent_dir_id') is not None:
-        rename_menu = deepcopy(NODE_MENU.get('rename'))
-        delete_menu = deepcopy(NODE_MENU.get('delete'))
-        rename_menu['action'] = MENU_ACTION_MAP.get('rename_dir')
-        delete_menu['action'] = MENU_ACTION_MAP.get('delete_dir')
-        node['menu'].extend([rename_menu, delete_menu])
+    # parent dir, only show create dir action
+    if dir_data.get('parent_dir_id') is None:
+        return node
+    # children dir
+    rename_menu = deepcopy(NODE_MENU.get('rename'))
+    delete_menu = deepcopy(NODE_MENU.get('delete'))
+    rename_menu['action'] = MENU_ACTION_MAP.get('rename_dir')
+    delete_menu['action'] = MENU_ACTION_MAP.get('delete_dir')
+    node['menu'].extend([rename_menu, delete_menu])
     if node['type'] == settings.CATEGORY_META.get('TestCase'):
         node['nocheck'] = False
         node['action'].append(NODE_ACTION_MAP.get('create_test_suite'))
@@ -92,7 +94,7 @@ def handler_dir_node(dir_data):
         node['action'].append(NODE_ACTION_MAP.get('create_resource_file'))
     elif node['type'] == settings.CATEGORY_META.get('ProjectFile'):
         node['nocheck'] = True
-        node['action'].append(NODE_ACTION_MAP.get('create_project_file'))
+        node['action'].append(NODE_ACTION_MAP.get('upload_project_file'))
     return node
 
 

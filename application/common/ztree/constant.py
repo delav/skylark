@@ -103,9 +103,9 @@ NODE_ACTION_MAP = {
          'title': '新建关键字组件', 'label': '组件名', 'icon': 'iconfont icon-a-addline-line'},
     'upload_project_file':
         {'type': NODE_ACTION_TYPE.get('upload'), 'desc': NODE_DESC.get('suite'),
-         'title': '上传文件', 'label': '文件名称', 'icon': 'iconfont icon-edit'},
+         'title': '上传文件', 'label': '文件名称', 'icon': 'iconfont icon-a-cloudupload-line'},
     'download_project_file':
         {'type': NODE_ACTION_TYPE.get('download'), 'desc': NODE_DESC.get('suite'),
-         'title': '下载文件', 'label': '文件名称', 'icon': 'iconfont icon-edit'}
+         'title': '下载文件', 'label': '文件名称', 'icon': 'iconfont icon-download'}
 }
 

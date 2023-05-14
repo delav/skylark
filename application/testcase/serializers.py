@@ -3,7 +3,7 @@ from application.testcase.models import TestCase
 
 
 class TestCaseSerializers(serializers.ModelSerializer):
-    test_suite_id = serializers.IntegerField()
+    test_suite_id = serializers.IntegerField(help_text='test suite id')
 
     class Meta:
         model = TestCase

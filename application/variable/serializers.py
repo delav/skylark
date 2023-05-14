@@ -3,7 +3,7 @@ from application.variable.models import Variable
 
 
 class VariableSerializers(serializers.ModelSerializer):
-    edit = serializers.BooleanField(read_only=True)
+    edit = serializers.BooleanField(read_only=True, help_text='edit mode')
 
     class Meta:
         model = Variable
@@ -16,8 +16,8 @@ class VariableSerializers(serializers.ModelSerializer):
 
 class BatchVariableSerializers(serializers.ModelSerializer):
     variable_list = serializers.ListField(help_text='variable list')
-    env_id = serializers.IntegerField(required=False)
-    region_id = serializers.IntegerField(required=False)
+    env_id = serializers.IntegerField(required=False, help_text='env id')
+    region_id = serializers.IntegerField(required=False, help_text='region id')
 
     class Meta:
         model = Variable

@@ -16,8 +16,8 @@ class UserAdminSerializer(serializers.ModelSerializer):
 
 class UserSerializer(TokenObtainPairSerializer, serializers.ModelSerializer):
 
-    password = serializers.CharField(write_only=True)
-    email = serializers.EmailField(read_only=True)
+    password = serializers.CharField(write_only=True, help_text='password')
+    email = serializers.EmailField(read_only=True, help_text='user email')
 
     class Meta:
         model = User
@@ -46,8 +46,8 @@ class UserSerializer(TokenObtainPairSerializer, serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
 
-    group_id = serializers.IntegerField(read_only=True)
-    confirm_password = serializers.CharField(allow_blank=False, write_only=True)
+    group_id = serializers.IntegerField(read_only=True, help_text='user group')
+    confirm_password = serializers.CharField(allow_blank=False, write_only=True, help_text='confirm password')
 
     class Meta:
         model = User

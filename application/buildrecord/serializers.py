@@ -4,8 +4,8 @@ from application.infra.utils.typetransform import id_str_to_set, join_id_to_str
 
 
 class BuildRecordSerializers(serializers.ModelSerializer):
-    env_list = serializers.ListField()
-    region_list = serializers.ListField(required=False)
+    env_list = serializers.ListField(help_text='env id list')
+    region_list = serializers.ListField(required=False, help_text='region id list')
 
     class Meta:
         model = BuildRecord

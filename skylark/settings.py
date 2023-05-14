@@ -194,6 +194,8 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
+PROJECT_FILE = BASE_DIR / STATIC_URL / 'files'
+
 # distributed execute
 DISTRIBUTED_BUILD = True
 DISTRIBUTED_WITH_SUITE = False

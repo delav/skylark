@@ -5,9 +5,9 @@ from application.infra.utils.typetransform import id_str_to_set, join_id_to_str
 
 
 class BuildPlanSerializers(serializers.ModelSerializer):
-    extra_data = serializers.JSONField(required=False)
-    env_list = serializers.ListField()
-    region_list = serializers.ListField(required=False)
+    extra_data = serializers.JSONField(required=False, help_text='plan extra data')
+    env_list = serializers.ListField(help_text='env id list')
+    region_list = serializers.ListField(required=False, help_text='region id list')
 
     class Meta:
         model = BuildPlan

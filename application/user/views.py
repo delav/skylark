@@ -14,10 +14,7 @@ from application.infra.django.pagination.paginator import PagePagination
 # Create your views here.
 
 
-class NoAuthUserViewSets(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
-
-    queryset = User.objects.all()
-    serializer_class = RegisterSerializer
+class NoAuthUserViewSets(viewsets.GenericViewSet):
 
     @action(methods=['post'], detail=False)
     def login(self, request, *args, **kwargs):

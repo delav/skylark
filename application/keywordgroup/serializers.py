@@ -5,7 +5,7 @@ from application.libkeyword.serializers import LibKeywordSerializers
 
 class KeywordGroupSerializers(serializers.ModelSerializer):
 
-    image = serializers.ImageField(required=False)
+    image = serializers.ImageField(required=False, help_text='keyword group icon')
 
     class Meta:
         model = KeywordGroup

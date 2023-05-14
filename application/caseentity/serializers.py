@@ -13,8 +13,8 @@ class CaseEntitySerializers(serializers.ModelSerializer):
 
 class CaseEntityListSerializers(serializers.ModelSerializer):
 
-    case_id = serializers.IntegerField()
-    entity_list = CaseEntitySerializers(many=True)
+    case_id = serializers.IntegerField(help_text='associated case id')
+    entity_list = CaseEntitySerializers(many=True, help_text='case entity list')
 
     class Meta:
         model = CaseEntity

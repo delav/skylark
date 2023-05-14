@@ -18,3 +18,4 @@ class VirtualFile(models.Model):
         verbose_name = 'virtual file'
         verbose_name_plural = verbose_name
         db_table = 'virtual_file'
+
