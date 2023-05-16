@@ -11,6 +11,6 @@ class VirtualFileSerializers(serializers.ModelSerializer):
 
 
 class UploadForm(forms.Form):
-    files = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
+    file = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
     dir_id = forms.IntegerField(help_text='associated suite')
     path = forms.CharField(help_text='file path for project')

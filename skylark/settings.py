@@ -194,7 +194,8 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
-PROJECT_FILE = BASE_DIR / STATIC_URL / 'files'
+PROJECT_FILES = BASE_DIR / 'static/files'
+FILE_SIZE_LIMIT = 100 * 1024 * 1024
 
 # distributed execute
 DISTRIBUTED_BUILD = True

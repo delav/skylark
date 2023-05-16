@@ -37,7 +37,9 @@ class BuildPlanSerializers(serializers.ModelSerializer):
         ret['envs'] = join_id_to_str(ret.pop('env_list'))
         if ret.get('region_list'):
             ret['regions'] = join_id_to_str(ret.pop('region_list'))
-        request = self.context['request']
+        request = self.context.get('request')
+        if not request:
+            return ret
         if request.method == 'POST':
             ret['create_by'] = request.user.email
         ret['update_by'] = request.user.email

@@ -1,4 +1,4 @@
-from os.path import join
+from pathlib import PurePath
 from django.conf import settings
 from application.pythonlib.models import PythonLib
 from application.variable.models import Variable
@@ -63,7 +63,7 @@ class ResourceCommonReader(object):
                 library = item['lib_name']
             else:
                 # customize python file
-                library = join(self.lib_path, item['lib_name'])
+                library = PurePath.joinpath(self.lib_path, item['lib_name'])
             library_list.append(library)
         return library_list
 

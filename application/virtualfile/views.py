@@ -1,3 +1,4 @@
+from pathlib import Path
 from re import search
 from loguru import logger
 from django.db import transaction
@@ -43,46 +44,62 @@ class FileViewSets(viewsets.GenericViewSet):
     @action(methods=['post'], detail=False)
     def upload(self, request, *args, **kwargs):
         logger.info(f'upload files')
-        print("POST DATA: ", request.FILES)
-        form = UploadForm(request.POST)
+        form = UploadForm(request.POST, request.FILES)
         if not form.is_valid():
             return JsonResponse(code=10302, msg='upload failed')
         files = request.FILES.getlist('file')
-        logger.info(f'files:', files)
         try:
+            success_count = 0
             with transaction.atomic():
                 for f in files:
-                    if f.size > 10 * 1024:
+                    if f.size > settings.FILE_SIZE_LIMIT:
                         continue
                     subfix = str(search(r'\w*(.\w*)', f.name).group(1))
                     suite_data = {
                         'name': f.name,
                         'category': settings.CATEGORY_META.get('ProjectFile'),
-                        'suite_dir_id': form.dir_id
+                        'suite_dir_id': form.cleaned_data.get('dir_id')
                     }
                     serializer = TestSuiteSerializers(data=suite_data)
                     serializer.is_valid(raise_exception=True)
-                    suite = TestSuite.objects.create(**serializer.data)
-                    VirtualFile.objects.create(
-                        suite_id=suite.id,
-                        file_subfix=subfix,
-                        file_text=f.chunks()
+                    validate_data = serializer.data
+                    validate_data['create_by'] = request.user.email
+                    suites = TestSuite.objects.update_or_create(
+                        name=validate_data.get('name'),
+                        suite_dir_id=validate_data.get('suite_dir_id'),
+                        defaults=validate_data
                     )
-                    file_path = settings.PROJECT_FILE / form.path / f.name
-                    destination = open(file_path, 'wb+')
-                    for chunk in f.chunks():
-                        destination.write(chunk)
-                    destination.close()
+                    suite_id = suites[0].id
+                    child_path = form.cleaned_data.get('path')
+                    child_path_list = child_path.split('/')
+                    file_path = Path(settings.PROJECT_FILES, *child_path_list)
+                    self.save_file_to_disk(file_path, f)
+                    VirtualFile.objects.update_or_create(
+                        suite_id=suite_id,
+                        file_path=child_path,
+                        file_subfix=subfix,
+                        defaults={'file_text': f.chunks()}
+                    )
+                    success_count += 1
         except Exception as e:
             logger.error(f'upload failed: {e}')
             return JsonResponse(code=10303, msg='upload failed')
-        return JsonResponse()
+        return JsonResponse(data=success_count)
 
     @action(methods=['post'], detail=False)
     def download(self, request, *args, **kwargs):
-        logger.info(f'register user: {request.form}')
+        logger.info(f'download file: {request.form}')
         file_info = VirtualFile.objects.get(id=id)
         file = open(file_info.file_path, 'rb')
         response = FileResponse(file)
         response['Content-Disposition'] = f'attachment;filename="{urlquote(file_info.file_name)}"'
         return response
+
+    @staticmethod
+    def save_file_to_disk(file_path, f):
+        Path(file_path).mkdir(parents=True, exist_ok=True)
+        file = file_path / f.name
+        destination = open(file, 'wb+')
+        for chunk in f.chunks():
+            destination.write(chunk)
+        destination.close()
