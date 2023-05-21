@@ -35,8 +35,22 @@ SECRET_KEY = 'django-insecure-h--jee4sh9uvpfsd5(3shn44e&fhcog9@lro82%2@7dcq_eaqy
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+# cors setting
+# ALLOWED_HOSTS = ['*']
 
+CORS_ORIGIN_WHITELIST = (
+    'http://127.0.0.1:8091',
+)
+
+CORS_ALLOW_METHODS = (
+    'GET',
+    'POST',
+    'PATCH',
+    'OPTIONS',
+    'PUT',
+    'DELETE',
+    'VIEW',
+)
 
 # Application definition
 
@@ -196,6 +210,7 @@ MEDIA_URL = '/media/'
 
 PROJECT_FILES = BASE_DIR / 'static/files'
 FILE_SIZE_LIMIT = 100 * 1024 * 1024
+SUPPORT_FILE_TYPE = ('.txt', )
 
 # distributed execute
 DISTRIBUTED_BUILD = True

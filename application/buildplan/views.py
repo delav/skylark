@@ -3,15 +3,16 @@ from django.conf import settings
 from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from application.infra.django.pagination.paginator import PagePagination
 from application.infra.django.response import JsonResponse
-from application.infra.utils.buildhandler import generate_task_name
+from application.infra.utils.buildhandler import generate_task_name, convert_task_name
 from application.group.models import Group
 from application.user.models import User
 from application.project.models import Project
 from application.buildplan.models import BuildPlan
 from application.buildplan.serializers import BuildPlanSerializers
-from application.common.schedule.periodic import PeriodicHandler, get_periodic_task
+from application.common.schedule.periodic import PeriodicHandler, get_periodic_task, get_periodic_list
 
 # Create your views here.
 
@@ -37,8 +38,7 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
         result = []
         for item in pg_queryset:
             item_dict = self.get_serializer(item).data
-            task_name = generate_task_name(item.id)
-            item_dict['periodic'] = get_periodic_task(task_name)
+            item_dict['periodic'] = get_periodic_task(id=item.periodic_task_id)
             result.append(item_dict)
         return JsonResponse(data=result)
 
@@ -70,10 +70,9 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
                 plan.save()
         except (Exception,) as e:
             logger.error(f'create build plan failed: {e}')
-            return JsonResponse(code=10100, msg='create build plan failed')
+            return JsonResponse(code=10501, msg='create build plan failed')
         result = self.get_serializer(plan).data
-        task_name = generate_task_name(plan.id)
-        result['periodic'] = get_periodic_task(task_name)
+        result['periodic'] = get_periodic_task(id=plan.periodic_task_id)
         return JsonResponse(data=result)
 
     def update(self, request, *args, **kwargs):
@@ -84,8 +83,36 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
         try:
             instance = self.get_object()
         except (Exception,):
-            return JsonResponse(code=10101, msg='build info not found')
+            return JsonResponse(code=10502, msg='build info not found')
         result = self.get_serializer(instance).data
-        task_name = generate_task_name(instance.id)
-        result['periodic'] = get_periodic_task(task_name)
+        result['periodic'] = get_periodic_task(id=instance.periodic_task_id)
         return JsonResponse(result)
+
+    @action(methods=['get'], detail=False)
+    def instantly(self, request, *args, **kwargs):
+        logger.info(f'get instantly build plan')
+        try:
+            limit = request.query_params.get('limit')
+            periodic_list = get_periodic_list(enabled=True)
+            sort_periodics = sorted(periodic_list, key=lambda o: o['to_next'], reverse=False)
+            plan_id_list = []
+            periodic_dict = {}
+            min_length = min(len(sort_periodics), int(limit))
+            for i in range(min_length):
+                periodic = sort_periodics[i]
+                plan_id = convert_task_name(periodic.get('name'))
+                plan_id_list.append(plan_id)
+                periodic_dict[plan_id] = periodic
+            queryset = BuildPlan.objects.filter(id__in=plan_id_list)
+            result = []
+            for item in queryset.iterator():
+                data = self.get_serializer(item).data
+                data['periodic'] = periodic_dict[item.id]
+                result.append(data)
+        except (Exception,) as e:
+            logger.error(f'get instantly build plan failed: {e}')
+            return JsonResponse(code=10503, msg='get instantly build plan failed')
+        return JsonResponse(data=result)
+
+
+

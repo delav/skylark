@@ -63,11 +63,12 @@ def robot_notifier(task_id):
     case_detail_list = []
     cases_result = conn.hgetall(case_redis_key)
     for case_id, item in cases_result.items():
-        item['test_case_id'] = int(case_id)
+        item = json.loads(item)
+        item['case_id'] = int(case_id)
         item['start_time'] = datetime.fromtimestamp(item['start_time'])
         item['end_time'] = datetime.fromtimestamp(item['end_time'])
-        item['build_history_id'] = history_id
-        case_detail_list.append(item)
+        item['history_id'] = history_id
+        case_detail_list.append(HistoryDetail(**item))
     HistoryDetail.objects.bulk_create(case_detail_list)
 
 

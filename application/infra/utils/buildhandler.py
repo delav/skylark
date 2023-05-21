@@ -19,3 +19,7 @@ def is_test_mode(build_id):
 
 def generate_task_name(plan_id):
     return f'PLAN-{plan_id}'
+
+
+def convert_task_name(task_name):
+    return int(task_name.split('-')[1])

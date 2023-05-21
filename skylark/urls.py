@@ -35,6 +35,7 @@ from application.region.views import RegionViewSets
 from application.variable.views import VariableViewSets, BatchVariableViewSets
 from application.builder.views import BuilderViewSets
 from application.buildplan.views import BuildPlanViewSets
+from application.buildrecord.views import BuildRecordViewSets
 from application.buildhistory.views import BuildHistoryViewSets
 from application.projectversion.views import ProjectVersionViewSets
 from application.tag.views import TagViewSets
@@ -62,6 +63,7 @@ router.register('variable', VariableViewSets, basename='variable')
 router.register('batch-variable', BatchVariableViewSets, basename='batch_variable')
 router.register('project-version', ProjectVersionViewSets, basename='project_version')
 router.register('build/plan', BuildPlanViewSets, basename='build_plan')
+router.register('build/record', BuildRecordViewSets, basename='build_record')
 router.register('build/history', BuildHistoryViewSets, basename='build_history')
 router.register('tag', TagViewSets, basename='tag')
 router.register('case-priority', CasePriorityViewSets, basename='case_priority')

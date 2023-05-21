@@ -39,13 +39,13 @@ class CommonParser(object):
     def _get_suite_map(self, iterator, path, reader, **kwargs):
         suite_map = {}
         for suite in iterator:
-            subfix = RESOURCE_FILE_SUBFIX
             if kwargs.get('suite_id'):
                 kwargs['suite_id'] = suite.id
             rd = reader(**kwargs)
-            if suite.category != settings.CATEGORY_META.get('Keyword'):
-                subfix = rd.subfix()
-            file = PATH_SEP.join([self.project_name, path, suite.name + subfix])
+            file_name = suite.name
+            if suite.category == settings.CATEGORY_META.get('Keyword'):
+                file_name = suite.name + RESOURCE_FILE_SUBFIX
+            file = PATH_SEP.join([self.project_name, path, file_name])
             text = rd.read()
             suite_map[file] = text
         return suite_map

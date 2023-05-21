@@ -55,7 +55,7 @@ def generate_build_data(project_id, root_id=0):
         parent_node['children'].append(dir_node)
     print("&&&&&&&&&&", json.dumps(dir_node_map))
     # print("**********", json.dumps(run_data))
-    # return project.name, run_data
+    return project.name, run_data, tree_nodes
 
 
 def get_suite_tree(dir_node_id, suite_queryset, tree_nodes):

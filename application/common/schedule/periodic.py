@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from croniter import croniter
 from django_celery_beat.models import CrontabSchedule
 from django_celery_beat.models import PeriodicTask, IntervalSchedule
@@ -16,9 +17,8 @@ class PeriodicHandler(object):
         if len(self.periodic_expr.split()) != 5:
             self.validate_interval(self.periodic_expr)
             return self.INTERVAL_TYPE
-        try:
-            croniter(self.periodic_expr)
-        except Exception:
+        valid = croniter.is_valid(self.periodic_expr)
+        if not valid:
             raise ValueError('Invalid crontab expr')
         return self.CRONTAB_TYPE
 
@@ -74,9 +74,64 @@ class PeriodicHandler(object):
             raise ValueError('Invalid interval expr')
 
 
-def get_periodic_task(task_name):
+def get_periodic_list(**kwargs):
+    result = []
     try:
-        task = PeriodicTask.objects.get(name=task_name)
+        queryset = PeriodicTask.objects.filter(
+            **kwargs
+        ).select_related('interval', 'crontab')
+    except (Exception,):
+        return result
+    for item in queryset.iterator():
+        next_time, to_next = datetime.now(), 0
+        if not item.crontab and not item.interval:
+            continue
+        if item.crontab:
+            periodic_expr = ' '.join([
+                item.crontab.minute,
+                item.crontab.hour,
+                item.crontab.day_of_week,
+                item.crontab.day_of_month,
+                item.crontab.month_of_year
+            ])
+            cron = croniter(periodic_expr)
+            next_timestamp = cron.get_next()
+            next_time = datetime.utcfromtimestamp(next_timestamp)
+            to_next = (next_time - datetime.now()).total_seconds()
+        elif item.interval:
+            every = item.interval.every
+            period = item.period
+            if period == 'days':
+                t = 60 * 60 * 24 * every
+            elif period == 'hours':
+                t = 60 * 60 * every
+            elif period == 'minutes':
+                t = 60 * every
+            elif period == 'seconds':
+                t = every
+            else:
+                t = 60 * 60
+            if item.last_run_at:
+                next_time = item.last_run_at + timedelta(seconds=t)
+                to_next = (next_time - datetime.now()).total_seconds()
+            else:
+                next_time = datetime.now() + timedelta(seconds=t)
+                to_next = t
+        item_data = {
+            'id': item.id,
+            'name': item.name,
+            'last_run_at': item.last_run_at,
+            'enabled': item.enabled,
+            'next_time': next_time,
+            'to_next': to_next
+        }
+        result.append(item_data)
+    return result
+
+
+def get_periodic_task(**kwargs):
+    try:
+        task = PeriodicTask.objects.get(**kwargs)
     except (Exception,):
         return {}
     periodic_data = {
@@ -84,7 +139,7 @@ def get_periodic_task(task_name):
         'name': task.name,
         'total_run': task.total_run_count,
         'last_run_at': str(task.last_run_at).replace('T', '')[:-7],
-        'status': task.enabled,
+        'enabled': task.enabled,
     }
     return periodic_data
 
