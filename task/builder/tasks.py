@@ -1,4 +1,4 @@
-import json
+from json import loads
 from django.conf import settings
 from application.infra.engine.dcsengine import DcsEngine
 from application.infra.utils.buildhandler import generate_test_task_id
@@ -8,6 +8,7 @@ from application.buildrecord.models import BuildRecord
 from application.projectversion.models import ProjectVersion
 from application.buildhistory.models import BuildHistory
 from application.common.parser.jsonparser import JsonParser
+from application.common.handler.modelmaphandler import get_env_id_map, get_region_id_map
 from skylark.celeryapp import app
 
 
@@ -21,10 +22,11 @@ def periodic_builder(plan_id):
     )
     env_ids = id_str_to_set(plan.envs)
     region_ids = id_str_to_set(plan.regions)
-    run_data = json.loads(version.run_data)
-    common_sources = json.loads(version.sources)
+    run_data = loads(version.run_data)
+    common_sources = loads(version.sources)
     build_cases = id_str_to_set(plan.build_cases, to_int=True)
     record = BuildRecord.objects.create(
+        desc=plan.title,
         create_by=plan.create_by,
         plan_id=plan.id,
         project_id=plan.project_id,
@@ -44,8 +46,8 @@ def instant_builder(record_id, project_id, project_name,
                     env_ids, region_ids, run_data, common_sources, build_cases):
     env_ids = id_str_to_set(env_ids)
     region_ids = id_str_to_set(region_ids)
-    run_data = json.loads(run_data)
-    common_sources = json.loads(common_sources)
+    run_data = loads(run_data)
+    common_sources = loads(common_sources)
     build_cases = id_str_to_set(build_cases, to_int=True)
     _create_task(
         record_id, project_id, project_name, env_ids,
@@ -55,26 +57,30 @@ def instant_builder(record_id, project_id, project_name,
 
 def _create_task(record_id, project_id, project_name,
                  env_id_list, region_id_list, run_data, common_sources, build_cases):
+    env_map = get_env_id_map()
+    region_map = get_region_id_map()
     for env_id in env_id_list:
+        env_name = env_map.get(env_id)
         env_common = common_sources.get(env_id)
         if not region_id_list:
-            region_id = None
+            region_id, region_name = None, None
             env_region_common = env_common.get('base')
             _execute(
-                record_id, project_id, project_name, env_id,
-                region_id, run_data, env_region_common, build_cases
+                record_id, project_id, project_name, env_id, env_name,
+                region_id, region_name, run_data, env_region_common, build_cases
             )
             continue
         for region_id in region_id_list:
+            region_name = region_map.get(region_id)
             env_region_common = env_common.get(region_id)
             _execute(
-                record_id, project_id, project_name, env_id,
-                region_id, run_data, env_region_common, build_cases
+                record_id, project_id, project_name, env_id, env_name,
+                region_id, region_name, run_data, env_region_common, build_cases
             )
 
 
-def _execute(record_id, project_id, project_name, env_id,
-             region_id, run_data, env_region_common, build_cases):
+def _execute(record_id, project_id, project_name, env_id, env_name,
+             region_id, region_name, run_data, env_region_common, build_cases):
     common_struct, structure_list = JsonParser(
         project_id=project_id,
         project_name=project_name,
@@ -102,13 +108,11 @@ def _execute(record_id, project_id, project_name, env_id,
     celery_task_list = []
     for batch_no, data in batch_data.items():
         suites, sources = data[0], data[1]
-        print(f"{batch_no}: {suites}")
-        print(f"{batch_no}: {sources}")
         celery_task = app.send_task(
             settings.RUNNER_TASK,
             queue=settings.RUNNER_QUEUE,
             routing_key=settings.RUNNER_ROUTING_KEY,
-            args=(task_id, str(batch_no), suites, sources)
+            args=(env_name, region_name, task_id, str(batch_no), suites, sources)
         )
         celery_task_list.append(celery_task.id)
     instance.celery_task = ','.join(celery_task_list)

@@ -17,14 +17,12 @@ class JsonParser(CommonParser):
         self.structures = []
 
     def parse(self, run_data, common=None):
-        common_file_paths = []
         common_file_sources = {}
         # common sources
         if common is None:
             common = self.get_common_from_parse()
         # handle project help file
         project_file_map = common.get('project_files', {})
-        common_file_paths.extend(project_file_map.keys())
         common_file_sources.update(project_file_map)
         # handle variable files, will use to suite and init file
         variable_file_map = common.get('variable_files', {})
@@ -36,6 +34,7 @@ class JsonParser(CommonParser):
         resource_list = list(resources_map.keys())
         # handle front run data
         format_data = get_path_from_front_tree(run_data, PATH_SEP)
+        init_file_paths = []
         for dir_id, dir_data in format_data['dirs'].items():
             dir_path = dir_data['path']
             dir_extra_data = dir_data['data']['extra_data']
@@ -50,7 +49,7 @@ class JsonParser(CommonParser):
                 ).read()
                 if not init_text:
                     continue
-                common_file_paths.append(init_file)
+                init_file_paths.append(init_file)
                 common_file_sources[init_file] = init_text
         for suite_id, suite_data in format_data['suites'].items():
             suite_file = PATH_SEP.join([self.project_name, suite_data['path'] + ROBOT_FILE_SUBFIX])
@@ -69,8 +68,8 @@ class JsonParser(CommonParser):
                 include_cases=self.build_cases,
             )
             self._extract(suite_file, suite_reader)
-        common = CommonStructure(common_file_paths, common_file_sources)
-        return common, self.structures
+        common_structure = CommonStructure(init_file_paths, common_file_sources)
+        return common_structure, self.structures
 
     def get_common_from_parse(self):
         self.init_sources()

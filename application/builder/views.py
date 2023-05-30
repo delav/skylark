@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from loguru import logger
 from django.conf import settings
 from rest_framework import viewsets
@@ -8,10 +8,13 @@ from application.infra.client.redisclient import RedisClient
 from application.infra.engine.dcsengine import DcsEngine
 from application.infra.utils.buildhandler import *
 from application.infra.utils.typetransform import join_id_to_str
+from application.infra.utils.buildhandler import generate_test_task_id
+from application.buildplan.models import BuildPlan
 from application.projectversion.models import ProjectVersion
 from application.buildplan.serializers import BuildPlanSerializers
 from application.buildrecord.models import BuildRecord
 from application.buildrecord.serializers import BuildRecordSerializers
+from application.buildhistory.models import BuildHistory
 from application.builder.serializers import DebugBuildSerializers
 from application.builder.serializers import TestQuickBuildSerializers
 from application.common.parser.jsonparser import JsonParser
@@ -38,10 +41,14 @@ class BuilderViewSets(viewsets.GenericViewSet):
                 project_id=project_id,
                 branch=data.get('branch')
             )
+            plan = BuildPlan.objects.get(id=plan_id)
+            if not str_envs:
+                str_envs = plan.envs
             run_data = version.run_data
             common_sources = version.sources
             build_cases = data.get('build_cases')
             record = BuildRecord.objects.create(
+                desc=plan.title,
                 create_by=request.user.email,
                 plan_id=plan_id,
                 project_id=project_id,
@@ -82,8 +89,11 @@ class BuilderViewSets(viewsets.GenericViewSet):
             run_data = version.run_data
             common_sources = version.sources
             build_cases = set(serializer.validated_data.get('case_list'))
+            user = request.user
+            buidl_desc = f'QUICK_BUILD-@{user.username}-{datetime.now().timestamp()}'
             record = BuildRecord.objects.create(
-                create_by=request.user.email,
+                desc=buidl_desc,
+                create_by=user.email,
                 project_id=project_id,
                 branch=branch,
                 envs=join_id_to_str(env_list),
@@ -112,7 +122,9 @@ class BuilderViewSets(viewsets.GenericViewSet):
         try:
             # debug mode don't save build data
             env_id = serializer.validated_data.get('env_id')
+            env_name = serializer.validated_data.get('env_name')
             region_id = serializer.validated_data.get('region_id')
+            region_name = serializer.validated_data.get('region_name')
             project_id = serializer.validated_data.get('project_id')
             project_name = serializer.validated_data.get('project_name')
             run_data = serializer.validated_data.get('run_data')
@@ -132,7 +144,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
                     settings.RUNNER_TASK,
                     queue=settings.RUNNER_QUEUE,
                     routing_key=settings.RUNNER_ROUTING_KEY,
-                    args=(task_id, str(batch_no), suites, sources)
+                    args=(env_name, region_name, task_id, str(batch_no), suites, sources)
                 )
         except (Exception,) as e:
             logger.error(f'build failed: {e}')
@@ -146,14 +158,26 @@ class BuilderViewSets(viewsets.GenericViewSet):
         }
         return JsonResponse(data=build_result)
 
-    @action(methods=['get'], detail=False)
+    @action(methods=['post'], detail=False)
     def progress(self, request, *args, **kwargs):
-        build_id = kwargs.get('pk')
+        data = request.data
+        mode = data.get('mode')
         conn = RedisClient(settings.ROBOT_REDIS_URL).connector
-        current_build_result = conn.hgetall(settings.CASE_RESULT_KEY_PREFIX+build_id)
-        logger.info("build progress: {}".format(current_build_result))
-        return JsonResponse(data=current_build_result or {})
-
+        if mode == 'debug':
+            task_id = data.get('task_id')
+            redis_key = settings.CASE_RESULT_KEY_PREFIX+task_id
+            current_build_result = conn.hgetall(redis_key)
+            logger.debug("build progress: {}".format(current_build_result))
+            return JsonResponse(data=current_build_result or {})
+        record_id_list = data.get('records', [])
+        redis_keys = []
+        for record_id in record_id_list:
+            histories = BuildHistory.objects.filter(record_id=record_id)
+            for item in histories:
+                task_id = generate_test_task_id(item.id)
+                redis_keys.append(settings.CASE_RESULT_KEY_PREFIX + task_id)
+        cases_result = conn.mget(redis_keys)
+        return JsonResponse(data=cases_result or [])
 
 
 

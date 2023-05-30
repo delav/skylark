@@ -14,11 +14,12 @@ class VariableSerializers(serializers.ModelSerializer):
         return super().to_representation(instance)
 
 
-class BatchVariableSerializers(serializers.ModelSerializer):
-    variable_list = serializers.ListField(help_text='variable list')
-    env_id = serializers.IntegerField(required=False, help_text='env id')
-    region_id = serializers.IntegerField(required=False, help_text='region id')
+class CopyVariableSerializers(serializers.ModelSerializer):
+    module_id = serializers.IntegerField(help_text='variable module id')
+    module_type = serializers.IntegerField(help_text='variable module type')
+    from_env_id = serializers.IntegerField(help_text='copied env id')
+    to_env_id = serializers.IntegerField(help_text='new env id')
 
     class Meta:
         model = Variable
-        fields = ('variable_list', 'env_id', 'region_id')
+        fields = ('module_id', 'module_type', 'from_env_id', 'to_env_id')

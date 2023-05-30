@@ -1,6 +1,5 @@
 from django.db import models
 from django.conf import settings
-from application.environment.models import Environment
 
 # Create your models here.
 

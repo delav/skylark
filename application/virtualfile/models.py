@@ -1,6 +1,4 @@
 from django.db import models
-from application.testsuite.models import TestSuite
-from application.environment.models import Environment
 
 # Create your models here.
 

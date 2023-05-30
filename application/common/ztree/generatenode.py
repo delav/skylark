@@ -76,6 +76,8 @@ def handler_dir_node(dir_data):
     node['isParent'] = True
     # parent dir, only show create dir action
     if dir_data.get('parent_dir_id') is None:
+        if node['type'] == settings.CATEGORY_META.get('TestCase'):
+            node['nocheck'] = False
         return node
     # children dir
     rename_menu = deepcopy(NODE_MENU.get('rename'))

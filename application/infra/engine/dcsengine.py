@@ -11,9 +11,9 @@ class DcsEngine(object):
         self.source_map = {}
 
     def init_common_data(self, common_struct):
-        c_paths = common_struct.get_common_path()
+        init_file_paths = common_struct.get_init_file_path()
         c_sources = common_struct.get_common_source()
-        self.path_list.extend(c_paths)
+        self.path_list.extend(init_file_paths)
         self.source_map.update(c_sources)
 
     def visit(self, structures):
@@ -21,7 +21,7 @@ class DcsEngine(object):
         for struct in structures:
             self.total_case += struct.case_count()
         if self.options.get('distributed') and self.total_case > max_batch_case:
-            self._multi_operator(structures)
+            return self._multi_operator(structures)
         self._single_operator(structures)
 
     def _single_operator(self, structure_list):

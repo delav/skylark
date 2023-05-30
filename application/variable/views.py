@@ -1,9 +1,10 @@
 from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from application.infra.django.response import JsonResponse
 from application.variable.models import Variable
-from application.variable.serializers import VariableSerializers, BatchVariableSerializers
+from application.variable.serializers import VariableSerializers, CopyVariableSerializers
 
 # Create your views here.
 
@@ -75,29 +76,36 @@ class VariableViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
             return JsonResponse(code=10505, msg='delete variable failed')
         return JsonResponse(data=instance.id)
 
-
-class BatchVariableViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    queryset = Variable.objects.all()
-    serializer_class = BatchVariableSerializers
-
-    def create(self, request, *args, **kwargs):
-        logger.info(f'batch create variable: {request.data}')
-        serializer = self.get_serializer(data=request.data)
+    @action(methods=['post'], detail=False)
+    def copy(self, request, *args, **kwargs):
+        logger.info(f'batch copy variables: {request.data}')
+        serializer = CopyVariableSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            batch_list = []
-            env_id = serializer.data.get('env_id')
-            region_id = serializer.data.get('region_id')
-            variable_list = serializer.data.get('variable_list')
-            for item in variable_list:
-                del item['id']
-                del item['edit']
-                item['env_id'] = env_id or item['env_id']
-                item['region_id'] = region_id or item['region_id']
-                new_obj = Variable(**item)
-                batch_list.append(new_obj)
-            Variable.objects.bulk_create(batch_list)
+            module_id = serializer.data.get('module_id')
+            module_type = serializer.data.get('module_type')
+            from_env_id = serializer.data.get('from_env_id')
+            to_env_id = serializer.data.get('to_env_id')
+            copied_variables = Variable.objects.filter(
+                module_id=module_id,
+                module_type=module_type,
+                env_id=from_env_id,
+            )
+            copy_list = []
+            for item in copied_variables.iterator():
+                new_item = VariableSerializers(item).data
+                del new_item['id']
+                new_item['env_id'] = to_env_id
+                obj = Variable(**new_item)
+                copy_list.append(obj)
+            Variable.objects.bulk_create(copy_list)
+            new_variables = Variable.objects.filter(
+                module_id=module_id,
+                module_type=module_type,
+                env_id=to_env_id
+            )
         except Exception as e:
-            logger.error(f'batch create variable failed: {e}')
-            return JsonResponse(code=10509, msg='batch create variable failed')
-        return JsonResponse(data=serializer.data)
+            logger.error(f'copy variable failed: {e}')
+            return JsonResponse(code=10508, msg='copy variable failed')
+        result = VariableSerializers(new_variables, many=True).data
+        return JsonResponse(data=result)

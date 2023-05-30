@@ -1,12 +1,15 @@
 
 
 class CommonStructure(object):
-    def __init__(self, common_file_paths, common_file_sources):
-        self.paths = common_file_paths
+    def __init__(self, init_file_paths, common_file_sources):
+        self.init_paths = init_file_paths
         self.sources = common_file_sources
 
+    def get_init_file_path(self):
+        return self.init_paths
+
     def get_common_path(self):
-        return self.paths
+        return self.sources.keys()
 
     def get_common_source(self):
         return self.sources

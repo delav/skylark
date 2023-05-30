@@ -17,7 +17,7 @@ from application.common.schedule.periodic import PeriodicHandler, get_periodic_t
 # Create your views here.
 
 
-class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
+class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
                         mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = BuildPlan.objects.all()
     serializer_class = BuildPlanSerializers
@@ -25,21 +25,31 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
 
     def list(self, request, *args, **kwargs):
         logger.info(f'get build plan list: {request.query_params}')
-        groups_queryset = Group.objects.filter(user=request.user)
-        users = User.objects.none()
-        for group in groups_queryset:
-            users |= group.user_set.all()
-        group_emails = [user.email for user in users]
-        projects = Project.objects.filter(create_by__in=group_emails, status=0)
-        project_ids = [item.id for item in projects]
-        queryset = self.get_queryset().filter(
-            project_id__in=project_ids).order_by('-create_at')
-        pg_queryset = self.paginate_queryset(queryset)
-        result = []
-        for item in pg_queryset:
-            item_dict = self.get_serializer(item).data
-            item_dict['periodic'] = get_periodic_task(id=item.periodic_task_id)
-            result.append(item_dict)
+        try:
+            project_id = request.query_params.get('project')
+            groups_queryset = Group.objects.filter(user=request.user)
+            users = User.objects.none()
+            for group in groups_queryset:
+                users |= group.user_set.all()
+            group_emails = [user.email for user in users]
+            projects = Project.objects.filter(create_by__in=group_emails, status=0)
+            project_ids = [item.id for item in projects]
+            if project_id:
+                queryset = self.get_queryset().filter(
+                    project_id=project_id).order_by('-create_at')
+            else:
+                queryset = self.get_queryset().filter(
+                    project_id__in=project_ids).order_by('-create_at')
+            pg_queryset = self.paginate_queryset(queryset)
+            plan_list = []
+            for item in pg_queryset:
+                item_dict = self.get_serializer(item).data
+                item_dict['periodic'] = get_periodic_task(id=item.periodic_task_id)
+                plan_list.append(item_dict)
+        except (Exception,) as e:
+            logger.error(f'get plan list failed: {e}')
+            return JsonResponse(code=10500, msg='get plan list failed')
+        result = {'data': plan_list, 'total': queryset.count()}
         return JsonResponse(data=result)
 
     @transaction.atomic
@@ -88,6 +98,16 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
         result['periodic'] = get_periodic_task(id=instance.periodic_task_id)
         return JsonResponse(result)
 
+    def destroy(self, request, *args, **kwargs):
+        logger.info(f'delete build plan: {kwargs.get("pk")}')
+        try:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+        except (Exception,) as e:
+            logger.error(f'delete build plan error: {e}')
+            return JsonResponse(code=10503, msg='delete build plan failed')
+        return JsonResponse(data=instance.id)
+
     @action(methods=['get'], detail=False)
     def instantly(self, request, *args, **kwargs):
         logger.info(f'get instantly build plan')
@@ -111,7 +131,7 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
                 result.append(data)
         except (Exception,) as e:
             logger.error(f'get instantly build plan failed: {e}')
-            return JsonResponse(code=10503, msg='get instantly build plan failed')
+            return JsonResponse(code=10505, msg='get instantly build plan failed')
         return JsonResponse(data=result)
 
 

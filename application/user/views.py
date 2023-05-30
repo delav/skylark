@@ -23,7 +23,9 @@ class NoAuthUserViewSets(viewsets.GenericViewSet):
         user = serializer.validated_data.pop('user')
         user.last_login = datetime.now()
         user.save()
-        return JsonResponse(data=serializer.validated_data)
+        user_info = UserSerializer(user).data
+        user_info.update(serializer.validated_data)
+        return JsonResponse(data=user_info)
 
     @transaction.atomic
     @action(methods=['post'], detail=False)

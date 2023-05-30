@@ -117,6 +117,7 @@ def get_periodic_list(**kwargs):
             else:
                 next_time = datetime.now() + timedelta(seconds=t)
                 to_next = t
+        next_time = str(next_time).replace('T', ' ')
         item_data = {
             'id': item.id,
             'name': item.name,

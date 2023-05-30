@@ -32,7 +32,7 @@ from application.setupteardown.views import SetupTeardownViewSets
 from application.keywordgroup.views import KeywordGroupViewSets
 from application.environment.views import EnvironmentViewSets
 from application.region.views import RegionViewSets
-from application.variable.views import VariableViewSets, BatchVariableViewSets
+from application.variable.views import VariableViewSets
 from application.builder.views import BuilderViewSets
 from application.buildplan.views import BuildPlanViewSets
 from application.buildrecord.views import BuildRecordViewSets
@@ -60,7 +60,6 @@ router.register('keyword-group', KeywordGroupViewSets, basename='keyword_group')
 router.register('environment', EnvironmentViewSets, basename='environment')
 router.register('region', RegionViewSets, basename='region')
 router.register('variable', VariableViewSets, basename='variable')
-router.register('batch-variable', BatchVariableViewSets, basename='batch_variable')
 router.register('project-version', ProjectVersionViewSets, basename='project_version')
 router.register('build/plan', BuildPlanViewSets, basename='build_plan')
 router.register('build/record', BuildRecordViewSets, basename='build_record')

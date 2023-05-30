@@ -5,6 +5,7 @@ from django.db import models
 
 class BuildRecord(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
+    desc = models.TextField(default='', help_text='build record desc')
     create_at = models.DateTimeField(auto_now_add=True, help_text='create time')
     create_by = models.CharField(max_length=255, help_text='create user')
     plan_id = models.IntegerField(default=None, blank=True, null=True, help_text='associated build plan')
