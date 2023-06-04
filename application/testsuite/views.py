@@ -56,7 +56,10 @@ class TestSuiteViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin, mixi
             logger.error(f'save test suite failed: {e}')
             return JsonResponse(code=10061, msg='create test suite failed')
         suite_data = serializer.data
-        suite_data['extra_data'] = {}
+        if suite_data['category'] != settings.CATEGORY_META.get('TestCase'):
+            suite_data['extra_data'] = {}
+        else:
+            suite_data['extra_data'] = get_model_extra_data(suite_data['id'], settings.MODULE_TYPE_META.get('TestSuite'))
         result = handler_suite_node(suite_data)
         return JsonResponse(data=result)
 

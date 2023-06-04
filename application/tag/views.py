@@ -9,17 +9,26 @@ from application.tag.serializers import TagSerializers
 # Create your views here.
 
 
-class TagViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.ListModelMixin,
+class TagViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
                   mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializers
 
     def list(self, request, *args, **kwargs):
-        logger.info(f'get all tags by project')
+        logger.info(f'get all tags by project: {request.query_params}')
         project_id = request.query_params.get('project')
-        queryset = self.get_queryset().filter(project_id=project_id).values('name').order_by('id')
-        serializer = self.get_serializer(queryset, many=True)
-        return JsonResponse(data=serializer.data)
+        try:
+            project_id = int(project_id)
+            query_sql = f'select id,name from tag where project_id={project_id} group by name'
+            result_list = []
+            queryset = Tag.objects.raw(query_sql)
+            for item in queryset.iterator():
+                item_data = {'id': item.id, 'name': item.name}
+                result_list.append(item_data)
+        except (Exception,) as e:
+            logger.error(f'get tags failed: {e}')
+            return JsonResponse(code=10121, msg='get tags failed')
+        return JsonResponse(data=result_list)
 
     def create(self, request, *args, **kwargs):
         logger.info(f'create tag: {request.data}')
@@ -54,8 +63,12 @@ class TagViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.Lis
             return JsonResponse(code=10121, msg='update tag failed')
         return JsonResponse(serializer.data)
 
-    def retrieve(self, request, *args, **kwargs):
-        pass
-
     def destroy(self, request, *args, **kwargs):
-        pass
+        logger.info(f'delete tag: {kwargs.get("pk")}')
+        try:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+        except (Exception,) as e:
+            logger.error(f'delete tag error: {e}')
+            return JsonResponse(code=10125, msg='delete tag failed')
+        return JsonResponse(data=instance.id)

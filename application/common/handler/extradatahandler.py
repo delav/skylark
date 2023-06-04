@@ -19,16 +19,16 @@ def get_model_extra_data(module_id, module_type, include_entity=False):
         )
         if variable_queryset.exists():
             variable_list = VariableSerializers(variable_queryset, many=True).data
-    setup_teardown = SetupTeardown.objects.filter(
-        module_id=module_id,
-        module_type=module_type
-    )
+        setup_teardown = SetupTeardown.objects.filter(
+            module_id=module_id,
+            module_type=module_type
+        )
+        if setup_teardown.exists():
+            fixture = SetupTeardownSerializers(setup_teardown.first()).data
     tag_queryset = Tag.objects.filter(
         module_id=module_id,
         module_type=module_type
     )
-    if setup_teardown.exists():
-        fixture = SetupTeardownSerializers(setup_teardown.first()).data
     if tag_queryset.exists():
         tag = TagSerializers(tag_queryset, many=True).data
     extra_data_result = {
@@ -39,16 +39,24 @@ def get_model_extra_data(module_id, module_type, include_entity=False):
     if include_entity:
         entity_queryset = CaseEntity.objects.filter(test_case_id=module_id).order_by('seq_number')
         entities = CaseEntitySerializers(entity_queryset, many=True)
-        extra_data_result[ENTITY_KEY] = entities.data
+        extra_data_result.update({ENTITY_KEY: entities.data})
     return extra_data_result
 
 
 def get_model_simple_extra_data(module_id, module_type, include_entity=False):
     variable_list, fixture, tag = [], {}, []
-    variable_simple_fields = ('name', 'value')
-    setup_teardown_simple_fields = ('suite_setup', 'suite_teardown', 'test_setup', 'test_teardown')
-    tag_simple_fields = ('name',)
-    entity_simple_fields = ('input_args', 'output_args', 'keyword_id')
+    variable_simple_fields = (
+        'name', 'value'
+    )
+    setup_teardown_simple_fields = (
+        'suite_setup', 'suite_teardown', 'test_setup', 'test_teardown'
+    )
+    tag_simple_fields = (
+        'name',
+    )
+    entity_simple_fields = (
+        'input_args', 'output_args', 'keyword_id'
+    )
     if module_type != settings.MODULE_TYPE_META.get('TestCase'):
         variable_queryset = Variable.objects.filter(
             module_id=module_id,

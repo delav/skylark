@@ -60,7 +60,10 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
             logger.error(f'create test case failed: {e}')
             return JsonResponse(code=10051, msg='create test case failed')
         case_data = serializer.data
-        case_data['extra_data'] = {}
+        if case_data['category'] != settings.CATEGORY_META.get('TestCase'):
+            case_data['extra_data'] = {}
+        else:
+            case_data['extra_data'] = get_model_extra_data(case_data['id'], settings.MODULE_TYPE_META.get('TestCase'))
         result = handler_case_node(case_data)
         return JsonResponse(data=result)
 
@@ -80,8 +83,8 @@ class TestCaseViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
                 if serializer.validated_data.get('category') == settings.CATEGORY_META.get('Keyword'):
                     UserKeyword.objects.get(test_case_id=case_id).save()
         except Exception as e:
-            logger.error(f'create test case failed: {e}')
-            return JsonResponse(code=10053, msg='create test case failed')
+            logger.error(f'update test case failed: {e}')
+            return JsonResponse(code=10053, msg='update test case failed')
         return JsonResponse(data=serializer.data)
 
     def destroy(self, request, *args, **kwargs):

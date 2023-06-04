@@ -6,7 +6,6 @@ from application.infra.django.response import JsonResponse
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers
 from application.project.models import Project
-from application.project.serializers import ProjectSerializers
 from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_dir_node
 
@@ -47,7 +46,10 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
             logger.error(f'save suite dir failed: {e}')
             return JsonResponse(code=10071, msg='create suite dir failed')
         dir_data = serializer.data
-        dir_data['extra_data'] = {}
+        if dir_data['category'] != settings.CATEGORY_META.get('TestCase'):
+            dir_data['extra_data'] = {}
+        else:
+            dir_data['extra_data'] = get_model_extra_data(dir_data['id'], settings.MODULE_TYPE_META.get('SuiteDir'))
         result = handler_dir_node(dir_data)
         return JsonResponse(data=result)
 
