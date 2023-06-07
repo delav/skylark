@@ -1,14 +1,16 @@
-# Create your views here.
 from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
 from django.db import transaction
+from django.conf import settings
 from application.infra.django.response import JsonResponse
 from application.testcase.models import TestCase
 from application.caseentity.models import CaseEntity
 from application.caseentity.serializers import CaseEntitySerializers, CaseEntityListSerializers
 from application.libkeyword.models import LibKeyword
 from application.userkeyword.models import UserKeyword
+
+# Create your views here.
 
 
 class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -53,24 +55,30 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
 
     def validate_keywords(self, case_id, entity_list):
         result_list = []
+        lib_type = settings.KEYWORD_TYPE.get('LibKeyword')
+        user_type = settings.KEYWORD_TYPE.get('UserKeyword')
         for i in range(len(entity_list)):
             entity = entity_list[i]
             entity['seq_number'] = i
             entity['test_case_id'] = case_id
             keyword_id = entity['keyword_id']
             keyword_type = entity['keyword_type']
-            if keyword_type == 1:
+            if keyword_type == lib_type:
                 lib_kw = LibKeyword.objects.get(id=keyword_id)
                 # lib keyword exists
                 if lib_kw.input_params is None and entity['input_args'] is not None:
-                    logger.error(f'[{lib_kw.ext_name}] error keyword param type: expect {lib_kw.input_params},'
-                                 f'but get {entity["input_args"]}')
+                    logger.error(
+                        f'[{lib_kw.ext_name}] error keyword param type: expect {lib_kw.input_params},'
+                        f'but get {entity["input_args"]}'
+                    )
                     raise Exception
                 if lib_kw.input_params is not None and entity['input_args'] is None:
-                    logger.error(f'[{lib_kw.ext_name}] error keyword param type: expect {lib_kw.input_params},'
-                                 f'but get {entity["input_args"]}')
+                    logger.error(
+                        f'[{lib_kw.ext_name}] error keyword param type: expect {lib_kw.input_params},'
+                        f'but get {entity["input_args"]}'
+                    )
                     raise Exception
-            elif keyword_type == 2:
+            elif keyword_type == user_type:
                 UserKeyword.objects.get(id=keyword_id)
             else:
                 logger.error(f'keyword is not exists: {keyword_id}')

@@ -1,12 +1,12 @@
 from loguru import logger
+from django.conf import settings
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
 from application.infra.django.response import JsonResponse
 from application.libkeyword.models import LibKeyword
 from application.libkeyword.serializers import LibKeywordSerializers
-from application.keywordgroup.models import KeywordGroup
-from application.keywordgroup.serializers import KeywordGroup2Serializers
+from application.common.keyword.formatkeyword import format_keyword_data
 
 # Create your views here.
 
@@ -19,8 +19,16 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
     def list(self, request, *args, **kwargs):
         logger.info('get all lib keywords')
         queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return JsonResponse(data=serializer.data)
+        lib_keywords = []
+        lib_type = settings.KEYWORD_TYPE.get('LibKeyword')
+        for item in queryset.iterator():
+            serializer = self.get_serializer(item)
+            keyword_data = format_keyword_data(
+                **serializer.data,
+                keyword_type=lib_type
+            )
+            lib_keywords.append(keyword_data)
+        return JsonResponse(data=lib_keywords)
 
     def create(self, request, *args, **kwargs):
         logger.info(f'add lib keyword: {request.data}')

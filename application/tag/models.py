@@ -1,5 +1,4 @@
 from django.db import models
-from django.conf import settings
 
 # Create your models here.
 
@@ -9,7 +8,7 @@ class Tag(models.Model):
     name = models.CharField(max_length=255, help_text='tag name')
     project_id = models.IntegerField(help_text='associated project')
     module_id = models.IntegerField(help_text='associated module id')
-    module_type = models.IntegerField(default=0, choices=settings.MODULE_TYPE, help_text='associated module type')
+    module_type = models.IntegerField(default=0, help_text='associated module type')
 
     class Meta:
         verbose_name = 'tag'

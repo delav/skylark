@@ -11,7 +11,7 @@ class Project(models.Model):
     update_at = models.DateTimeField(auto_now=True, help_text='update time')
     create_by = models.CharField(max_length=255, help_text='create user')
     update_by = models.CharField(max_length=255, help_text='last update user')
-    status = models.IntegerField(default=0, choices=settings.MODULE_STATUS, help_text='project status')
+    status = models.IntegerField(default=0, help_text='project status')
 
     class Meta:
         verbose_name = 'project'

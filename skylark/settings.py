@@ -265,7 +265,6 @@ CATEGORY_META = {
     'Resource': 2,
     'ProjectFile': 3,
 }
-CATEGORY = [(v, k) for k, v in CATEGORY_META.items()]
 # related model data type
 MODULE_TYPE_META = {
     'Project': 0,
@@ -273,7 +272,7 @@ MODULE_TYPE_META = {
     'TestSuite': 2,
     'TestCase': 3,
 }
-MODULE_TYPE = [(v, k) for k, v in MODULE_TYPE_META.items()]
+
 # variable value type
 VALUE_TYPE_META = {
     'String': 0,
@@ -281,12 +280,23 @@ VALUE_TYPE_META = {
     'List': 2,
     'Dict': 3,
 }
-VALUE_TYPE = [(v, k) for k, v in VALUE_TYPE_META.items()]
 
 MODULE_STATUS_META = {
     'Normal': 0,
     'Discarded': 1,
     'Deleted': 2,
 }
-MODULE_STATUS = [(v, k) for k, v in MODULE_STATUS_META.items()]
+
+KEYWORD_TYPE = {
+    'LibKeyword': 1,
+    'UserKeyword': 2
+}
+
+KEYWORD_INPUT_TYPE = {
+    'None': 0,
+    'Single': 1,
+    'Multi': 2,
+    'List': 3,
+    'Dict': 4
+}
 

@@ -14,8 +14,7 @@ class CaseEntity(models.Model):
     test_case = models.ForeignKey(TestCase, related_name='entities', on_delete=models.CASCADE,
                                   help_text='associated case')
     keyword_id = models.IntegerField(help_text='lib keyword or user keyword id')
-    keyword_type = models.IntegerField(default=1, choices=((1, 'lib_keyword'), (2, 'user_keyword')),
-                                       help_text='keyword type')
+    keyword_type = models.IntegerField(default=1, help_text='keyword type')
 
     class Meta:
         verbose_name = 'case entity'
