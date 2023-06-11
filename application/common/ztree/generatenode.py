@@ -51,14 +51,14 @@ def handler_suite_node(suite_data):
         node['action'] = [NODE_ACTION_MAP.get('create_cust_keyword')]
         rename_menu['action'] = MENU_ACTION_MAP.get('rename_keyword_file')
         delete_menu['action'] = MENU_ACTION_MAP.get('delete_keyword_file')
-        node['menu'] = [NODE_MENU.get('copy'), NODE_MENU.get('paste'), rename_menu, delete_menu]
+        node['menu'] = [rename_menu, delete_menu]
     elif node['type'] == settings.CATEGORY_META.get('Resource'):
         node['nocheck'] = True
         node['isParent'] = False
         node['action'] = []
         rename_menu['action'] = MENU_ACTION_MAP.get('rename_resource_file')
         delete_menu['action'] = MENU_ACTION_MAP.get('delete_resource_file')
-        node['menu'] = [NODE_MENU.get('copy'), NODE_MENU.get('paste'), rename_menu, delete_menu]
+        node['menu'] = [rename_menu, delete_menu]
     elif node['type'] == settings.CATEGORY_META.get('ProjectFile'):
         node['nocheck'] = True
         node['isParent'] = False
@@ -84,19 +84,22 @@ def handler_dir_node(dir_data):
     delete_menu = deepcopy(NODE_MENU.get('delete'))
     rename_menu['action'] = MENU_ACTION_MAP.get('rename_dir')
     delete_menu['action'] = MENU_ACTION_MAP.get('delete_dir')
-    node['menu'].extend([rename_menu, delete_menu])
     if node['type'] == settings.CATEGORY_META.get('TestCase'):
         node['nocheck'] = False
         node['action'].append(NODE_ACTION_MAP.get('create_test_suite'))
+        node['menu'] = [NODE_MENU.get('paste'), rename_menu, delete_menu]
     elif node['type'] == settings.CATEGORY_META.get('Keyword'):
         node['nocheck'] = True
         node['action'].append(NODE_ACTION_MAP.get('create_keyword_file'))
+        node['menu'] = [rename_menu, delete_menu]
     elif node['type'] == settings.CATEGORY_META.get('Resource'):
         node['nocheck'] = True
         node['action'].append(NODE_ACTION_MAP.get('create_resource_file'))
+        node['menu'] = [rename_menu, delete_menu]
     elif node['type'] == settings.CATEGORY_META.get('ProjectFile'):
         node['nocheck'] = True
         node['action'].append(NODE_ACTION_MAP.get('upload_project_file'))
+        node['menu'] = [rename_menu, delete_menu]
     return node
 
 

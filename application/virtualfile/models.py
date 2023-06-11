@@ -15,6 +15,7 @@ class VirtualFile(models.Model):
     edit_file = models.BooleanField(default=False, help_text='if  can edit file')
     save_mode = models.IntegerField(default=1, help_text='save file mode, 1: db, 2:file')
     remark = models.TextField(default=None, blank=True, null=True, help_text='remark')
+    status = models.IntegerField(default=0, help_text='file status')
 
     class Meta:
         verbose_name = 'virtual file'

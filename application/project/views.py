@@ -14,21 +14,39 @@ from application.common.operator import ProjectOperator
 # Create your views here.
 
 
-class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin,
-                      mixins.UpdateModelMixin, viewsets.GenericViewSet):
+class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
+                      mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializers
 
     def list(self, request, *args, **kwargs):
         logger.info('get project list by current user')
-        groups_queryset = Group.objects.filter(user=request.user)
-        users = User.objects.none()
-        for group in groups_queryset:
-            users |= group.user_set.all()
-        group_emails = [user.email for user in users]
-        queryset = Project.objects.filter(create_by__in=group_emails, status=0)
-        serializer = self.get_serializer(queryset, many=True)
-        return JsonResponse(data=serializer.data)
+        try:
+            result = []
+            current_user = request.user
+            groups_queryset = Group.objects.filter(user=current_user)
+            users = User.objects.none()
+            for group in groups_queryset:
+                users |= group.user_set.all()
+            group_emails = [user.email for user in users]
+            group_queryset = Project.objects.filter(
+                create_by__in=group_emails,
+                status=settings.MODULE_STATUS_META.get('Normal'),
+                personal=False
+            )
+            group_serializer = self.get_serializer(group_queryset, many=True)
+            personal_queryset = Project.objects.filter(
+                create_by=current_user.email,
+                status=settings.MODULE_STATUS_META.get('Normal'),
+                personal=True
+            )
+            personal_serializer = self.get_serializer(personal_queryset, many=True)
+            result.extend(group_serializer.data)
+            result.extend(personal_serializer.data)
+        except (Exception,) as e:
+            logger.error(f'get project list failed: {e}')
+            return JsonResponse(code=10089, msg='get project failed')
+        return JsonResponse(data=result)
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -44,7 +62,7 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Ret
         copied_project_name = cname or default_project_name
         try:
             copied_project = Project.objects.get(name=copied_project_name)
-            operator = ProjectOperator(project_name, copied_project, request.user)
+            operator = ProjectOperator(project_name, copied_project, request.user.email)
             with transaction.atomic():
                 operator.copy_project_action() if cname else operator.new_project_action()
                 project = operator.get_new_project()
@@ -55,13 +73,12 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Ret
         result_serializer = self.get_serializer(project)
         return JsonResponse(data=result_serializer.data)
 
-    def retrieve(self, request, *args, **kwargs):
-        pass
-
     def update(self, request, *args, **kwargs):
         logger.info(f'update project: {request.data}')
         try:
             instance = self.get_object()
+            if instance.status != settings.MODULE_STATUS_META.get('Normal'):
+                return JsonResponse(code=10088, data='project not exist')
             serializer = self.get_serializer(instance, data=request.data)
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
@@ -69,6 +86,17 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, mixins.Ret
             logger.error(f'update project failed: {e}')
             return JsonResponse(code=10087, msg='update project failed')
         return JsonResponse(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        logger.info(f'delete project: {kwargs.get("pk")}')
+        try:
+            instance = self.get_object()
+            instance.status = settings.MODULE_STATUS_META.get('Deleted')
+            instance.save()
+        except (Exception,) as e:
+            logger.error(f'delete project failed: {e}')
+            return JsonResponse(code=10087, msg='delete project failed')
+        return JsonResponse()
 
 
 class AdminProjectViewSets(mixins.ListModelMixin, mixins.RetrieveModelMixin,

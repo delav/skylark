@@ -12,6 +12,7 @@ class Project(models.Model):
     create_by = models.CharField(max_length=255, help_text='create user')
     update_by = models.CharField(max_length=255, help_text='last update user')
     status = models.IntegerField(default=0, help_text='project status')
+    personal = models.BooleanField(default=False, help_text='personal project')
 
     class Meta:
         verbose_name = 'project'

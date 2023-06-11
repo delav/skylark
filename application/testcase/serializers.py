@@ -23,3 +23,13 @@ class TestCaseSerializers(serializers.ModelSerializer):
             ret['create_by'] = user_email
         ret['update_by'] = user_email
         return ret
+
+
+class DuplicateTestCaseSerializers(serializers.ModelSerializer):
+    to_project_id = serializers.IntegerField(help_text='to project id')
+    to_suite_id = serializers.IntegerField(help_text='to test suite id')
+    raw_case_id = serializers.IntegerField(help_text='copy test case id')
+
+    class Meta:
+        model = TestCase
+        fields = ('to_project_id', 'to_suite_id', 'raw_case_id')

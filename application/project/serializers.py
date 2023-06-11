@@ -6,7 +6,9 @@ class ProjectSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ('id', 'name', 'create_at', 'update_at', 'create_by', 'update_by')
+        fields = (
+            'id', 'name', 'status', 'personal', 'create_at', 'update_at', 'create_by', 'update_by'
+        )
         read_only_fields = ('create_by', 'update_by')
 
     def to_internal_value(self, data):

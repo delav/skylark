@@ -1,7 +1,7 @@
 from loguru import logger
+from django.conf import settings
 from rest_framework import mixins
 from rest_framework import viewsets
-from django.conf import settings
 from application.infra.django.response import JsonResponse
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers
@@ -12,7 +12,7 @@ from application.common.ztree.generatenode import handler_dir_node
 # Create your views here.
 
 
-class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin,
+class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
                        mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = SuiteDir.objects.all()
     serializer_class = SuiteDirSerializers
@@ -25,7 +25,10 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
         except (Exception,) as e:
             logger.error(f'get base dir info failed: {e}')
             return JsonResponse(code=10070, msg='get base dir failed')
-        dirs = project.dirs.filter(parent_dir=None).order_by('category')
+        dirs = project.dirs.filter(
+            parent_dir=None,
+            status=settings.MODULE_STATUS_META.get('Normal')
+        ).order_by('category')
         dir_list = []
         for item in dirs.iterator():
             dir_data = self.get_serializer(item).data
@@ -53,13 +56,12 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
         result = handler_dir_node(dir_data)
         return JsonResponse(data=result)
 
-    def retrieve(self, request, *args, **kwargs):
-        pass
-
     def update(self, request, *args, **kwargs):
         logger.info(f'update suite dir: {request.data}')
         try:
             instance = self.get_object()
+            if instance.status != settings.MODULE_STATUS_META.get('Normal'):
+                return JsonResponse(code=10074, data='suite sir not exist')
             serializer = self.get_serializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
@@ -74,7 +76,8 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixin
             instance = self.get_object()
             if not instance.parent_dir:
                 return JsonResponse(code=10074, msg='dir not allowed delete')
-            self.perform_destroy(instance)
+            instance.status = settings.MODULE_STATUS_META.get('Deleted')
+            instance.save()
         except (Exception,) as e:
             logger.error(f'delete suite dir error: {e}')
             return JsonResponse(code=10075, msg='delete suite dir failed')

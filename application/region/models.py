@@ -8,7 +8,6 @@ class Region(models.Model):
     name = models.CharField(max_length=255, help_text='region name')
     desc = models.CharField(default='', max_length=255, help_text='region desc')
     status = models.IntegerField(default=0, help_text='region status')
-    default = models.BooleanField(default=False, help_text='if default')
 
     class Meta:
         verbose_name = 'region'

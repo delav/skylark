@@ -21,3 +21,14 @@ class TestSuiteSerializers(serializers.ModelSerializer):
             ret['create_by'] = user_email
         ret['update_by'] = user_email
         return ret
+
+
+class DuplicateTestSuiteSerializers(serializers.ModelSerializer):
+    to_project_id = serializers.IntegerField(help_text='to project id')
+    to_dir_id = serializers.IntegerField(help_text='to suite dir id')
+    raw_suite_id = serializers.IntegerField(help_text='copy test suite id')
+
+    class Meta:
+        model = TestSuite
+        fields = ('to_project_id', 'to_dir_id', 'raw_suite_id')
+
