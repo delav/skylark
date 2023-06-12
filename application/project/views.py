@@ -10,6 +10,7 @@ from application.infra.django.response import JsonResponse
 from application.project.models import Project
 from application.project.serializers import ProjectSerializers
 from application.common.operator import ProjectOperator
+from application.infra.utils.timehanldler import get_partial_timestamp
 
 # Create your views here.
 
@@ -55,14 +56,19 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         project_name = serializer.validated_data.get('name')
-        project_q = Project.objects.filter(name=project_name)
-        if project_q.exists():
+        _project = Project.objects.filter(name=project_name)
+        if _project.exists():
             return JsonResponse(code=10080, data='project name already exists')
         default_project_name = settings.PROJECT_MODULE
         copied_project_name = cname or default_project_name
         try:
             copied_project = Project.objects.get(name=copied_project_name)
-            operator = ProjectOperator(project_name, copied_project, request.user.email)
+            operator = ProjectOperator(
+                project_name,
+                copied_project,
+                create_by=request.user.email,
+                personal=serializer.validated_data.get('personal')
+                )
             with transaction.atomic():
                 operator.copy_project_action() if cname else operator.new_project_action()
                 project = operator.get_new_project()
@@ -91,7 +97,11 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
         logger.info(f'delete project: {kwargs.get("pk")}')
         try:
             instance = self.get_object()
+            if instance.create_by != request.user.email or not instance.personal:
+                return JsonResponse(code=10088, msg='project not allowed deleted')
             instance.status = settings.MODULE_STATUS_META.get('Deleted')
+            instance.name = instance.name + f'-{get_partial_timestamp(6)}'
+            instance.update_by = request.user.email
             instance.save()
         except (Exception,) as e:
             logger.error(f'delete project failed: {e}')

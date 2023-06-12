@@ -8,10 +8,10 @@ from application.common.operator.caseoperator import CaseOperator
 
 class SuiteOperator(object):
 
-    def __init__(self, project_id, new_dir_id, user):
+    def __init__(self, project_id, new_dir_id, create_user):
         self.project_id = project_id
         self.dir_id = new_dir_id
-        self.create_by = user
+        self.create_by = create_user
 
     def copy_suite_by_id(self, suite_id):
         suite_obj = TestSuite.objects.get(id=suite_id)

@@ -6,10 +6,10 @@ from application.caseentity.models import CaseEntity
 
 class CaseOperator(object):
 
-    def __init__(self, project_id, new_suite_id, user):
+    def __init__(self, project_id, new_suite_id, create_user):
         self.project_id = project_id
         self.suite_id = new_suite_id
-        self.create_by = user
+        self.create_by = create_user
 
     def copy_case_by_id(self, case_id):
         case_obj = TestCase.objects.get(id=case_id)

@@ -4,18 +4,16 @@ from application.common.operator.diroperator import DirOperator
 
 class ProjectOperator(object):
 
-    def __init__(self, new_project_name, copy_project, user):
-        self.create_by = user
-        self.copy_project = copy_project
+    def __init__(self, new_project_name, copy_project_id, **kwargs):
+        self.kwargs = kwargs
+        self.copy_project_id = copy_project_id
         self.name = new_project_name
         self.new_project = None
 
     def _create_project(self):
         project = Project.objects.create(
             name=self.name,
-            create_by=self.create_by,
-            status=self.copy_project.status,
-            personal=self.copy_project.personal
+            **self.kwargs
         )
         self.new_project = project
 
@@ -25,16 +23,16 @@ class ProjectOperator(object):
     def new_project_action(self):
         self._create_project()
         DirOperator(
-            self.new_project,
-            self.copy_project,
-            self.create_by
+            self.new_project.id,
+            self.copy_project_id,
+            self.new_project.create_by
         ).create_first_level_dir()
 
     def copy_project_action(self):
         self._create_project()
         DirOperator(
-            self.new_project,
-            self.copy_project,
-            self.create_by
+            self.new_project.id,
+            self.copy_project_id,
+            self.new_project.create_by
         ).deep_copy_all_dir()
 

@@ -14,6 +14,7 @@ from application.virtualfile.models import VirtualFile
 from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_dir_node, handler_suite_node
 from application.common.operator.suiteoperator import SuiteOperator
+from application.infra.utils.timehanldler import get_partial_timestamp
 
 # Create your views here.
 
@@ -88,6 +89,8 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
             with transaction.atomic():
                 instance = self.get_object()
                 instance.status = settings.MODULE_STATUS_META.get('Deleted')
+                instance.name = instance.name + f'-{get_partial_timestamp(6)}'
+                instance.update_by = request.user.email
                 instance.save()
                 if instance.category == settings.CATEGORY_META.get('Resource'):
                     file_obj = VirtualFile.objects.get(suite_id=instance.id)

@@ -8,6 +8,7 @@ from application.suitedir.serializers import SuiteDirSerializers
 from application.project.models import Project
 from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_dir_node
+from application.infra.utils.timehanldler import get_partial_timestamp
 
 # Create your views here.
 
@@ -77,6 +78,8 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
             if not instance.parent_dir:
                 return JsonResponse(code=10074, msg='dir not allowed delete')
             instance.status = settings.MODULE_STATUS_META.get('Deleted')
+            instance.name = instance.name + f'-{get_partial_timestamp(6)}'
+            instance.update_by = request.user.email
             instance.save()
         except (Exception,) as e:
             logger.error(f'delete suite dir error: {e}')
