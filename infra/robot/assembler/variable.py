@@ -1,5 +1,5 @@
-from application.infra.robot.assembler.configure import Config
-from application.infra.constant import SPECIAL_SEP, VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
+from infra.robot.assembler.configure import Config
+from infra.constant import SPECIAL_SEP, VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
 
 config = Config()
 

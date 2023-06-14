@@ -1,4 +1,4 @@
-from application.infra.constant.constants import SPECIAL_SEP
+from infra.constant.constants import SPECIAL_SEP
 from application.common.reader.module import keyword_map, alias_map
 
 

@@ -1,6 +1,6 @@
 from uuid import uuid1
 from copy import deepcopy
-from django.conf import settings
+from application.constant import *
 from application.common.ztree.constant import *
 
 
@@ -20,12 +20,12 @@ def handler_case_node(case_data):
     node['isParent'] = False
     rename_menu = deepcopy(NODE_MENU.get('rename'))
     delete_menu = deepcopy(NODE_MENU.get('delete'))
-    if node['type'] == settings.CATEGORY_META.get('TestCase'):
+    if node['type'] == CATEGORY_META.get('TestCase'):
         node['nocheck'] = False
         rename_menu['action'] = MENU_ACTION_MAP.get('rename_test_case')
         delete_menu['action'] = MENU_ACTION_MAP.get('delete_test_case')
         node['menu'] = [NODE_MENU.get('copy'), rename_menu, delete_menu]
-    elif node['type'] == settings.CATEGORY_META.get('Keyword'):
+    elif node['type'] == CATEGORY_META.get('Keyword'):
         node['nocheck'] = True
         rename_menu['action'] = MENU_ACTION_MAP.get('rename_cust_keyword')
         delete_menu['action'] = MENU_ACTION_MAP.get('delete_cust_keyword')
@@ -38,28 +38,28 @@ def handler_suite_node(suite_data):
     node['desc'] = NODE_DESC['suite']
     rename_menu = deepcopy(NODE_MENU.get('rename'))
     delete_menu = deepcopy(NODE_MENU.get('delete'))
-    if node['type'] == settings.CATEGORY_META.get('TestCase'):
+    if node['type'] == CATEGORY_META.get('TestCase'):
         node['nocheck'] = False
         node['isParent'] = True
         node['action'] = [NODE_ACTION_MAP.get('create_test_case')]
         rename_menu['action'] = MENU_ACTION_MAP.get('rename_test_suite')
         delete_menu['action'] = MENU_ACTION_MAP.get('delete_test_suite')
         node['menu'] = [NODE_MENU.get('copy'), NODE_MENU.get('paste'), rename_menu, delete_menu]
-    elif node['type'] == settings.CATEGORY_META.get('Keyword'):
+    elif node['type'] == CATEGORY_META.get('Keyword'):
         node['nocheck'] = True
         node['isParent'] = True
         node['action'] = [NODE_ACTION_MAP.get('create_cust_keyword')]
         rename_menu['action'] = MENU_ACTION_MAP.get('rename_keyword_file')
         delete_menu['action'] = MENU_ACTION_MAP.get('delete_keyword_file')
         node['menu'] = [rename_menu, delete_menu]
-    elif node['type'] == settings.CATEGORY_META.get('Resource'):
+    elif node['type'] == CATEGORY_META.get('Resource'):
         node['nocheck'] = True
         node['isParent'] = False
         node['action'] = []
         rename_menu['action'] = MENU_ACTION_MAP.get('rename_resource_file')
         delete_menu['action'] = MENU_ACTION_MAP.get('delete_resource_file')
         node['menu'] = [rename_menu, delete_menu]
-    elif node['type'] == settings.CATEGORY_META.get('ProjectFile'):
+    elif node['type'] == CATEGORY_META.get('ProjectFile'):
         node['nocheck'] = True
         node['isParent'] = False
         node['action'] = [NODE_ACTION_MAP.get('download_project_file')]
@@ -76,7 +76,7 @@ def handler_dir_node(dir_data):
     node['isParent'] = True
     # parent dir, only show create dir action
     if dir_data.get('parent_dir_id') is None:
-        if node['type'] == settings.CATEGORY_META.get('TestCase'):
+        if node['type'] == CATEGORY_META.get('TestCase'):
             node['nocheck'] = False
         return node
     # children dir
@@ -84,19 +84,19 @@ def handler_dir_node(dir_data):
     delete_menu = deepcopy(NODE_MENU.get('delete'))
     rename_menu['action'] = MENU_ACTION_MAP.get('rename_dir')
     delete_menu['action'] = MENU_ACTION_MAP.get('delete_dir')
-    if node['type'] == settings.CATEGORY_META.get('TestCase'):
+    if node['type'] == CATEGORY_META.get('TestCase'):
         node['nocheck'] = False
         node['action'].append(NODE_ACTION_MAP.get('create_test_suite'))
         node['menu'] = [NODE_MENU.get('paste'), rename_menu, delete_menu]
-    elif node['type'] == settings.CATEGORY_META.get('Keyword'):
+    elif node['type'] == CATEGORY_META.get('Keyword'):
         node['nocheck'] = True
         node['action'].append(NODE_ACTION_MAP.get('create_keyword_file'))
         node['menu'] = [rename_menu, delete_menu]
-    elif node['type'] == settings.CATEGORY_META.get('Resource'):
+    elif node['type'] == CATEGORY_META.get('Resource'):
         node['nocheck'] = True
         node['action'].append(NODE_ACTION_MAP.get('create_resource_file'))
         node['menu'] = [rename_menu, delete_menu]
-    elif node['type'] == settings.CATEGORY_META.get('ProjectFile'):
+    elif node['type'] == CATEGORY_META.get('ProjectFile'):
         node['nocheck'] = True
         node['action'].append(NODE_ACTION_MAP.get('upload_project_file'))
         node['menu'] = [rename_menu, delete_menu]

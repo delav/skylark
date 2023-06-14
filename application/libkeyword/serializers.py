@@ -7,7 +7,4 @@ class LibKeywordSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = LibKeyword
-        fields = (
-            'id', 'name', 'ext_name', 'desc', 'group_id',
-            'input_params', 'input_desc', 'output_params', 'output_desc', 'input_type', 'image', 'mark'
-        )
+        exclude = ('create_at', 'update_at')

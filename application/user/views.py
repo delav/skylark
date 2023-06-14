@@ -5,11 +5,11 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
-from application.infra.django.response import JsonResponse
+from infra.django.response import JsonResponse
 from application.user.models import User
 from application.user.serializers import UserSerializer, RegisterSerializer, UserAdminSerializer
 from application.group.models import Group
-from application.infra.django.pagination.paginator import PagePagination
+from infra.django.pagination.paginator import PagePagination
 
 # Create your views here.
 

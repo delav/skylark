@@ -4,7 +4,7 @@ from rest_framework import mixins
 from rest_framework.permissions import AllowAny, IsAdminUser
 from application.group.models import Group
 from application.group.serializers import GroupSerializers
-from application.infra.django.response import JsonResponse
+from infra.django.response import JsonResponse
 
 
 class GroupViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin,

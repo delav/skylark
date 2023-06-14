@@ -2,7 +2,7 @@ from loguru import logger
 from django.conf import settings
 from rest_framework import mixins
 from rest_framework import viewsets
-from application.infra.django.response import JsonResponse
+from infra.django.response import JsonResponse
 from application.projectversion.models import ProjectVersion
 from application.projectversion.serializers import ProjectVersionSerializers
 from skylark.celeryapp import app

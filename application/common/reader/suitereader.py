@@ -3,8 +3,8 @@ from application.variable.models import Variable
 from application.setupteardown.models import SetupTeardown
 from application.tag.models import Tag
 from application.common.reader.module.testcase import CaseReader
-from application.infra.robot.suitefile import SuiteFile
-from application.infra.constant.constants import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
+from infra.robot.suitefile import SuiteFile
+from infra.constant.constants import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
 
 
 class JsonSuiteReader(object):

@@ -4,9 +4,9 @@ from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from application.infra.django.pagination.paginator import PagePagination
-from application.infra.django.response import JsonResponse
-from application.infra.utils.buildhandler import generate_task_name, convert_task_name
+from infra.django.pagination.paginator import PagePagination
+from infra.django.response import JsonResponse
+from infra.utils.buildhandler import generate_task_name, convert_task_name
 from application.group.models import Group
 from application.user.models import User
 from application.project.models import Project

@@ -1,16 +1,15 @@
 from loguru import logger
-from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
-from application.infra.django.response import JsonResponse
+from infra.django.response import JsonResponse
 from application.casepriority.models import CasePriority
 from application.casepriority.serializers import CasePrioritySerializers
 
 # Create your views here.
 
 
-class CasePriorityViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.ListModelMixin,
-                           mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class CasePriorityViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
+                           mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = CasePriority.objects.all()
     serializer_class = CasePrioritySerializers
 
@@ -43,8 +42,3 @@ class CasePriorityViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, m
             return JsonResponse(code=10131, msg='update case priority failed')
         return JsonResponse(serializer.data)
 
-    def retrieve(self, request, *args, **kwargs):
-        pass
-
-    def destroy(self, request, *args, **kwargs):
-        pass

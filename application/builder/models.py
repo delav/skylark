@@ -1,5 +1,4 @@
 from django.db import models
-from application.user.models import User
 from application.project.models import Project
 from application.environment.models import Environment
 

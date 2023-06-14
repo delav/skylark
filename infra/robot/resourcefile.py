@@ -1,8 +1,8 @@
-from application.infra.robot.assembler.setting import LibrarySetting, ResourceSetting, VariableSetting
-from application.infra.robot.assembler.variable import VariableAssembler
-from application.infra.robot.assembler.testcase import KeywordAssembler
-from application.infra.robot.basefile import BaseFile
-from application.infra.constant.constants import ENTITY_KEY
+from infra.robot.assembler.setting import LibrarySetting, ResourceSetting, VariableSetting
+from infra.robot.assembler.variable import VariableAssembler
+from infra.robot.assembler.testcase import KeywordAssembler
+from infra.robot.basefile import BaseFile
+from infra.constant.constants import ENTITY_KEY
 
 
 class ResourceKeywordFile(BaseFile):

@@ -98,7 +98,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'application.infra.django.middleware.loghandler.OpLogs',
+    'infra.django.middleware.loghandler.OpLogs',
 ]
 
 ROOT_URLCONF = 'skylark.urls'
@@ -150,10 +150,10 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'application.infra.django.permission.LoginAuth',
+        'infra.django.permission.LoginAuth',
     ),
     'DATETIME_FORMAT': '%Y-%m-%d %H:%M:%S',
-    'EXCEPTION_HANDLER': 'application.infra.django.exception.exception_handler',
+    'EXCEPTION_HANDLER': 'infra.django.exception.exception_handler',
 }
 
 SIMPLE_JWT = {
@@ -254,49 +254,4 @@ BUILDER_QUEUE = 'builder'
 BUILDER_ROUTING_KEY = 'periodic.builder'
 INSTANT_TASK = 'task.builder.tasks.instant_builder'
 PERIODIC_TASK = 'task.builder.tasks.periodic_builder'
-
-# user customize keyword group
-CUSTOMIZE_KEYWORD_GROUP = 99
-
-# model data category. 0: test case, 1: resource(user keyword), 2: text/other file
-CATEGORY_META = {
-    'TestCase': 0,
-    'Keyword': 1,
-    'Resource': 2,
-    'ProjectFile': 3,
-}
-# related model data type
-MODULE_TYPE_META = {
-    'Project': 0,
-    'SuiteDir': 1,
-    'TestSuite': 2,
-    'TestCase': 3,
-}
-
-# variable value type
-VALUE_TYPE_META = {
-    'String': 0,
-    'Number': 1,
-    'List': 2,
-    'Dict': 3,
-}
-
-MODULE_STATUS_META = {
-    'Normal': 0,
-    'Discarded': 1,
-    'Deleted': 2,
-}
-
-KEYWORD_TYPE = {
-    'LibKeyword': 1,
-    'UserKeyword': 2
-}
-
-KEYWORD_INPUT_TYPE = {
-    'None': 0,
-    'Single': 1,
-    'Multi': 2,
-    'List': 3,
-    'Dict': 4
-}
 

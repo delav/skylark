@@ -1,6 +1,6 @@
-from application.infra.robot.assembler.variable import VariableAssembler
-from application.infra.robot.assembler.setting import SetupTeardownSetting, ResourceSetting, TagSetting, VariableSetting
-from application.infra.robot.basefile import BaseFile
+from infra.robot.assembler.variable import VariableAssembler
+from infra.robot.assembler.setting import SetupTeardownSetting, ResourceSetting, TagSetting, VariableSetting
+from infra.robot.basefile import BaseFile
 
 
 class DirInitFile(BaseFile):

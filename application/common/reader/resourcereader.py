@@ -3,8 +3,8 @@ from django.conf import settings
 from application.pythonlib.models import PythonLib
 from application.variable.models import Variable
 from application.common.reader.module.testcase import CaseReader
-from application.infra.robot.resourcefile import ResourceKeywordFile, ResourceCommonFile
-from application.infra.constant.constants import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
+from infra.robot.resourcefile import ResourceKeywordFile, ResourceCommonFile
+from infra.constant.constants import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
 
 
 class ResourceKeywordReader(object):

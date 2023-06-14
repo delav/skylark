@@ -1,4 +1,4 @@
-from django.conf import settings
+from application.constant import MODULE_TYPE_META
 from application.setupteardown.models import SetupTeardown
 from application.setupteardown.serializers import SetupTeardownSerializers
 from application.variable.models import Variable
@@ -7,12 +7,12 @@ from application.tag.models import Tag
 from application.tag.serializers import TagSerializers
 from application.caseentity.models import CaseEntity
 from application.caseentity.serializers import CaseEntitySerializers
-from application.infra.constant.constants import VARIABLE_KEY, FIXTURE_KEY, TAG_KEY, ENTITY_KEY
+from infra.constant.constants import VARIABLE_KEY, FIXTURE_KEY, TAG_KEY, ENTITY_KEY
 
 
 def get_model_extra_data(module_id, module_type, include_entity=False):
     variable_list, fixture, tag = [], {}, []
-    if module_type != settings.MODULE_TYPE_META.get('TestCase'):
+    if module_type != MODULE_TYPE_META.get('TestCase'):
         variable_queryset = Variable.objects.filter(
             module_id=module_id,
             module_type=module_type
@@ -57,7 +57,7 @@ def get_model_simple_extra_data(module_id, module_type, include_entity=False):
     entity_simple_fields = (
         'input_args', 'output_args', 'keyword_id'
     )
-    if module_type != settings.MODULE_TYPE_META.get('TestCase'):
+    if module_type != MODULE_TYPE_META.get('TestCase'):
         variable_queryset = Variable.objects.filter(
             module_id=module_id,
             module_type=module_type

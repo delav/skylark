@@ -1,5 +1,5 @@
-from application.infra.robot.assembler.configure import Config
-from application.infra.constant import SPECIAL_SEP, ENTITY_NAME_KEY, ENTITY_PARAMS_KEY, ENTITY_RETURN_KEY
+from infra.robot.assembler.configure import Config
+from infra.constant import SPECIAL_SEP, ENTITY_NAME_KEY, ENTITY_PARAMS_KEY, ENTITY_RETURN_KEY
 
 config = Config()
 

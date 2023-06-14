@@ -2,7 +2,7 @@ from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from application.infra.django.response import JsonResponse
+from infra.django.response import JsonResponse
 from application.variable.models import Variable
 from application.variable.serializers import VariableSerializers, CopyVariableSerializers
 

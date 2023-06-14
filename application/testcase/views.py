@@ -1,10 +1,10 @@
 from loguru import logger
 from django.db import transaction
-from django.conf import settings
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from application.infra.django.response import JsonResponse
+from infra.django.response import JsonResponse
+from application.constant import *
 from application.testcase.models import TestCase
 from application.testcase.serializers import TestCaseSerializers, DuplicateTestCaseSerializers
 from application.userkeyword.models import UserKeyword
@@ -12,7 +12,7 @@ from application.testsuite.models import TestSuite
 from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_case_node
 from application.common.operator.caseoperator import CaseOperator
-from application.infra.utils.timehanldler import get_partial_timestamp
+from infra.utils.timehanldler import get_partial_timestamp
 
 # Create your views here.
 
@@ -26,18 +26,21 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         logger.info(f'get all test case by test suite id: {request.query_params}')
         try:
             suite_id = request.query_params.get('suite')
-            suite_obj = TestSuite.objects.get(id=suite_id)
+            suite_obj = TestSuite.objects.get(
+                id=suite_id,
+                status=MODULE_STATUS_META.get('Normal')
+            )
         except (Exception,) as e:
             logger.error(f'get test case failed: {e}')
             return JsonResponse(code=10050, msg='get test case failed')
-        test_cases = suite_obj.cases.filter(status=settings.MODULE_STATUS_META.get('Normal'))
+        test_cases = suite_obj.cases.filter(status=MODULE_STATUS_META.get('Normal'))
         case_list = []
         for item in test_cases.iterator():
             case_data = self.get_serializer(item).data
-            if item.category != settings.CATEGORY_META.get('TestCase'):
+            if item.category != CATEGORY_META.get('TestCase'):
                 case_data['extra_data'] = {}
             else:
-                case_data['extra_data'] = get_model_extra_data(item.id, settings.MODULE_TYPE_META.get('TestCase'))
+                case_data['extra_data'] = get_model_extra_data(item.id, MODULE_TYPE_META.get('TestCase'))
             case_list.append(handler_case_node(case_data))
         return JsonResponse(data=case_list)
 
@@ -51,22 +54,22 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
                 self.perform_create(serializer)
                 case_id = serializer.data.get('id')
                 suite_id = serializer.validated_data.get('test_suite_id')
-                if serializer.validated_data.get('category') == settings.CATEGORY_META.get('Keyword'):
+                if serializer.validated_data.get('category') == CATEGORY_META.get('Keyword'):
                     suite = TestSuite.objects.select_related('suite_dir__project').get(id=suite_id)
                     project_id = suite.suite_dir.project_id
                     UserKeyword.objects.create(
                         test_case_id=case_id,
-                        group_id=settings.CUSTOMIZE_KEYWORD_GROUP,
+                        group_id=CUSTOMIZE_KEYWORD_GROUP,
                         project_id=project_id
                     )
         except Exception as e:
             logger.error(f'create test case failed: {e}')
             return JsonResponse(code=10051, msg='create test case failed')
         case_data = serializer.data
-        if case_data['category'] != settings.CATEGORY_META.get('TestCase'):
+        if case_data['category'] != CATEGORY_META.get('TestCase'):
             case_data['extra_data'] = {}
         else:
-            case_data['extra_data'] = get_model_extra_data(case_data['id'], settings.MODULE_TYPE_META.get('TestCase'))
+            case_data['extra_data'] = get_model_extra_data(case_data['id'], MODULE_TYPE_META.get('TestCase'))
         result = handler_case_node(case_data)
         return JsonResponse(data=result)
 
@@ -75,14 +78,14 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         logger.info(f'update test case: {request.data}')
         try:
             instance = self.get_object()
-            if instance.status != settings.MODULE_STATUS_META.get('Normal'):
+            if instance.status != MODULE_STATUS_META.get('Normal'):
                 return JsonResponse(code=10054, data='test case not exist')
             serializer = self.get_serializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             with transaction.atomic():
                 self.perform_update(serializer)
                 case_id = serializer.validated_data.get('id')
-                if serializer.validated_data.get('category') == settings.CATEGORY_META.get('Keyword'):
+                if serializer.validated_data.get('category') == CATEGORY_META.get('Keyword'):
                     UserKeyword.objects.get(test_case_id=case_id).save()
         except Exception as e:
             logger.error(f'update test case failed: {e}')
@@ -95,13 +98,13 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         try:
             with transaction.atomic():
                 instance = self.get_object()
-                instance.status = settings.MODULE_STATUS_META.get('Deleted')
+                instance.status = MODULE_STATUS_META.get('Deleted')
                 instance.name = instance.name + f'-{get_partial_timestamp(6)}'
                 instance.update_by = request.user.email
                 instance.save()
-                if instance.category == settings.CATEGORY_META.get('Keyword'):
+                if instance.category == CATEGORY_META.get('Keyword'):
                     related_keyword = UserKeyword.objects.get(test_case_id=instance.id)
-                    related_keyword.status = settings.MODULE_STATUS_META.get('Deleted')
+                    related_keyword.status = MODULE_STATUS_META.get('Deleted')
                     related_keyword.save()
         except (Exception,) as e:
             logger.error(f'delete test case error: {e}')
@@ -129,9 +132,9 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
             logger.error(f'copy test case failed: {e}')
             return JsonResponse(code=10055, msg='copy test case failed')
         case_data = self.get_serializer(new_case).data
-        if case_data['category'] != settings.CATEGORY_META.get('TestCase'):
+        if case_data['category'] != CATEGORY_META.get('TestCase'):
             case_data['extra_data'] = {}
         else:
-            case_data['extra_data'] = get_model_extra_data(case_data['id'], settings.MODULE_TYPE_META.get('TestCase'))
+            case_data['extra_data'] = get_model_extra_data(case_data['id'], MODULE_TYPE_META.get('TestCase'))
         result = handler_case_node(case_data)
         return JsonResponse(data=result)

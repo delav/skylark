@@ -2,8 +2,8 @@ from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
 from django.db import transaction
-from django.conf import settings
-from application.infra.django.response import JsonResponse
+from infra.django.response import JsonResponse
+from application.constant import MODULE_STATUS_META, KEYWORD_TYPE
 from application.testcase.models import TestCase
 from application.caseentity.models import CaseEntity
 from application.caseentity.serializers import CaseEntitySerializers, CaseEntityListSerializers
@@ -33,13 +33,14 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
         logger.info(f'save test case entities: {request.data}')
         serializer = CaseEntityListSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         case_id = serializer.validated_data.get('case_id')
         entity_list = serializer.validated_data.get('entity_list')
 
         try:
             with transaction.atomic():
                 test_case = TestCase.objects.get(id=case_id)
+                if test_case.status == MODULE_STATUS_META.get('Deleted'):
+                    return JsonResponse(code=10042, data='test case not exist')
                 test_case.update_by = request.user.email
                 test_case.save()
                 # delete old case entities
@@ -55,8 +56,8 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
 
     def validate_keywords(self, case_id, entity_list):
         result_list = []
-        lib_type = settings.KEYWORD_TYPE.get('LibKeyword')
-        user_type = settings.KEYWORD_TYPE.get('UserKeyword')
+        lib_type = KEYWORD_TYPE.get('LibKeyword')
+        user_type = KEYWORD_TYPE.get('UserKeyword')
         for i in range(len(entity_list)):
             entity = entity_list[i]
             entity['seq_number'] = i

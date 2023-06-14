@@ -1,6 +1,6 @@
-from application.infra.constant.constants import PATH_SEP, ROBOT_FILE_SUBFIX, INIT_FILE_NAME
-from application.infra.constant.constants import VARIABLE_KEY, FIXTURE_KEY, TAG_KEY
-from application.infra.engine.structure import SuiteStructure, CommonStructure
+from infra.constant.constants import PATH_SEP, ROBOT_FILE_SUBFIX, INIT_FILE_NAME
+from infra.constant.constants import VARIABLE_KEY, FIXTURE_KEY, TAG_KEY
+from infra.engine.structure import SuiteStructure, CommonStructure
 from application.common.reader.initreader import JsonDirInitReader
 from application.common.reader.suitereader import JsonSuiteReader
 from application.common.parser.baseparser import CommonParser

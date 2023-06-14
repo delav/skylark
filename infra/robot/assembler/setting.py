@@ -1,4 +1,4 @@
-from application.infra.robot.assembler.configure import Config
+from infra.robot.assembler.configure import Config
 
 
 config = Config()

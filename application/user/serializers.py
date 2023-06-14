@@ -2,9 +2,9 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.db.models import Q
 from django.contrib.auth.hashers import make_password, check_password
-from application.infra.common import ecb_decrypt
+from infra.common import ecb_decrypt
 from application.user.models import User
-from application.infra.django.exception import ValidationException
+from infra.django.exception import ValidationException
 
 
 class UserAdminSerializer(serializers.ModelSerializer):

@@ -1,5 +1,5 @@
 from rest_framework.exceptions import APIException
-from application.infra.django.exception import DetailError
+from infra.django.exception import DetailError
 
 
 class ValidationException(APIException):

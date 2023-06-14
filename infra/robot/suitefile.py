@@ -1,10 +1,10 @@
-from application.infra.constant.constants import ENTITY_KEY
-from application.infra.robot.assembler.setting import ResourceSetting, VariableSetting, TagSetting
-from application.infra.robot.assembler.setting import SetupTeardownSetting, TimeoutSetting
-from application.infra.robot.assembler.variable import VariableAssembler
-from application.infra.robot.assembler.testcase import TestcaseAssembler
-from application.infra.robot.basefile import BaseFile
-from application.infra.robot.assembler.configure import Config
+from infra.constant.constants import ENTITY_KEY
+from infra.robot.assembler.setting import ResourceSetting, VariableSetting, TagSetting
+from infra.robot.assembler.setting import SetupTeardownSetting, TimeoutSetting
+from infra.robot.assembler.variable import VariableAssembler
+from infra.robot.assembler.testcase import TestcaseAssembler
+from infra.robot.basefile import BaseFile
+from infra.robot.assembler.configure import Config
 
 
 class SuiteFile(BaseFile):

@@ -1,9 +1,9 @@
 from loguru import logger
-from django.conf import settings
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
-from application.infra.django.response import JsonResponse
+from infra.django.response import JsonResponse
+from application.constant import KEYWORD_TYPE, MODULE_STATUS_META
 from application.libkeyword.models import LibKeyword
 from application.libkeyword.serializers import LibKeywordSerializers
 from application.common.keyword.formatkeyword import format_keyword_data
@@ -18,9 +18,9 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
 
     def list(self, request, *args, **kwargs):
         logger.info('get all lib keywords')
-        queryset = self.get_queryset()
+        queryset = LibKeyword.objects.filter(status=MODULE_STATUS_META.get('Normal'))
         lib_keywords = []
-        lib_type = settings.KEYWORD_TYPE.get('LibKeyword')
+        lib_type = KEYWORD_TYPE.get('LibKeyword')
         for item in queryset.iterator():
             serializer = self.get_serializer(item)
             keyword_data = format_keyword_data(

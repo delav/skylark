@@ -2,7 +2,7 @@ from django.conf import settings
 from pathlib import Path
 from application.virtualfile.models import VirtualFile
 from application.virtualfile.serializers import VirtualFileSerializers
-from application.infra.utils.readfile import FILE_READER_MAP
+from infra.utils.readfile import FILE_READER_MAP
 
 
 def get_file_content(suite_id, **kwargs):

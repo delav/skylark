@@ -1,4 +1,4 @@
-from application.infra.constant.constants import ENTITY_NAME_KEY, ENTITY_PARAMS_KEY, ENTITY_RETURN_KEY
+from infra.constant.constants import ENTITY_NAME_KEY, ENTITY_PARAMS_KEY, ENTITY_RETURN_KEY
 from application.common.reader.module.keyword import LibKeywordManager
 from application.caseentity.models import CaseEntity
 from application.caseentity.serializers import CaseEntitySerializers

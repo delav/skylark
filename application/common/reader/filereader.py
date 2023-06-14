@@ -1,4 +1,4 @@
-from application.infra.robot.variablefile import VariableFile
+from infra.robot.variablefile import VariableFile
 from application.common.handler.filedatahandler import get_file_content
 
 

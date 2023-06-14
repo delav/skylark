@@ -1,14 +1,14 @@
 from loguru import logger
-from django.conf import settings
 from rest_framework import mixins
 from rest_framework import viewsets
-from application.infra.django.response import JsonResponse
+from infra.django.response import JsonResponse
+from application.constant import *
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers
 from application.project.models import Project
 from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_dir_node
-from application.infra.utils.timehanldler import get_partial_timestamp
+from infra.utils.timehanldler import get_partial_timestamp
 
 # Create your views here.
 
@@ -28,15 +28,15 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
             return JsonResponse(code=10070, msg='get base dir failed')
         dirs = project.dirs.filter(
             parent_dir=None,
-            status=settings.MODULE_STATUS_META.get('Normal')
+            status=MODULE_STATUS_META.get('Normal')
         ).order_by('category')
         dir_list = []
         for item in dirs.iterator():
             dir_data = self.get_serializer(item).data
-            if item.category != settings.CATEGORY_META.get('TestCase'):
+            if item.category != CATEGORY_META.get('TestCase'):
                 dir_data['extra_data'] = {}
             else:
-                dir_data['extra_data'] = get_model_extra_data(item.id, settings.MODULE_TYPE_META.get('SuiteDir'))
+                dir_data['extra_data'] = get_model_extra_data(item.id, MODULE_TYPE_META.get('SuiteDir'))
             dir_list.append(handler_dir_node(dir_data))
         return JsonResponse(data=dir_list)
 
@@ -50,10 +50,10 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
             logger.error(f'save suite dir failed: {e}')
             return JsonResponse(code=10071, msg='create suite dir failed')
         dir_data = serializer.data
-        if dir_data['category'] != settings.CATEGORY_META.get('TestCase'):
+        if dir_data['category'] != CATEGORY_META.get('TestCase'):
             dir_data['extra_data'] = {}
         else:
-            dir_data['extra_data'] = get_model_extra_data(dir_data['id'], settings.MODULE_TYPE_META.get('SuiteDir'))
+            dir_data['extra_data'] = get_model_extra_data(dir_data['id'], MODULE_TYPE_META.get('SuiteDir'))
         result = handler_dir_node(dir_data)
         return JsonResponse(data=result)
 
@@ -61,7 +61,7 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         logger.info(f'update suite dir: {request.data}')
         try:
             instance = self.get_object()
-            if instance.status != settings.MODULE_STATUS_META.get('Normal'):
+            if instance.status != MODULE_STATUS_META.get('Normal'):
                 return JsonResponse(code=10074, data='suite sir not exist')
             serializer = self.get_serializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
@@ -77,7 +77,7 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
             instance = self.get_object()
             if not instance.parent_dir:
                 return JsonResponse(code=10074, msg='dir not allowed delete')
-            instance.status = settings.MODULE_STATUS_META.get('Deleted')
+            instance.status = MODULE_STATUS_META.get('Deleted')
             instance.name = instance.name + f'-{get_partial_timestamp(6)}'
             instance.update_by = request.user.email
             instance.save()

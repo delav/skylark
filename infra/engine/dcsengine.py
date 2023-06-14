@@ -1,4 +1,4 @@
-from application.infra.engine.structure import SuiteStructure
+from infra.engine.structure import SuiteStructure
 
 
 class DcsEngine(object):

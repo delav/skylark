@@ -8,7 +8,8 @@ from django.conf import settings
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from application.infra.django.response import JsonResponse
+from infra.django.response import JsonResponse
+from application.constant import CATEGORY_META
 from application.testsuite.models import TestSuite
 from application.testsuite.serializers import TestSuiteSerializers
 from application.virtualfile.models import VirtualFile
@@ -56,7 +57,7 @@ class FileViewSets(viewsets.GenericViewSet):
                     subfix = str(search(r'\w*(.\w*)', f.name).group(1))
                     suite_data = {
                         'name': f.name,
-                        'category': settings.CATEGORY_META.get('ProjectFile'),
+                        'category': CATEGORY_META.get('ProjectFile'),
                         'suite_dir_id': form.cleaned_data.get('dir_id')
                     }
                     serializer = TestSuiteSerializers(data=suite_data)

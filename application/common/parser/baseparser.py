@@ -1,5 +1,5 @@
-from django.conf import settings
-from application.infra.constant.constants import PATH_SEP, COMMON_RESOURCE_PREFIX, RESOURCE_FILE_SUBFIX
+from infra.constant.constants import PATH_SEP, COMMON_RESOURCE_PREFIX, RESOURCE_FILE_SUBFIX
+from application.constant import *
 from application.testsuite.models import TestSuite
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers
@@ -43,7 +43,7 @@ class CommonParser(object):
                 kwargs['suite_id'] = suite.id
             rd = reader(**kwargs)
             file_name = suite.name
-            if suite.category == settings.CATEGORY_META.get('Keyword'):
+            if suite.category == CATEGORY_META.get('Keyword'):
                 file_name = suite.name + RESOURCE_FILE_SUBFIX
             file = PATH_SEP.join([self.project_name, path, file_name])
             text = rd.read()
@@ -54,7 +54,8 @@ class CommonParser(object):
         result_map = {}
         dir_queryset = SuiteDir.objects.filter(
             project_id=self.project_id,
-            category=category
+            category=category,
+            status=MODULE_STATUS_META.get('Normal')
         )
         dir_ser = SuiteDirSerializers(dir_queryset, many=True)
         dir_list = dir_ser.data
@@ -63,7 +64,8 @@ class CommonParser(object):
         for item in dir_list:
             suite_queryset = TestSuite.objects.filter(
                 suite_dir_id=item['id'],
-                category=category
+                category=category,
+                status=MODULE_STATUS_META.get('Normal')
             )
             if not suite_queryset.exists():
                 continue
@@ -87,7 +89,7 @@ class CommonParser(object):
             env_id=self.env_id,
             region_id=self.region_id,
             project_id=self.project_id,
-            module_type=settings.MODULE_TYPE_META.get('Project')
+            module_type=MODULE_TYPE_META.get('Project')
         ).read()
         if not common_text:
             return {}
@@ -95,7 +97,7 @@ class CommonParser(object):
 
     def _get_common_variable_files(self):
         return self._recursion_suite_path(
-            settings.CATEGORY_META.get('Resource'),
+            CATEGORY_META.get('Resource'),
             FileReader,
             env_id=self.env_id,
             region_id=self.region_id,
@@ -108,10 +110,10 @@ class CommonParser(object):
         resource_map.update(common_resource_map)
         common_resource_list = list(common_resource_map.keys())
         keyword_map = self._recursion_suite_path(
-            settings.CATEGORY_META.get('Keyword'),
+            CATEGORY_META.get('Keyword'),
             ResourceKeywordReader,
             suite_id=True,
-            module_type=settings.MODULE_TYPE_META.get('TestSuite'),
+            module_type=MODULE_TYPE_META.get('TestSuite'),
             resource_list=common_resource_list,
             variable_files=common_variable_file_list
         )
@@ -120,7 +122,7 @@ class CommonParser(object):
 
     def _get_common_project_file(self):
         return self._recursion_suite_path(
-            settings.CATEGORY_META.get('ProjectFile'),
+            CATEGORY_META.get('ProjectFile'),
             FileReader,
             env_id=self.env_id,
             region_id=self.region_id,

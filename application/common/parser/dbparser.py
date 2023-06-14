@@ -1,15 +1,15 @@
-from django.conf import settings
-from application.infra.constant.constants import PATH_SEP, ROBOT_FILE_SUBFIX, INIT_FILE_NAME
+from infra.constant.constants import PATH_SEP, ROBOT_FILE_SUBFIX, INIT_FILE_NAME
+from application.constant import *
 from application.testsuite.models import TestSuite
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers
 from application.common.reader.suitereader import DBSuiteReader
 from application.common.reader.initreader import DBDirInitReader
-from .baseparser import BaseParser
+from .baseparser import CommonParser
 from .treeformat import list_to_tree, get_path_from_tree
 
 
-class DBParser(BaseParser):
+class DBParser(CommonParser):
 
     def parse(self):
         common_file_paths = []
@@ -25,7 +25,8 @@ class DBParser(BaseParser):
         # handle case file
         case_dirs_queryset = SuiteDir.objects.filter(
             project_id=self.project_id,
-            category=settings.CATEGORY_META.get('TestCase')
+            status=MODULE_STATUS_META.get('Normal'),
+            category=CATEGORY_META.get('TestCase')
         )
         case_dirs_ser = SuiteDirSerializers(case_dirs_queryset, many=True)
         case_dir_list = case_dirs_ser.data
@@ -38,14 +39,17 @@ class DBParser(BaseParser):
             init_file = PATH_SEP.join([self.project_name, init_path, INIT_FILE_NAME+ROBOT_FILE_SUBFIX])
             init_text = DBDirInitReader(
                 dir_id=dir_id,
-                module_type=settings.MODULE_TYPE_META.get('SuiteDir'),
+                module_type=MODULE_TYPE_META.get('SuiteDir'),
                 resource_list=resource_list
             ).read()
             if init_text:
                 self.robot_suite.append(init_file)
                 self.robot_data[init_file] = init_text
             # suite file
-            suite_queryset = TestSuite.objects.filter(suite_dir_id=dir_id)
+            suite_queryset = TestSuite.objects.filter(
+                suite_dir_id=dir_id,
+                status=MODULE_STATUS_META.get('Normal')
+            )
             if not suite_queryset.exists():
                 continue
             suite = suite_queryset.first()
@@ -56,7 +60,7 @@ class DBParser(BaseParser):
                 suite_file = PATH_SEP.join([self.project_name, dir_path, suite.name+ROBOT_FILE_SUBFIX])
                 suite_reader = DBSuiteReader(
                     suite_id=suite.id,
-                    module_type=settings.MODULE_TYPE_META.get('TestSuite'),
+                    module_type=MODULE_TYPE_META.get('TestSuite'),
                     suite_timeout=suite.timeout,
                     resource_list=resource_list
                 )

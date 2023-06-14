@@ -5,7 +5,8 @@ from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from application.infra.django.response import JsonResponse
+from infra.django.response import JsonResponse
+from application.constant import *
 from application.testsuite.models import TestSuite
 from application.testsuite.serializers import TestSuiteSerializers, DuplicateTestSuiteSerializers
 from application.suitedir.models import SuiteDir
@@ -14,7 +15,7 @@ from application.virtualfile.models import VirtualFile
 from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_dir_node, handler_suite_node
 from application.common.operator.suiteoperator import SuiteOperator
-from application.infra.utils.timehanldler import get_partial_timestamp
+from infra.utils.timehanldler import get_partial_timestamp
 
 # Create your views here.
 
@@ -28,26 +29,29 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         logger.info(f'get child dir and suite by dir id: {request.query_params}')
         try:
             dir_id = request.query_params.get('dir')
-            dir_obj = SuiteDir.objects.get(id=dir_id)
+            dir_obj = SuiteDir.objects.get(
+                id=dir_id,
+                status=MODULE_STATUS_META.get('Normal')
+            )
         except (Exception,) as e:
             logger.error(f'get dir child info failed: {e}')
             return JsonResponse(code=10060, msg='get dir child info failed')
-        child_dirs = dir_obj.children.filter(status=settings.MODULE_STATUS_META.get('Normal'))
-        child_suites = dir_obj.suites.filter(status=settings.MODULE_STATUS_META.get('Normal'))
+        child_dirs = dir_obj.children.filter(status=MODULE_STATUS_META.get('Normal'))
+        child_suites = dir_obj.suites.filter(status=MODULE_STATUS_META.get('Normal'))
         node_list = []
         for item in child_dirs.iterator():
             dir_data = SuiteDirSerializers(item).data
-            if item.category != settings.CATEGORY_META.get('TestCase'):
+            if item.category != CATEGORY_META.get('TestCase'):
                 dir_data['extra_data'] = {}
             else:
-                dir_data['extra_data'] = get_model_extra_data(item.id, settings.MODULE_TYPE_META.get('SuiteDir'))
+                dir_data['extra_data'] = get_model_extra_data(item.id, MODULE_TYPE_META.get('SuiteDir'))
             node_list.append(handler_dir_node(dir_data))
         for item in child_suites.iterator():
             suite_data = self.get_serializer(item).data
-            if item.category != settings.CATEGORY_META.get('TestCase'):
+            if item.category != CATEGORY_META.get('TestCase'):
                 suite_data['extra_data'] = {}
             else:
-                suite_data['extra_data'] = get_model_extra_data(item.id, settings.MODULE_TYPE_META.get('TestSuite'))
+                suite_data['extra_data'] = get_model_extra_data(item.id, MODULE_TYPE_META.get('TestSuite'))
             node_list.append(handler_suite_node(suite_data))
         return JsonResponse(data=node_list)
 
@@ -61,10 +65,10 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
             logger.error(f'save test suite failed: {e}')
             return JsonResponse(code=10061, msg='create test suite failed')
         suite_data = serializer.data
-        if suite_data['category'] != settings.CATEGORY_META.get('TestCase'):
+        if suite_data['category'] != CATEGORY_META.get('TestCase'):
             suite_data['extra_data'] = {}
         else:
-            suite_data['extra_data'] = get_model_extra_data(suite_data['id'], settings.MODULE_TYPE_META.get('TestSuite'))
+            suite_data['extra_data'] = get_model_extra_data(suite_data['id'], MODULE_TYPE_META.get('TestSuite'))
         result = handler_suite_node(suite_data)
         return JsonResponse(data=result)
 
@@ -72,7 +76,7 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         logger.info(f'update test suite: {request.data}')
         try:
             instance = self.get_object()
-            if instance.status != settings.MODULE_STATUS_META.get('Normal'):
+            if instance.status != MODULE_STATUS_META.get('Normal'):
                 return JsonResponse(code=10064, data='test suite not exist')
             serializer = self.get_serializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
@@ -88,17 +92,17 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         try:
             with transaction.atomic():
                 instance = self.get_object()
-                instance.status = settings.MODULE_STATUS_META.get('Deleted')
+                instance.status = MODULE_STATUS_META.get('Deleted')
                 instance.name = instance.name + f'-{get_partial_timestamp(6)}'
                 instance.update_by = request.user.email
                 instance.save()
-                if instance.category == settings.CATEGORY_META.get('Resource'):
+                if instance.category == CATEGORY_META.get('Resource'):
                     file_obj = VirtualFile.objects.get(suite_id=instance.id)
-                    file_obj.status = settings.MODULE_STATUS_META.get('Deleted')
+                    file_obj.status = MODULE_STATUS_META.get('Deleted')
                     file_obj.save()
-                if instance.category == settings.CATEGORY_META.get('ProjectFile'):
+                if instance.category == CATEGORY_META.get('ProjectFile'):
                     file_obj = VirtualFile.objects.get(suite_id=instance.id)
-                    file_obj.status = settings.MODULE_STATUS_META.get('Deleted')
+                    file_obj.status = MODULE_STATUS_META.get('Deleted')
                     file_obj.save()
                     if file_obj.save_mode == 2:
                         child_path_list = file_obj.file_path.split('/')
@@ -133,9 +137,9 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
             logger.error(f'copy test suite failed: {e}')
             return JsonResponse(code=10065, msg='copy test suite failed')
         suite_data = self.get_serializer(new_suite).data
-        if suite_data['category'] != settings.CATEGORY_META.get('TestCase'):
+        if suite_data['category'] != CATEGORY_META.get('TestCase'):
             suite_data['extra_data'] = {}
         else:
-            suite_data['extra_data'] = get_model_extra_data(suite_data['id'], settings.MODULE_TYPE_META.get('TestSuite'))
+            suite_data['extra_data'] = get_model_extra_data(suite_data['id'], MODULE_TYPE_META.get('TestSuite'))
         result = handler_suite_node(suite_data)
         return JsonResponse(data=result)

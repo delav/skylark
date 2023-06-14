@@ -1,8 +1,8 @@
 from application.setupteardown.models import SetupTeardown
 from application.tag.models import Tag
 from application.variable.models import Variable
-from application.infra.robot.initfile import DirInitFile
-from application.infra.constant.constants import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
+from infra.robot.initfile import DirInitFile
+from infra.constant.constants import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
 
 
 class JsonDirInitReader(object):

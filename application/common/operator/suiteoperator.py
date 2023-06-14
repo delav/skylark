@@ -1,4 +1,4 @@
-from django.conf import settings
+from application.constant import *
 from application.testsuite.models import TestSuite
 from application.setupteardown.models import SetupTeardown
 from application.variable.models import Variable
@@ -15,6 +15,8 @@ class SuiteOperator(object):
 
     def copy_suite_by_id(self, suite_id):
         suite_obj = TestSuite.objects.get(id=suite_id)
+        if suite_obj.status == MODULE_STATUS_META.get('Deleted'):
+            return None
         return self.copy_suite(suite_obj)
 
     def copy_suite_by_obj(self, suite_obj):
@@ -32,7 +34,7 @@ class SuiteOperator(object):
         )
         old_fixtures = SetupTeardown.objects.filter(
             module_id=suite_obj.id,
-            module_type=settings.MODULE_TYPE_META.get('TestSuite')
+            module_type=MODULE_TYPE_META.get('TestSuite')
         )
         new_fixtures = []
         for fixture in old_fixtures.iterator():
@@ -42,7 +44,7 @@ class SuiteOperator(object):
         SetupTeardown.objects.bulk_create(new_fixtures)
         old_variables = Variable.objects.filter(
             module_id=suite_obj.id,
-            module_type=settings.MODULE_TYPE_META.get('TestSuite')
+            module_type=MODULE_TYPE_META.get('TestSuite')
         )
         new_variables = []
         for variable in old_variables.iterator():
@@ -52,7 +54,7 @@ class SuiteOperator(object):
         Variable.objects.bulk_create(new_fixtures)
         old_tags = Tag.objects.filter(
             module_id=suite_obj.id,
-            module_type=settings.MODULE_TYPE_META.get('TestSuite')
+            module_type=MODULE_TYPE_META.get('TestSuite')
         )
         new_tags = []
         for tag in old_tags.iterator():
