@@ -136,6 +136,8 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         except Exception as e:
             logger.error(f'copy test suite failed: {e}')
             return JsonResponse(code=10065, msg='copy test suite failed')
+        if not new_suite:
+            return JsonResponse(code=10066, msg='suite not exist')
         suite_data = self.get_serializer(new_suite).data
         if suite_data['category'] != CATEGORY_META.get('TestCase'):
             suite_data['extra_data'] = {}

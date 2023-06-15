@@ -1,3 +1,4 @@
+from infra.utils.timehanldler import get_partial_timestamp
 from application.constant import *
 from application.testcase.models import TestCase
 from application.tag.models import Tag
@@ -6,10 +7,11 @@ from application.caseentity.models import CaseEntity
 
 class CaseOperator(object):
 
-    def __init__(self, project_id, new_suite_id, create_user):
+    def __init__(self, project_id, new_suite_id, create_user, case_name=None):
         self.project_id = project_id
         self.suite_id = new_suite_id
         self.create_by = create_user
+        self.case_name = case_name
 
     def copy_case_by_id(self, case_id):
         case_obj = TestCase.objects.get(id=case_id)
@@ -22,8 +24,9 @@ class CaseOperator(object):
 
     def copy_case(self, case_obj):
         user_keyword_case_id = None
+        new_case_name = case_obj.name + '-copy'
         new_case = TestCase.objects.create(
-            name=case_obj.name,
+            name=new_case_name,
             document=case_obj.document,
             category=case_obj.category,
             create_by=self.create_by,
@@ -54,6 +57,9 @@ class CaseOperator(object):
             t.test_case_id = new_case.id
             entity_list.append(t)
         CaseEntity.objects.bulk_create(entity_list)
-        return user_keyword_case_id
+        return new_case
 
-
+    def generate_new_name(self, old_name):
+        if self.case_name is not None:
+            return
+        self.case_name = old_name + f'-{get_partial_timestamp(4)}copy'

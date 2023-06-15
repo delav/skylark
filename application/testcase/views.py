@@ -131,6 +131,8 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         except Exception as e:
             logger.error(f'copy test case failed: {e}')
             return JsonResponse(code=10055, msg='copy test case failed')
+        if not new_case:
+            return JsonResponse(code=10056, msg='case not exist')
         case_data = self.get_serializer(new_case).data
         if case_data['category'] != CATEGORY_META.get('TestCase'):
             case_data['extra_data'] = {}
