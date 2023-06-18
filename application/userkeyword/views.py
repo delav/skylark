@@ -2,7 +2,7 @@ from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
 from infra.django.response import JsonResponse
-from application.constant import KEYWORD_TYPE, MODULE_STATUS_META
+from application.constant import KeywordType, ModuleStatus
 from application.userkeyword.models import UserKeyword
 from application.userkeyword.serializers import UserKeywordSerializers
 from application.common.keyword.formatkeyword import format_keyword_data
@@ -20,13 +20,12 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
             project_id = request.query_params.get('project')
             queryset = UserKeyword.objects.filter(
                 project_id=project_id,
-                status=MODULE_STATUS_META.get('Normal')
+                status=ModuleStatus.NORMAL
             ).select_related('test_case')
         except (Exception,) as e:
             logger.error(f'get user keyword failed: {e}')
             return JsonResponse(code=1000030, msg='request params error')
         user_keywords = []
-        user_type = KEYWORD_TYPE.get('UserKeyword')
         for item in queryset.iterator():
             serializer_data = self.get_serializer(item).data
             keyword_data = format_keyword_data(
@@ -35,7 +34,7 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
                 ext_name=item.test_case.name,
                 desc=item.test_case.document,
                 group_id=serializer_data['group_id'],
-                keyword_type=user_type,
+                keyword_type=KeywordType.USER,
                 input_params=item.test_case.inputs,
                 output_params=item.test_case.outputs,
                 image=serializer_data['image'],

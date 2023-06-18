@@ -9,7 +9,7 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from infra.django.response import JsonResponse
-from application.constant import CATEGORY_META
+from application.constant import ModuleCategory, ModuleStatus
 from application.testsuite.models import TestSuite
 from application.testsuite.serializers import TestSuiteSerializers
 from application.virtualfile.models import VirtualFile
@@ -25,17 +25,35 @@ class VirtualFileViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewse
     serializer_class = VirtualFileSerializers
 
     def create(self, request, *args, **kwargs):
-        logger.info('create file')
+        logger.info(f'create file: {request.data}')
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            file_data = serializer.data
+            file_name = file_data.get('file_name')
+            suffix = str(search(r'\w*(.\w*)', file_name).group(1))
+            file_data['file_suffix'] = suffix
+            if suffix not in settings.SUPPORT_FILE_TYPE:
+                return JsonResponse(code=10308, data='file type not supported')
+            instance, _ = VirtualFile.objects.update_or_create(
+                suite_id=file_data.get('suite_id'),
+                defaults=file_data
+            )
+        except (Exception,) as e:
+            logger.error(f'save virtual file failed: {e}')
+            return JsonResponse(code=10300, msg='save virtual file failed')
+        data = self.get_serializer(instance).data
+        return JsonResponse(data=data)
 
     def list(self, request, *args, **kwargs):
         logger.info(f'get file content by suite id: {request.query_params}')
+        suite_id = request.query_params.get('suite')
         try:
-            suite_id = request.query_params.get('suite')
             data = get_file_content(suite_id)
-            return JsonResponse(data=data)
         except (Exception,) as e:
             logger.error(f'get virtual file failed: {e}')
             return JsonResponse(code=10301, msg='get virtual file failed')
+        return JsonResponse(data=data)
 
 
 class FileViewSets(viewsets.GenericViewSet):
@@ -50,37 +68,51 @@ class FileViewSets(viewsets.GenericViewSet):
         files = request.FILES.getlist('file')
         try:
             node_list = []
+            dir_id = form.cleaned_data.get('dir_id')
             with transaction.atomic():
                 for f in files:
                     if f.size > settings.FILE_SIZE_LIMIT:
                         continue
-                    subfix = str(search(r'\w*(.\w*)', f.name).group(1))
-                    suite_data = {
+                    suffix = str(search(r'\w*(.\w*)', f.name).group(1))
+                    related_suite_data = {
                         'name': f.name,
-                        'category': CATEGORY_META.get('ProjectFile'),
-                        'suite_dir_id': form.cleaned_data.get('dir_id')
+                        'category': ModuleCategory.FILE,
+                        'suite_dir_id': dir_id
                     }
-                    serializer = TestSuiteSerializers(data=suite_data)
+                    serializer = TestSuiteSerializers(data=related_suite_data)
                     serializer.is_valid(raise_exception=True)
-                    validate_data = serializer.data
+                    validate_data = serializer.validated_data
                     validate_data['create_by'] = request.user.email
-                    suites = TestSuite.objects.update_or_create(
+                    suite, created = TestSuite.objects.update_or_create(
                         name=validate_data.get('name'),
                         suite_dir_id=validate_data.get('suite_dir_id'),
                         defaults=validate_data
                     )
-                    suite = suites[0]
                     child_path = form.cleaned_data.get('path')
                     child_path_list = child_path.split('/')
                     file_path = Path(settings.PROJECT_FILES, *child_path_list)
-                    self.save_file_to_disk(file_path, f)
-                    VirtualFile.objects.update_or_create(
-                        suite_id=suite.id,
-                        file_path=child_path,
-                        file_name=f.name,
-                        file_subfix=subfix,
-                        defaults={'file_text': f.chunks()}
-                    )
+                    if f.size > settings.SAVE_TO_DB_SIZE_LIMIT or suffix not in settings.SAVE_TO_DB_FILE_TYPE:
+                        save_mode = 2
+                        file_text = None
+                        self.save_file_to_disk(file_path, f)
+                    else:
+                        save_mode = 1
+                        file_text = f.read()
+                    if created:
+                        VirtualFile.objects.create(
+                            suite_id=suite.id,
+                            file_path=child_path,
+                            file_name=f.name,
+                            file_suffix=suffix,
+                            save_mode=save_mode,
+                            file_text=file_text
+                        )
+                    else:
+                        file_obj = VirtualFile.objects.get(suite_id=suite.id)
+                        file_obj.status = ModuleStatus.NORMAL
+                        file_obj.save_mode = save_mode
+                        file_obj.file_text = file_text
+                        file_obj.save()
                     suite_data = TestSuiteSerializers(suite).data
                     suite_data['extra_data'] = {}
                     node_list.append(handler_suite_node(suite_data))
@@ -95,6 +127,8 @@ class FileViewSets(viewsets.GenericViewSet):
         suite_id = request.POST.get('suite')
         try:
             instance = VirtualFile.objects.get(suite_id=suite_id)
+            if instance.status == ModuleStatus.DELETED:
+                return JsonResponse(code=100308, data='file not exist')
             child_path_list = instance.file_path.split('/')
             file_path = Path(settings.PROJECT_FILES, *child_path_list)
             file_name = instance.file_name

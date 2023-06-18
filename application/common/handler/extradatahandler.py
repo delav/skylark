@@ -1,4 +1,4 @@
-from application.constant import MODULE_TYPE_META
+from application.constant import ModuleType
 from application.setupteardown.models import SetupTeardown
 from application.setupteardown.serializers import SetupTeardownSerializers
 from application.variable.models import Variable
@@ -12,7 +12,7 @@ from infra.constant.constants import VARIABLE_KEY, FIXTURE_KEY, TAG_KEY, ENTITY_
 
 def get_model_extra_data(module_id, module_type, include_entity=False):
     variable_list, fixture, tag = [], {}, []
-    if module_type != MODULE_TYPE_META.get('TestCase'):
+    if module_type != ModuleType.CASE:
         variable_queryset = Variable.objects.filter(
             module_id=module_id,
             module_type=module_type
@@ -57,7 +57,7 @@ def get_model_simple_extra_data(module_id, module_type, include_entity=False):
     entity_simple_fields = (
         'input_args', 'output_args', 'keyword_id'
     )
-    if module_type != MODULE_TYPE_META.get('TestCase'):
+    if module_type != ModuleType.CASE:
         variable_queryset = Variable.objects.filter(
             module_id=module_id,
             module_type=module_type

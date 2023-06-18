@@ -14,14 +14,14 @@ def generate_build_data(project_id, root_id=0):
     run_data = []
     project = Project.objects.get(id=project_id)
     dir_queryset = project.dirs.filter(
-        category=CATEGORY_META.get('TestCase'),
-        status=MODULE_STATUS_META.get('Normal')
+        category=ModuleCategory.TESTCASE,
+        status=ModuleStatus.NORMAL
     ).values('id', 'name', 'category', 'project_id', 'parent_dir_id')
     dir_node_map = {}
     for dir_data in dir_queryset.iterator():
         dir_data['extra_data'] = get_model_simple_extra_data(
             dir_data['id'],
-            MODULE_TYPE_META.get('SuiteDir')
+            ModuleType.DIR
         )
         dir_node = fill_build_node(dir_data, '', 'dir')
         dir_node_map[dir_data['id']] = dir_node
@@ -38,8 +38,8 @@ def generate_build_data(project_id, root_id=0):
 
         suites = TestSuite.objects.filter(
             suite_dir_id=dir_data['id'],
-            category=CATEGORY_META.get('TestCase'),
-            status=MODULE_STATUS_META.get('Normal')
+            category=ModuleCategory.TESTCASE,
+            status=ModuleStatus.NORMAL
         ).values('id', 'name', 'category', 'suite_dir_id', 'timeout')
         # print("dir_name::::::::::::::::::", dir_data['name'])
         dir_node['children'] = get_suite_tree(dir_node['id'], suites, tree_nodes)
@@ -64,13 +64,13 @@ def get_suite_tree(dir_node_id, suite_queryset, tree_nodes):
     for suite_data in suite_queryset.iterator():
         suite_data['extra_data'] = get_model_simple_extra_data(
             suite_data['id'],
-            MODULE_TYPE_META.get('TestSuite')
+            ModuleType.SUITE
         )
         suite_node = fill_build_node(suite_data, dir_node_id, 'suite')
         case_queryset = TestCase.objects.filter(
             test_suite_id=suite_data['id'],
-            category=CATEGORY_META.get('TestCase'),
-            status=MODULE_STATUS_META.get('Normal')
+            category=ModuleCategory.TESTCASE,
+            status=ModuleStatus.NORMAL
         ).values('id', 'name', 'category', 'test_suite_id', 'inputs', 'outputs', 'timeout')
         suite_node['children'] = []
         # simple node
@@ -79,7 +79,7 @@ def get_suite_tree(dir_node_id, suite_queryset, tree_nodes):
         for case_data in case_queryset.iterator():
             case_data['extra_data'] = get_model_simple_extra_data(
                 case_data['id'],
-                MODULE_TYPE_META.get('TestCase'),
+                ModuleType.CASE,
                 include_entity=True
             )
             case_node = fill_build_node(case_data, suite_node['id'], 'case')

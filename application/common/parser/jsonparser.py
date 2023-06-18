@@ -1,4 +1,4 @@
-from infra.constant.constants import PATH_SEP, ROBOT_FILE_SUBFIX, INIT_FILE_NAME
+from infra.constant.constants import PATH_SEP, ROBOT_FILE_SUFFIX, INIT_FILE_NAME
 from infra.constant.constants import VARIABLE_KEY, FIXTURE_KEY, TAG_KEY
 from infra.engine.structure import SuiteStructure, CommonStructure
 from application.common.reader.initreader import JsonDirInitReader
@@ -39,7 +39,7 @@ class JsonParser(CommonParser):
             dir_path = dir_data['path']
             dir_extra_data = dir_data['data']['extra_data']
             if dir_extra_data.get(VARIABLE_KEY) or dir_extra_data.get(FIXTURE_KEY):
-                init_file = PATH_SEP.join([self.project_name, dir_path, INIT_FILE_NAME + ROBOT_FILE_SUBFIX])
+                init_file = PATH_SEP.join([self.project_name, dir_path, INIT_FILE_NAME + ROBOT_FILE_SUFFIX])
                 init_text = JsonDirInitReader(
                     setup_teardown_data=dir_extra_data.get(FIXTURE_KEY),
                     variable_list=dir_extra_data.get(VARIABLE_KEY),
@@ -52,7 +52,7 @@ class JsonParser(CommonParser):
                 init_file_paths.append(init_file)
                 common_file_sources[init_file] = init_text
         for suite_id, suite_data in format_data['suites'].items():
-            suite_file = PATH_SEP.join([self.project_name, suite_data['path'] + ROBOT_FILE_SUBFIX])
+            suite_file = PATH_SEP.join([self.project_name, suite_data['path'] + ROBOT_FILE_SUFFIX])
             suite_extra_data = suite_data['data']['extra_data']
             if suite_id not in format_data['cases']:
                 continue

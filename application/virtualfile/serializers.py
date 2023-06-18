@@ -8,7 +8,7 @@ class VirtualFileSerializers(serializers.ModelSerializer):
     class Meta:
         model = VirtualFile
         fields = '__all__'
-        read_only_fields = ['edit_file', 'save_mode']
+        read_only_fields = ['file_suffix', 'edit_file', 'save_mode']
 
 
 class UploadForm(forms.Form):

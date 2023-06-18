@@ -3,7 +3,7 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
 from infra.django.response import JsonResponse
-from application.constant import KEYWORD_TYPE, MODULE_STATUS_META
+from application.constant import KeywordType, ModuleStatus
 from application.libkeyword.models import LibKeyword
 from application.libkeyword.serializers import LibKeywordSerializers
 from application.common.keyword.formatkeyword import format_keyword_data
@@ -18,9 +18,9 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
 
     def list(self, request, *args, **kwargs):
         logger.info('get all lib keywords')
-        queryset = LibKeyword.objects.filter(status=MODULE_STATUS_META.get('Normal'))
+        queryset = LibKeyword.objects.filter(status=ModuleStatus.NORMAL)
         lib_keywords = []
-        lib_type = KEYWORD_TYPE.get('LibKeyword')
+        lib_type = KeywordType.LIB
         for item in queryset.iterator():
             serializer = self.get_serializer(item)
             keyword_data = format_keyword_data(

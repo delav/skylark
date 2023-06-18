@@ -1,4 +1,4 @@
-from infra.constant.constants import PATH_SEP, ROBOT_FILE_SUBFIX, INIT_FILE_NAME
+from infra.constant.constants import PATH_SEP, ROBOT_FILE_SUFFIX, INIT_FILE_NAME
 from application.constant import *
 from application.testsuite.models import TestSuite
 from application.suitedir.models import SuiteDir
@@ -25,8 +25,8 @@ class DBParser(CommonParser):
         # handle case file
         case_dirs_queryset = SuiteDir.objects.filter(
             project_id=self.project_id,
-            status=MODULE_STATUS_META.get('Normal'),
-            category=CATEGORY_META.get('TestCase')
+            status=ModuleStatus.NORMAL,
+            category=ModuleCategory.TESTCASE
         )
         case_dirs_ser = SuiteDirSerializers(case_dirs_queryset, many=True)
         case_dir_list = case_dirs_ser.data
@@ -36,10 +36,10 @@ class DBParser(CommonParser):
             # dir init file
             dir_id = item['id']
             init_path = case_path_map.get(dir_id, '')
-            init_file = PATH_SEP.join([self.project_name, init_path, INIT_FILE_NAME+ROBOT_FILE_SUBFIX])
+            init_file = PATH_SEP.join([self.project_name, init_path, INIT_FILE_NAME+ROBOT_FILE_SUFFIX])
             init_text = DBDirInitReader(
                 dir_id=dir_id,
-                module_type=MODULE_TYPE_META.get('SuiteDir'),
+                module_type=ModuleType.DIR,
                 resource_list=resource_list
             ).read()
             if init_text:
@@ -48,7 +48,7 @@ class DBParser(CommonParser):
             # suite file
             suite_queryset = TestSuite.objects.filter(
                 suite_dir_id=dir_id,
-                status=MODULE_STATUS_META.get('Normal')
+                status=ModuleStatus.NORMAL
             )
             if not suite_queryset.exists():
                 continue
@@ -57,10 +57,10 @@ class DBParser(CommonParser):
             dir_path = case_path_map.get(suite_dir_id)
             # test case
             for suite in suite_queryset.iterator():
-                suite_file = PATH_SEP.join([self.project_name, dir_path, suite.name+ROBOT_FILE_SUBFIX])
+                suite_file = PATH_SEP.join([self.project_name, dir_path, suite.name+ROBOT_FILE_SUFFIX])
                 suite_reader = DBSuiteReader(
                     suite_id=suite.id,
-                    module_type=MODULE_TYPE_META.get('TestSuite'),
+                    module_type=ModuleType.SUITE,
                     suite_timeout=suite.timeout,
                     resource_list=resource_list
                 )

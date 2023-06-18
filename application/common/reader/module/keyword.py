@@ -2,6 +2,12 @@ from infra.constant.constants import SPECIAL_SEP
 from application.common.reader.module import keyword_map, alias_map
 
 
+STATUSES = ['FAIL', 'PASS', 'SKIP', 'NOT RUN']
+
+KEYWORD_TYPES = ['KEYWORD', 'SETUP', 'TEARDOWN', 'FOR', 'ITERATION', 'IF', 'ELSE IF', 'ELSE', 'RETURN',
+                 'TRY', 'EXCEPT', 'FINALLY', 'WHILE', 'CONTINUE', 'BREAK']
+
+
 class LibKeywordManager(object):
     """
     handle special keyword, such as FOR, END IF..., function name is the keyword name.

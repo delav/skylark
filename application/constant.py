@@ -1,45 +1,46 @@
 # user customize keyword group
 CUSTOMIZE_KEYWORD_GROUP = 99
 
-# model data category
-CATEGORY_META = {
-    'TestCase': 0,
-    'Keyword': 1,
-    'Resource': 2,
-    'ProjectFile': 3,
-}
-# model data type
-MODULE_TYPE_META = {
-    'Project': 0,
-    'SuiteDir': 1,
-    'TestSuite': 2,
-    'TestCase': 3,
-}
+
+# module data category
+class ModuleCategory:
+    TESTCASE = 0
+    KEYWORD = 1
+    RESOURCE = 2
+    FILE = 3
+
+
+# module data type
+class ModuleType:
+    PROJECT = 0
+    DIR = 1
+    SUITE = 2
+    CASE = 3
+
 
 # variable value type
-VALUE_TYPE_META = {
-    'String': 0,
-    'Number': 1,
-    'List': 2,
-    'Dict': 3,
-}
+class ValueType:
+    STRING = 0
+    NUMBER = 1
+    LIST = 2
+    DICT = 3
+
 
 # model data status
-MODULE_STATUS_META = {
-    'Normal': 0,
-    'Discarded': 1,
-    'Deleted': 2,
-}
+class ModuleStatus:
+    NORMAL = 0
+    DISCARDED = 1
+    DELETED = 2
 
-KEYWORD_TYPE = {
-    'LibKeyword': 1,
-    'UserKeyword': 2
-}
 
-KEYWORD_INPUT_TYPE = {
-    'None': 0,
-    'Single': 1,
-    'Multi': 2,
-    'List': 3,
-    'Dict': 4
-}
+class KeywordType:
+    LIB = 1
+    USER = 2
+
+
+class ParamMode:
+    NAN = 0
+    SINGLE = 1
+    MULTI = 2
+    LIST = 3
+    DICT = 4

@@ -1,4 +1,4 @@
-from application.constant import MODULE_STATUS_META
+from application.constant import ModuleStatus
 from application.testcase.models import TestCase
 from application.testcase.serializers import TestCaseSerializers
 from application.common.reader.module.entity import EntityReader
@@ -45,14 +45,14 @@ class CaseReader(object):
     def get_by_suite_id(self, suite_id):
         case_queryset = TestCase.objects.filter(
             test_suite_id=suite_id,
-            status=MODULE_STATUS_META.get('Normal')
+            status=ModuleStatus.NORMAL
         )
         return self._get_case_from_db(case_queryset)
 
     def get_by_case_ids(self, case_ids):
         case_queryset = TestCase.objects.filter(
             id__in=case_ids,
-            status=MODULE_STATUS_META.get('Normal')
+            status=ModuleStatus.NORMAL
         )
         return self._get_case_from_db(case_queryset)
 

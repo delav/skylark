@@ -1,5 +1,4 @@
 from django.db import models
-from datetime import datetime
 from application.testcase.models import TestCase
 from application.project.models import Project
 
@@ -8,8 +7,6 @@ from application.project.models import Project
 
 class UserKeyword(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
-    create_at = models.DateTimeField(default=datetime.now, help_text='create time')
-    update_at = models.DateTimeField(default=datetime.now, help_text='update time')
     group_id = models.IntegerField(help_text='associated keyword group')
     image = models.ImageField(default='icons/keyword/user.svg', upload_to='icons/keyword', help_text='keyword icon')
     test_case = models.ForeignKey(TestCase, on_delete=models.CASCADE, help_text='associated test case')

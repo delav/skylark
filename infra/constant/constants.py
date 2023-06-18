@@ -23,7 +23,7 @@ VARIABLE_VALUE_KEY = 'value'
 PATH_SEP = '/'
 INIT_FILE_NAME = '__init__'
 COMMON_RESOURCE_PREFIX = 'common-'
-ROBOT_FILE_SUBFIX = '.robot'
-RESOURCE_FILE_SUBFIX = '.resource'
+ROBOT_FILE_SUFFIX = '.robot'
+RESOURCE_FILE_SUFFIX = '.resource'
 
 

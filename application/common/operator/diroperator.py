@@ -1,4 +1,4 @@
-from application.constant import MODULE_STATUS_META
+from application.constant import ModuleStatus
 from application.suitedir.models import SuiteDir
 from application.testsuite.models import TestSuite
 from application.common.operator.suiteoperator import SuiteOperator
@@ -28,7 +28,7 @@ class DirOperator(object):
     def deep_copy_all_dir(self):
         dir_queryset = SuiteDir.objects.filter(
             project_id=self.old_project_id,
-            status=MODULE_STATUS_META.get('Normal')
+            status=ModuleStatus.NORMAL
         )
         for dir_obj in dir_queryset.iterator():
             new_dir = SuiteDir.objects.create(
@@ -44,7 +44,7 @@ class DirOperator(object):
     def copy_dir(self, old_dir, new_dir):
         suite_query = TestSuite.objects.filter(
             suite_dir_id=old_dir.id,
-            status=MODULE_STATUS_META.get('Normal')
+            status=ModuleStatus.NORMAL
         )
         for old_suite in suite_query.iterator():
             SuiteOperator(

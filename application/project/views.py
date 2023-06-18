@@ -6,7 +6,7 @@ from rest_framework import viewsets
 from infra.utils.timehanldler import get_partial_timestamp
 from infra.django.pagination.paginator import PagePagination
 from infra.django.response import JsonResponse
-from application.constant import MODULE_STATUS_META
+from application.constant import ModuleStatus
 from application.user.models import User
 from application.group.models import Group
 from application.project.models import Project
@@ -33,13 +33,13 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
             group_emails = [user.email for user in users]
             group_queryset = Project.objects.filter(
                 create_by__in=group_emails,
-                status=MODULE_STATUS_META.get('Normal'),
+                status=ModuleStatus.NORMAL,
                 personal=False
             )
             group_serializer = self.get_serializer(group_queryset, many=True)
             personal_queryset = Project.objects.filter(
                 create_by=current_user.email,
-                status=MODULE_STATUS_META.get('Normal'),
+                status=ModuleStatus.NORMAL,
                 personal=True
             )
             personal_serializer = self.get_serializer(personal_queryset, many=True)
@@ -84,7 +84,7 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
         logger.info(f'update project: {request.data}')
         try:
             instance = self.get_object()
-            if instance.status != MODULE_STATUS_META.get('Normal'):
+            if instance.status != ModuleStatus.NORMAL:
                 return JsonResponse(code=10088, data='project not exist')
             serializer = self.get_serializer(instance, data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -100,7 +100,7 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
             instance = self.get_object()
             if instance.create_by != request.user.email or not instance.personal:
                 return JsonResponse(code=10088, msg='project not allowed deleted')
-            instance.status = MODULE_STATUS_META.get('Deleted')
+            instance.status = ModuleStatus.DELETED
             instance.name = instance.name + f'-{get_partial_timestamp(6)}'
             instance.update_by = request.user.email
             instance.save()

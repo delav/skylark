@@ -1,4 +1,4 @@
-from application.constant import KEYWORD_TYPE, KEYWORD_INPUT_TYPE
+from application.constant import KeywordType, ParamMode
 
 fields = {
     'id': '',
@@ -27,16 +27,14 @@ def format_keyword_data(**kwargs):
         keyword_data['ext_name']
     ]):
         return {}
-    user_type = KEYWORD_TYPE.get('UserKeyword')
-    if keyword_data['keyword_type'] == user_type:
+    if keyword_data['keyword_type'] == KeywordType.USER:
         keyword_data['input_type'] = handler_user_keyword_type(keyword_data['input_params'])
     return keyword_data
 
 
 def handler_user_keyword_type(inputs):
-    input_types = KEYWORD_INPUT_TYPE
     if inputs is None or inputs == '':
-        return input_types.get('None')
+        return ParamMode.NAN
     if '|' in inputs:
-        return input_types.get('Multi')
-    return input_types.get('Single')
+        return ParamMode.MULTI
+    return ParamMode.SINGLE

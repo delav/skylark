@@ -15,7 +15,7 @@ class CaseOperator(object):
 
     def copy_case_by_id(self, case_id):
         case_obj = TestCase.objects.get(id=case_id)
-        if case_obj.status == MODULE_STATUS_META.get('Deleted'):
+        if case_obj.status == ModuleStatus.DELETED:
             return None
         return self.copy_case(case_obj)
 
@@ -23,7 +23,6 @@ class CaseOperator(object):
         return self.copy_case(case_obj)
 
     def copy_case(self, case_obj):
-        user_keyword_case_id = None
         new_case_name = case_obj.name + '-copy'
         new_case = TestCase.objects.create(
             name=new_case_name,
@@ -37,11 +36,9 @@ class CaseOperator(object):
             timeout=case_obj.timeout,
             status=case_obj.status
         )
-        if new_case.category == CATEGORY_META.get('Keyword'):
-            user_keyword_case_id = new_case.id
         old_tags = Tag.objects.filter(
             module_id=case_obj.id,
-            module_type=MODULE_TYPE_META.get('TestCase')
+            module_type=ModuleType.CASE
         )
         new_tags = []
         for tag in old_tags.iterator():

@@ -3,7 +3,7 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from django.db import transaction
 from infra.django.response import JsonResponse
-from application.constant import MODULE_STATUS_META, KEYWORD_TYPE
+from application.constant import ModuleStatus, KeywordType
 from application.testcase.models import TestCase
 from application.caseentity.models import CaseEntity
 from application.caseentity.serializers import CaseEntitySerializers, CaseEntityListSerializers
@@ -39,7 +39,7 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
         try:
             with transaction.atomic():
                 test_case = TestCase.objects.get(id=case_id)
-                if test_case.status == MODULE_STATUS_META.get('Deleted'):
+                if test_case.status == ModuleStatus.DELETED:
                     return JsonResponse(code=10042, data='test case not exist')
                 test_case.update_by = request.user.email
                 test_case.save()
@@ -56,15 +56,13 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
 
     def validate_keywords(self, case_id, entity_list):
         result_list = []
-        lib_type = KEYWORD_TYPE.get('LibKeyword')
-        user_type = KEYWORD_TYPE.get('UserKeyword')
         for i in range(len(entity_list)):
             entity = entity_list[i]
             entity['seq_number'] = i
             entity['test_case_id'] = case_id
             keyword_id = entity['keyword_id']
             keyword_type = entity['keyword_type']
-            if keyword_type == lib_type:
+            if keyword_type == KeywordType.LIB:
                 lib_kw = LibKeyword.objects.get(id=keyword_id)
                 # lib keyword exists
                 if lib_kw.input_params is None and entity['input_args'] is not None:
@@ -79,7 +77,7 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
                         f'but get {entity["input_args"]}'
                     )
                     raise Exception
-            elif keyword_type == user_type:
+            elif keyword_type == KeywordType.USER:
                 UserKeyword.objects.get(id=keyword_id)
             else:
                 logger.error(f'keyword is not exists: {keyword_id}')

@@ -28,19 +28,19 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
             suite_id = request.query_params.get('suite')
             suite_obj = TestSuite.objects.get(
                 id=suite_id,
-                status=MODULE_STATUS_META.get('Normal')
+                status=ModuleStatus.NORMAL
             )
         except (Exception,) as e:
             logger.error(f'get test case failed: {e}')
             return JsonResponse(code=10050, msg='get test case failed')
-        test_cases = suite_obj.cases.filter(status=MODULE_STATUS_META.get('Normal'))
+        test_cases = suite_obj.cases.filter(status=ModuleStatus.NORMAL)
         case_list = []
         for item in test_cases.iterator():
             case_data = self.get_serializer(item).data
-            if item.category != CATEGORY_META.get('TestCase'):
+            if item.category != ModuleCategory.TESTCASE:
                 case_data['extra_data'] = {}
             else:
-                case_data['extra_data'] = get_model_extra_data(item.id, MODULE_TYPE_META.get('TestCase'))
+                case_data['extra_data'] = get_model_extra_data(item.id, ModuleType.CASE)
             case_list.append(handler_case_node(case_data))
         return JsonResponse(data=case_list)
 
@@ -50,43 +50,41 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
+            suite_id = serializer.validated_data.get('test_suite_id')
             with transaction.atomic():
-                self.perform_create(serializer)
-                case_id = serializer.data.get('id')
-                suite_id = serializer.validated_data.get('test_suite_id')
-                if serializer.validated_data.get('category') == CATEGORY_META.get('Keyword'):
-                    suite = TestSuite.objects.select_related('suite_dir__project').get(id=suite_id)
+                instance = TestCase.objects.create(
+                    **serializer.validated_data,
+                )
+                if instance.category == ModuleCategory.KEYWORD:
+                    suite = TestSuite.objects.select_related(
+                        'suite_dir__project'
+                    ).get(id=suite_id)
                     project_id = suite.suite_dir.project_id
                     UserKeyword.objects.create(
-                        test_case_id=case_id,
+                        test_case_id=instance.id,
                         group_id=CUSTOMIZE_KEYWORD_GROUP,
                         project_id=project_id
                     )
         except Exception as e:
             logger.error(f'create test case failed: {e}')
             return JsonResponse(code=10051, msg='create test case failed')
-        case_data = serializer.data
-        if case_data['category'] != CATEGORY_META.get('TestCase'):
+        case_data = self.get_serializer(instance)
+        if case_data['category'] != ModuleCategory.TESTCASE:
             case_data['extra_data'] = {}
         else:
-            case_data['extra_data'] = get_model_extra_data(case_data['id'], MODULE_TYPE_META.get('TestCase'))
+            case_data['extra_data'] = get_model_extra_data(case_data['id'], ModuleType.CASE)
         result = handler_case_node(case_data)
         return JsonResponse(data=result)
 
-    @transaction.atomic
     def update(self, request, *args, **kwargs):
         logger.info(f'update test case: {request.data}')
         try:
             instance = self.get_object()
-            if instance.status != MODULE_STATUS_META.get('Normal'):
+            if instance.status != ModuleStatus.NORMAL:
                 return JsonResponse(code=10054, data='test case not exist')
             serializer = self.get_serializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
-            with transaction.atomic():
-                self.perform_update(serializer)
-                case_id = serializer.validated_data.get('id')
-                if serializer.validated_data.get('category') == CATEGORY_META.get('Keyword'):
-                    UserKeyword.objects.get(test_case_id=case_id).save()
+            self.perform_update(serializer)
         except Exception as e:
             logger.error(f'update test case failed: {e}')
             return JsonResponse(code=10053, msg='update test case failed')
@@ -98,13 +96,13 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         try:
             with transaction.atomic():
                 instance = self.get_object()
-                instance.status = MODULE_STATUS_META.get('Deleted')
+                instance.status = ModuleStatus.DELETED
                 instance.name = instance.name + f'-{get_partial_timestamp(6)}'
                 instance.update_by = request.user.email
                 instance.save()
-                if instance.category == CATEGORY_META.get('Keyword'):
+                if instance.category == ModuleCategory.KEYWORD:
                     related_keyword = UserKeyword.objects.get(test_case_id=instance.id)
-                    related_keyword.status = MODULE_STATUS_META.get('Deleted')
+                    related_keyword.status = ModuleStatus.DELETED
                     related_keyword.save()
         except (Exception,) as e:
             logger.error(f'delete test case error: {e}')
@@ -134,9 +132,9 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         if not new_case:
             return JsonResponse(code=10056, msg='case not exist')
         case_data = self.get_serializer(new_case).data
-        if case_data['category'] != CATEGORY_META.get('TestCase'):
+        if case_data['category'] != ModuleCategory.TESTCASE:
             case_data['extra_data'] = {}
         else:
-            case_data['extra_data'] = get_model_extra_data(case_data['id'], MODULE_TYPE_META.get('TestCase'))
+            case_data['extra_data'] = get_model_extra_data(case_data['id'], ModuleType.CASE)
         result = handler_case_node(case_data)
         return JsonResponse(data=result)

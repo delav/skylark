@@ -1,4 +1,4 @@
-from infra.constant.constants import PATH_SEP, COMMON_RESOURCE_PREFIX, RESOURCE_FILE_SUBFIX
+from infra.constant.constants import PATH_SEP, COMMON_RESOURCE_PREFIX, RESOURCE_FILE_SUFFIX
 from application.constant import *
 from application.testsuite.models import TestSuite
 from application.suitedir.models import SuiteDir
@@ -43,8 +43,8 @@ class CommonParser(object):
                 kwargs['suite_id'] = suite.id
             rd = reader(**kwargs)
             file_name = suite.name
-            if suite.category == CATEGORY_META.get('Keyword'):
-                file_name = suite.name + RESOURCE_FILE_SUBFIX
+            if suite.category == ModuleCategory.KEYWORD:
+                file_name = suite.name + RESOURCE_FILE_SUFFIX
             file = PATH_SEP.join([self.project_name, path, file_name])
             text = rd.read()
             suite_map[file] = text
@@ -55,7 +55,7 @@ class CommonParser(object):
         dir_queryset = SuiteDir.objects.filter(
             project_id=self.project_id,
             category=category,
-            status=MODULE_STATUS_META.get('Normal')
+            status=ModuleStatus.NORMAL
         )
         dir_ser = SuiteDirSerializers(dir_queryset, many=True)
         dir_list = dir_ser.data
@@ -65,7 +65,7 @@ class CommonParser(object):
             suite_queryset = TestSuite.objects.filter(
                 suite_dir_id=item['id'],
                 category=category,
-                status=MODULE_STATUS_META.get('Normal')
+                status=ModuleStatus.NORMAL
             )
             if not suite_queryset.exists():
                 continue
@@ -83,13 +83,13 @@ class CommonParser(object):
         handle common variable file. belong resource file, too
         """
         un_name = f'{self.env_id}-{self.region_id}' if self.region_id else f'{self.env_id}'
-        common_name = f'{COMMON_RESOURCE_PREFIX}{un_name}{RESOURCE_FILE_SUBFIX}'
+        common_name = f'{COMMON_RESOURCE_PREFIX}{un_name}{RESOURCE_FILE_SUFFIX}'
         common_file = PATH_SEP.join([self.project_name, common_name])
         common_text = ResourceCommonReader(
             env_id=self.env_id,
             region_id=self.region_id,
             project_id=self.project_id,
-            module_type=MODULE_TYPE_META.get('Project')
+            module_type=ModuleType.PROJECT
         ).read()
         if not common_text:
             return {}
@@ -97,7 +97,7 @@ class CommonParser(object):
 
     def _get_common_variable_files(self):
         return self._recursion_suite_path(
-            CATEGORY_META.get('Resource'),
+            ModuleCategory.RESOURCE,
             FileReader,
             env_id=self.env_id,
             region_id=self.region_id,
@@ -110,10 +110,10 @@ class CommonParser(object):
         resource_map.update(common_resource_map)
         common_resource_list = list(common_resource_map.keys())
         keyword_map = self._recursion_suite_path(
-            CATEGORY_META.get('Keyword'),
+            ModuleCategory.KEYWORD,
             ResourceKeywordReader,
             suite_id=True,
-            module_type=MODULE_TYPE_META.get('TestSuite'),
+            module_type=ModuleType.SUITE,
             resource_list=common_resource_list,
             variable_files=common_variable_file_list
         )
@@ -122,7 +122,7 @@ class CommonParser(object):
 
     def _get_common_project_file(self):
         return self._recursion_suite_path(
-            CATEGORY_META.get('ProjectFile'),
+            ModuleCategory.FILE,
             FileReader,
             env_id=self.env_id,
             region_id=self.region_id,
