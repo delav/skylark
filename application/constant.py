@@ -44,3 +44,8 @@ class ParamMode:
     MULTI = 2
     LIST = 3
     DICT = 4
+
+
+class FileSaveMode:
+    DB = 1
+    FILE = 2

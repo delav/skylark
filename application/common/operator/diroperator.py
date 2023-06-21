@@ -1,4 +1,5 @@
-from application.constant import ModuleStatus
+from application.constant import *
+from application.setupteardown.models import SetupTeardown
 from application.suitedir.models import SuiteDir
 from application.testsuite.models import TestSuite
 from application.common.operator.suiteoperator import SuiteOperator
@@ -46,6 +47,8 @@ class DirOperator(object):
             suite_dir_id=old_dir.id,
             status=ModuleStatus.NORMAL
         )
+        if old_dir.category == ModuleCategory.TESTCASE:
+            self._copy_fixture(old_dir.id, new_dir.id)
         for old_suite in suite_query.iterator():
             SuiteOperator(
                 self.new_project_id,
@@ -53,4 +56,11 @@ class DirOperator(object):
                 self.create_by
             ).copy_suite_by_obj(old_suite)
 
-
+    def _copy_fixture(self, old_dir_id, new_dir_id):
+        fixture_obj = SetupTeardown.objects.get(
+            module_id=old_dir_id,
+            module_type=ModuleType.DIR
+        )
+        fixture_obj.id = None
+        fixture_obj.module_id = new_dir_id
+        fixture_obj.save()

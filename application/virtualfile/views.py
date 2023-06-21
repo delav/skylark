@@ -1,4 +1,5 @@
 from pathlib import Path
+from io import StringIO
 from re import search
 from loguru import logger
 from django.db import transaction
@@ -9,13 +10,13 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from infra.django.response import JsonResponse
-from application.constant import ModuleCategory, ModuleStatus
+from application.constant import ModuleCategory, ModuleStatus, FileSaveMode
 from application.testsuite.models import TestSuite
 from application.testsuite.serializers import TestSuiteSerializers
 from application.virtualfile.models import VirtualFile
 from application.virtualfile.serializers import VirtualFileSerializers, UploadForm
 from application.common.ztree.generatenode import handler_suite_node
-from application.common.handler.filedatahandler import get_file_content
+from application.common.handler.filedatahandler import PATH_SEPARATOR, get_file_content
 
 # Create your views here.
 
@@ -89,14 +90,14 @@ class FileViewSets(viewsets.GenericViewSet):
                         defaults=validate_data
                     )
                     child_path = form.cleaned_data.get('path')
-                    child_path_list = child_path.split('/')
+                    child_path_list = child_path.split(PATH_SEPARATOR)
                     file_path = Path(settings.PROJECT_FILES, *child_path_list)
                     if f.size > settings.SAVE_TO_DB_SIZE_LIMIT or suffix not in settings.SAVE_TO_DB_FILE_TYPE:
-                        save_mode = 2
+                        save_mode = FileSaveMode.FILE
                         file_text = None
                         self.save_file_to_disk(file_path, f)
                     else:
-                        save_mode = 1
+                        save_mode = FileSaveMode.DB
                         file_text = f.read()
                     if created:
                         VirtualFile.objects.create(
@@ -129,10 +130,15 @@ class FileViewSets(viewsets.GenericViewSet):
             instance = VirtualFile.objects.get(suite_id=suite_id)
             if instance.status == ModuleStatus.DELETED:
                 return JsonResponse(code=100308, data='file not exist')
-            child_path_list = instance.file_path.split('/')
+            child_path_list = instance.file_path.split(PATH_SEPARATOR)
             file_path = Path(settings.PROJECT_FILES, *child_path_list)
             file_name = instance.file_name
-            file = self.read_file_from_dick(file_path, file_name)
+            file = None
+            if instance.save_mode == FileSaveMode.FILE:
+                file = self.read_file_from_dick(file_path, file_name)
+            elif instance.save_mode == FileSaveMode.DB:
+                file = StringIO()
+                file.write(instance.file_text)
             if file is None:
                 return JsonResponse(code=10304, msg='file not exist')
             response = FileResponse(file)
@@ -148,7 +154,7 @@ class FileViewSets(viewsets.GenericViewSet):
     def save_file_to_disk(file_path, f):
         Path(file_path).mkdir(parents=True, exist_ok=True)
         file = file_path / f.name
-        destination = open(file, 'wb+')
+        destination = open(file, 'wb+', encoding='utf-8')
         for chunk in f.chunks():
             destination.write(chunk)
         destination.close()
@@ -158,4 +164,4 @@ class FileViewSets(viewsets.GenericViewSet):
         file = Path(file_path, file_name)
         if not file.exists():
             return None
-        return open(file, 'rb')
+        return open(file, 'rb', encoding='utf-8')

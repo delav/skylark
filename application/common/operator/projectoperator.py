@@ -1,4 +1,6 @@
+from application.constant import ModuleType
 from application.project.models import Project
+from application.variable.models import Variable
 from application.common.operator.diroperator import DirOperator
 
 
@@ -30,9 +32,21 @@ class ProjectOperator(object):
 
     def copy_project_action(self):
         self._create_project()
+        self._copy_project_variable()
         DirOperator(
             self.new_project.id,
             self.copy_project_id,
             self.new_project.create_by
         ).deep_copy_all_dir()
 
+    def _copy_project_variable(self):
+        old_variable_query = Variable.objects.filter(
+            module_id=self.copy_project_id,
+            module_type=ModuleType.PROJECT
+        )
+        new_variables = []
+        for variable in old_variable_query.iterator():
+            variable.id = None
+            variable.module_id = self.new_project.id
+            new_variables.append(variable)
+        Variable.objects.bulk_create(new_variables)
