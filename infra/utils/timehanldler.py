@@ -7,7 +7,7 @@ def get_partial_timestamp(number=10):
     int_number_str = int_float[0]
     float_number_str = int_float[1]
     if number <= 10:
-        start = 10 - number - 1
+        start = 10 - number
         return int_number_str[start:]
     sub_num = number - 10
     sub_num = 6 if sub_num > 6 else sub_num

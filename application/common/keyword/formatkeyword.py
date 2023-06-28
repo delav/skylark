@@ -35,6 +35,10 @@ def format_keyword_data(**kwargs):
 def handler_user_keyword_type(inputs):
     if inputs is None or inputs == '':
         return ParamMode.NAN
-    if '|' in inputs:
+    elif '|' in inputs:
         return ParamMode.MULTI
+    elif inputs == '@{LIST}':
+        return ParamMode.LIST
+    elif inputs == '&{DICT}':
+        return ParamMode.DICT
     return ParamMode.SINGLE

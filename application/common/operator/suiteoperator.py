@@ -56,7 +56,8 @@ class SuiteOperator(object):
             CaseOperator(
                 self.project_id,
                 new_suite.id,
-                self.create_by
+                self.create_by,
+                old_case.name
             ).copy_case_by_obj(old_case)
         return new_suite
 
