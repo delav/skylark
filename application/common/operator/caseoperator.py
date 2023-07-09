@@ -1,4 +1,4 @@
-from infra.utils.timehanldler import get_partial_timestamp
+from infra.utils.timehanldler import get_timestamp
 from application.constant import *
 from application.testcase.models import TestCase
 from application.tag.models import Tag
@@ -53,7 +53,7 @@ class CaseOperator(object):
     def generate_new_name(self, old_name):
         if self.case_name is not None:
             return
-        self.case_name = old_name + f'-{get_partial_timestamp(4)}copy'
+        self.case_name = old_name + f'-{get_timestamp(4)}copy'
 
     def _copy_tag(self, old_case_id, new_case_id):
         old_tags = Tag.objects.filter(

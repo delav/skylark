@@ -38,3 +38,8 @@ lib_keyword = LibKeywordMap()
 keyword_map = lib_keyword.get_id_map()
 name_map = lib_keyword.get_name_map()
 alias_map = lib_keyword.get_alias_map()
+#
+# lib_keyword = {}
+# keyword_map = {}
+# name_map = {}
+# alias_map = {}

@@ -1,12 +1,9 @@
-# user customize keyword group
-CUSTOMIZE_KEYWORD_GROUP = 99
-
 
 # module data category
 class ModuleCategory:
     TESTCASE = 0
     KEYWORD = 1
-    RESOURCE = 2
+    VARIABLE = 2
     FILE = 3
 
 
@@ -20,10 +17,11 @@ class ModuleType:
 
 # variable value type
 class ValueType:
-    STRING = 0
-    NUMBER = 1
-    LIST = 2
-    DICT = 3
+    NONE = 0
+    STRING = 1
+    NUMBER = 2
+    LIST = 3
+    DICT = 4
 
 
 # model data status
@@ -34,12 +32,17 @@ class ModuleStatus:
 
 
 class KeywordType:
-    LIB = 1
-    USER = 2
+    LIB = 0
+    USER = 1
+
+
+class KeywordGroupType:
+    LIB = 0
+    USER = 1
 
 
 class ParamMode:
-    NAN = 0
+    NONE = 0
     SINGLE = 1
     MULTI = 2
     LIST = 3

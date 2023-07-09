@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAdminUser
 from infra.django.response import JsonResponse
 from application.user.models import User
 from application.user.serializers import UserSerializer, RegisterSerializer, UserAdminSerializer
-from application.group.models import Group
+from application.usergroup.models import UserGroup
 from infra.django.pagination.paginator import PagePagination
 
 # Create your views here.
@@ -37,7 +37,7 @@ class NoAuthUserViewSets(viewsets.GenericViewSet):
             with transaction.atomic():
                 user = serializer.save()
                 group_id = request.data.get('group_id')
-                group = Group.objects.get(id=group_id)
+                group = UserGroup.objects.get(id=group_id)
                 user.groups.add(group)
         except Exception as e:
             logger.error(f'register failed: {e}')
@@ -93,7 +93,7 @@ class AdminUserViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
                 user = User(username=username, email=data.get('email'),
                             group_id=data.get('email'), is_superuser=data.get('is_superuser'))
                 user.save()
-                group = Group.objects.get(id=data.get('group_id'))
+                group = UserGroup.objects.get(id=data.get('group_id'))
                 user.groups.add(group)
         except Exception as e:
             logger.error(f'add user failed: {e}')

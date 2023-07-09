@@ -1,5 +1,4 @@
-from infra.constant.constants import PATH_SEP, ROBOT_FILE_SUFFIX, INIT_FILE_NAME
-from infra.constant.constants import VARIABLE_KEY, FIXTURE_KEY, TAG_KEY
+from infra.constant.constants import *
 from infra.engine.structure import SuiteStructure, CommonStructure
 from application.common.reader.initreader import JsonDirInitReader
 from application.common.reader.suitereader import JsonSuiteReader
@@ -21,17 +20,20 @@ class JsonParser(CommonParser):
         # common sources
         if common is None:
             common = self.get_common_from_parse()
+        # handle base common resource
+        base_resource_map = common.get(BASE_RESOURCE_KEY)
+        common_file_sources.update(base_resource_map)
+        # handle user keyword, will use to suite and init file
+        user_keyword_map = common.get(USER_KEYWORD_KEY, {})
+        common_file_sources.update(user_keyword_map)
+        # handle variable files, will not use to suite and init file, use in command
+        variable_file_map = common.get(VARIABLE_FILE_KEY, {})
+        # variable_file_list = list(variable_file_map.keys())
+        variable_file_list = []
         # handle project help file
-        project_file_map = common.get('project_files', {})
-        common_file_sources.update(project_file_map)
-        # handle variable files, will use to suite and init file
-        variable_file_map = common.get('variable_files', {})
-        variable_file_list = list(variable_file_map.keys())
-        # handle resources, will use to suite and init file
-        resources_map = common.get('resources', {})
-        common_file_sources.update(resources_map)
-        common_file_sources.update(variable_file_map)
-        resource_list = list(resources_map.keys())
+        project_file_map = common.get(PROJECT_FILE_KEY, {})
+        # need download file in slaver
+        user_keyword_list = list(user_keyword_map.keys())
         # handle front run data
         format_data = get_path_from_front_tree(run_data, PATH_SEP)
         init_file_paths = []
@@ -43,7 +45,7 @@ class JsonParser(CommonParser):
                 init_text = JsonDirInitReader(
                     setup_teardown_data=dir_extra_data.get(FIXTURE_KEY),
                     variable_list=dir_extra_data.get(VARIABLE_KEY),
-                    resource_list=resource_list,
+                    resource_list=user_keyword_list,
                     variable_files=variable_file_list,
                     tag_list=dir_extra_data.get(TAG_KEY, [])
                 ).read()
@@ -61,22 +63,23 @@ class JsonParser(CommonParser):
                 setup_teardown_data=suite_extra_data.get(FIXTURE_KEY),
                 suite_timeout=suite_data['data']['timeout'],
                 variable_list=suite_extra_data.get(VARIABLE_KEY),
-                resource_list=resource_list,
+                resource_list=user_keyword_list,
                 variable_files=variable_file_list,
                 tag_list=suite_extra_data.get(TAG_KEY),
                 case_data=suite_case_data,
                 include_cases=self.build_cases,
             )
             self._extract(suite_file, suite_reader)
-        common_structure = CommonStructure(init_file_paths, common_file_sources)
+        common_structure = CommonStructure(init_file_paths, common_file_sources, variable_file_map, project_file_map)
         return common_structure, self.structures
 
     def get_common_from_parse(self):
         self.init_sources()
         return {
-            'variable_files': self.common_variable_files,
-            'resources': self.common_resources,
-            'project_files': self.common_project_files,
+            BASE_RESOURCE_KEY: self.common_base_resources,
+            VARIABLE_FILE_KEY: self.common_variable_files,
+            USER_KEYWORD_KEY: self.common_user_keywords,
+            PROJECT_FILE_KEY: self.common_project_files,
         }
 
     def _extract(self, path, reader):

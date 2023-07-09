@@ -10,6 +10,7 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from infra.django.response import JsonResponse
+from infra.utils.timehanldler import get_timestamp
 from application.constant import ModuleCategory, ModuleStatus, FileSaveMode
 from application.testsuite.models import TestSuite
 from application.testsuite.serializers import TestSuiteSerializers
@@ -34,6 +35,7 @@ class VirtualFileViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewse
             file_name = file_data.get('file_name')
             suffix = str(search(r'\w*(.\w*)', file_name).group(1))
             file_data['file_suffix'] = suffix
+            file_data['update_time'] = int(get_timestamp(10))
             if suffix not in settings.SUPPORT_FILE_TYPE:
                 return JsonResponse(code=10308, data='file type not supported')
             instance, _ = VirtualFile.objects.update_or_create(
@@ -106,13 +108,15 @@ class FileViewSets(viewsets.GenericViewSet):
                             file_name=f.name,
                             file_suffix=suffix,
                             save_mode=save_mode,
-                            file_text=file_text
+                            file_text=file_text,
+                            update_time=int(get_timestamp(10))
                         )
                     else:
                         file_obj = VirtualFile.objects.get(suite_id=suite.id)
                         file_obj.status = ModuleStatus.NORMAL
                         file_obj.save_mode = save_mode
                         file_obj.file_text = file_text
+                        file_obj.update_time = int(get_timestamp(10))
                         file_obj.save()
                     suite_data = TestSuiteSerializers(suite).data
                     suite_data['extra_data'] = {}

@@ -12,6 +12,7 @@ class VirtualFile(models.Model):
     file_suffix = models.CharField(default=None, blank=True, null=True, max_length=255, help_text='file suffix name')
     file_text = models.TextField(default=None, blank=True, null=True, help_text='file content')
     suite_id = models.IntegerField(help_text='associated suite')
+    update_time = models.IntegerField(default=None, help_text='file change timestamp')
     edit_file = models.BooleanField(default=False, help_text='if  can edit file')
     save_mode = models.IntegerField(default=1, help_text='save file mode, 1: db, 2:file')
     remark = models.TextField(default=None, blank=True, null=True, help_text='remark')

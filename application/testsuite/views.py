@@ -16,7 +16,7 @@ from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_dir_node, handler_suite_node
 from application.common.operator.suiteoperator import SuiteOperator
 from application.common.handler.filedatahandler import update_file
-from infra.utils.timehanldler import get_partial_timestamp
+from infra.utils.timehanldler import get_timestamp
 
 # Create your views here.
 
@@ -84,7 +84,7 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
                 serializer = self.get_serializer(instance, data=request.data, partial=True)
                 serializer.is_valid(raise_exception=True)
                 self.perform_update(serializer)
-                if instance.category in (ModuleCategory.RESOURCE, ModuleCategory.FILE):
+                if instance.category in (ModuleCategory.VARIABLE, ModuleCategory.FILE):
                     update_file(instance.id, name=instance.name)
         except (Exception,) as e:
             logger.error(f'update test suite failed: {e}')
@@ -98,10 +98,10 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
             with transaction.atomic():
                 instance = self.get_object()
                 instance.status = ModuleStatus.DELETED
-                instance.name = instance.name + f'-{get_partial_timestamp(6)}'
+                instance.name = instance.name + f'-{get_timestamp(6)}'
                 instance.update_by = request.user.email
                 instance.save()
-                if instance.category in (ModuleCategory.RESOURCE, ModuleCategory.FILE):
+                if instance.category in (ModuleCategory.VARIABLE, ModuleCategory.FILE):
                     update_file(instance.id, status=ModuleStatus.DELETED)
         except (Exception,) as e:
             logger.error(f'delete test suite error: {e}')

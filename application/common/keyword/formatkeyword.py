@@ -12,6 +12,7 @@ fields = {
     'input_desc': '',
     'output_desc': '',
     'input_type': 2,
+    'output_type': 0,
     'image': '',
     'status': 0
 }
@@ -29,12 +30,13 @@ def format_keyword_data(**kwargs):
         return {}
     if keyword_data['keyword_type'] == KeywordType.USER:
         keyword_data['input_type'] = handler_user_keyword_type(keyword_data['input_params'])
+        keyword_data['output_type'] = ParamMode.NONE
     return keyword_data
 
 
 def handler_user_keyword_type(inputs):
     if inputs is None or inputs == '':
-        return ParamMode.NAN
+        return ParamMode.NONE
     elif '|' in inputs:
         return ParamMode.MULTI
     elif inputs == '@{LIST}':

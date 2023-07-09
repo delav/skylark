@@ -63,20 +63,7 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
             keyword_id = entity['keyword_id']
             keyword_type = entity['keyword_type']
             if keyword_type == KeywordType.LIB:
-                lib_kw = LibKeyword.objects.get(id=keyword_id)
-                # lib keyword exists
-                if lib_kw.input_params is None and entity['input_args'] is not None:
-                    logger.error(
-                        f'[{lib_kw.ext_name}] error keyword param type: expect {lib_kw.input_params},'
-                        f'but get {entity["input_args"]}'
-                    )
-                    raise Exception
-                if lib_kw.input_params is not None and entity['input_args'] is None:
-                    logger.error(
-                        f'[{lib_kw.ext_name}] error keyword param type: expect {lib_kw.input_params},'
-                        f'but get {entity["input_args"]}'
-                    )
-                    raise Exception
+                LibKeyword.objects.get(id=keyword_id)
             elif keyword_type == KeywordType.USER:
                 UserKeyword.objects.get(id=keyword_id)
             else:

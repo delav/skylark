@@ -65,7 +65,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_celery_beat',
     'application.user.apps.UserConfig',
-    'application.group.apps.GroupConfig',
+    'application.usergroup.apps.UserGroupConfig',
     'application.tag.apps.TagConfig',
     'application.keywordgroup.apps.KeywordGroupConfig',
     'application.libkeyword.apps.LibKeywordConfig',
@@ -197,7 +197,9 @@ USE_L10N = True
 
 USE_TZ = False
 
-AES_KEY = "20220427@)@@)$@&"
+AES_KEY = '20220427@)@@)$@&'
+
+INTERNAL_AUTH_KEY = "19960101"
 
 
 # Static files (CSS, JavaScript, Images)
@@ -212,7 +214,7 @@ PROJECT_FILES = BASE_DIR / 'static/files'
 FILE_SIZE_LIMIT = 10 * 1024 * 1024
 SAVE_TO_DB_SIZE_LIMIT = 1 * 1024 * 1024
 SUPPORT_FILE_TYPE = ('.txt', '.py')
-SAVE_TO_DB_FILE_TYPE = ('.txt', '.py')
+SAVE_TO_DB_FILE_TYPE = ('.txt', '.xml', '.json')
 
 # distributed execute
 DISTRIBUTED_BUILD = True

@@ -53,3 +53,24 @@ def update_file(suite_id, **kwargs):
         file = Path(file_path, file_obj.file_name)
         if file.exists():
             file.unlink()
+
+
+def get_file_download_info(suite_id, **kwargs):
+    queryset = VirtualFile.objects.filter(
+        suite_id=suite_id,
+        **kwargs
+    )
+    if not queryset.exists():
+        return {}
+    instance = queryset.first()
+    data = VirtualFileSerializers(instance).data
+    child_path_list = instance.file_path.split(PATH_SEPARATOR)
+    file_path = Path(settings.PROJECT_FILES, *child_path_list)
+    file_name = instance.file_name
+    file = Path(file_path, file_name)
+    data['file_info'] = {
+        'host': '127.0.0.1:8000',
+        'api': '/api/internal/download-file',
+        'params': {'path': str(file)}
+    }
+    return data

@@ -3,12 +3,12 @@ from django.conf import settings
 from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
-from infra.utils.timehanldler import get_partial_timestamp
+from infra.utils.timehanldler import get_timestamp
 from infra.django.pagination.paginator import PagePagination
 from infra.django.response import JsonResponse
 from application.constant import ModuleStatus
 from application.user.models import User
-from application.group.models import Group
+from application.usergroup.models import UserGroup
 from application.project.models import Project
 from application.project.serializers import ProjectSerializers
 from application.common.operator import ProjectOperator
@@ -26,7 +26,7 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
         try:
             result = []
             current_user = request.user
-            groups_queryset = Group.objects.filter(user=current_user)
+            groups_queryset = UserGroup.objects.filter(user=current_user)
             users = User.objects.none()
             for group in groups_queryset:
                 users |= group.user_set.all()
@@ -101,7 +101,7 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
             if instance.create_by != request.user.email or not instance.personal:
                 return JsonResponse(code=10088, msg='project not allowed deleted')
             instance.status = ModuleStatus.DELETED
-            instance.name = instance.name + f'-{get_partial_timestamp(6)}'
+            instance.name = instance.name + f'-{get_timestamp(6)}'
             instance.update_by = request.user.email
             instance.save()
         except (Exception,) as e:

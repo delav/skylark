@@ -3,7 +3,7 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from infra.django.response import JsonResponse
 from infra.django.pagination.paginator import PagePagination
-from application.group.models import Group
+from application.usergroup.models import UserGroup
 from application.user.models import User
 from application.project.models import Project
 from application.buildrecord.models import BuildRecord
@@ -22,7 +22,7 @@ class BuildRecordViewSets(mixins.RetrieveModelMixin, mixins.ListModelMixin, view
         logger.info(f'get record by param: {request.query_params}')
         try:
             project_id = request.query_params.get('project')
-            groups_queryset = Group.objects.filter(user=request.user)
+            groups_queryset = UserGroup.objects.filter(user=request.user)
             users = User.objects.none()
             for group in groups_queryset:
                 users |= group.user_set.all()

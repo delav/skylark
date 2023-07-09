@@ -1,6 +1,8 @@
 import json
 from datetime import datetime
 from skylark.celeryapp import app
+from infra.constant.constants import BASE_RESOURCE_KEY, USER_KEYWORD_KEY, VARIABLE_FILE_KEY, PROJECT_FILE_KEY
+from application.constant import ModuleStatus
 from application.projectversion.models import ProjectVersion
 from application.environment.models import Environment
 from application.region.models import Region
@@ -13,27 +15,28 @@ def generate_version(project_id, version_kwargs):
     project_name, run_data, nodes = generate_build_data(project_id)
     env_resource_dict = {}
     env_queryset = Environment.objects.all()
-    region_queryset = Region.objects.filter(status=0)
+    region_queryset = Region.objects.filter(status=ModuleStatus.NORMAL)
     for env in env_queryset:
+        env_resource_dict[env.id] = {}
         if not region_queryset.exists():
             parser = CommonParser(project_id, project_name, env.id, None)
             parser.init_sources()
-            env_resource_dict[env.id] = {}
             base_resource = {'base': {
-                'variable_files': parser.common_variable_files,
-                'resources': parser.common_resources,
-                'project_files': parser.common_project_files,
+                BASE_RESOURCE_KEY: parser.common_base_resources,
+                USER_KEYWORD_KEY: parser.common_user_keywords,
+                VARIABLE_FILE_KEY: parser.common_variable_files,
+                PROJECT_FILE_KEY: parser.common_project_files,
             }}
             env_resource_dict[env.id].update(base_resource)
             continue
         for region in region_queryset:
-            env_resource_dict[env.id] = {}
             parser = CommonParser(project_id, project_name, env.id, region.id)
             parser.init_sources()
             region_resource = {region.id: {
-                'variable_files': parser.common_variable_files,
-                'resources': parser.common_resources,
-                'project_files': parser.common_project_files,
+                BASE_RESOURCE_KEY: parser.common_base_resources,
+                USER_KEYWORD_KEY: parser.common_user_keywords,
+                VARIABLE_FILE_KEY: parser.common_variable_files,
+                PROJECT_FILE_KEY: parser.common_project_files,
             }}
             env_resource_dict[env.id].update(region_resource)
     version_kwargs['run_data'] = json.dumps(run_data)
@@ -48,5 +51,7 @@ def generate_version(project_id, version_kwargs):
         version.update(**version_kwargs)
         return
     ProjectVersion.objects.create(**version_kwargs)
+    # TODO
+    # send task to every slaver to pre-download file
 
 

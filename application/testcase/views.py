@@ -12,7 +12,7 @@ from application.testsuite.models import TestSuite
 from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_case_node
 from application.common.operator.caseoperator import CaseOperator
-from infra.utils.timehanldler import get_partial_timestamp
+from infra.utils.timehanldler import get_timestamp
 
 # Create your views here.
 
@@ -62,7 +62,7 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
                     project_id = suite.suite_dir.project_id
                     UserKeyword.objects.create(
                         test_case_id=instance.id,
-                        group_id=CUSTOMIZE_KEYWORD_GROUP,
+                        group_id=KeywordGroupType.USER,
                         project_id=project_id
                     )
         except Exception as e:
@@ -97,7 +97,7 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
             with transaction.atomic():
                 instance = self.get_object()
                 instance.status = ModuleStatus.DELETED
-                instance.name = instance.name + f'-{get_partial_timestamp(6)}'
+                instance.name = instance.name + f'-{get_timestamp(6)}'
                 instance.update_by = request.user.email
                 instance.save()
                 if instance.category == ModuleCategory.KEYWORD:

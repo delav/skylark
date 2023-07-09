@@ -107,12 +107,12 @@ def _execute(record_id, project_id, project_name, env_id, env_name,
     task_id = generate_test_task_id(instance.id)
     celery_task_list = []
     for batch_no, data in batch_data.items():
-        suites, sources = data[0], data[1]
+        suites, sources, resources, files = data[0], data[1], data[2], data[3]
         celery_task = app.send_task(
             settings.RUNNER_TASK,
             queue=settings.RUNNER_QUEUE,
             routing_key=settings.RUNNER_ROUTING_KEY,
-            args=(env_name, region_name, task_id, str(batch_no), suites, sources)
+            args=(env_name, region_name, task_id, str(batch_no), suites, sources, resources, files)
         )
         celery_task_list.append(celery_task.id)
     instance.celery_task = ','.join(celery_task_list)

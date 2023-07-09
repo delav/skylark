@@ -9,12 +9,16 @@ class DcsEngine(object):
         self.total_case = 0
         self.path_list = []
         self.source_map = {}
+        self.variable_files = {}
+        self.external_files = {}
 
     def init_common_data(self, common_struct):
         init_file_paths = common_struct.get_init_file_path()
-        c_sources = common_struct.get_common_source()
+        common_sources = common_struct.get_common_source()
+        self.variable_files = common_struct.get_variable_files()
+        self.external_files = common_struct.get_external_files()
         self.path_list.extend(init_file_paths)
-        self.source_map.update(c_sources)
+        self.source_map.update(common_sources)
 
     def visit(self, structures):
         max_batch_case = self.options.get('limit')
@@ -30,7 +34,9 @@ class DcsEngine(object):
             text = structure.get_content()
             self.path_list.append(path)
             self.source_map.update({path: text})
-        self.batch_data[1] = (self.path_list, self.source_map)
+        self.batch_data[1] = (
+            self.path_list, self.source_map, self.variable_files, self.external_files
+        )
 
     def _multi_operator(self, structure_list):
         for i in range(len(structure_list)):
@@ -42,7 +48,9 @@ class DcsEngine(object):
             sources.update({path: text})
             paths.extend(self.path_list)
             sources.update(self.source_map)
-            self.batch_data[i] = (paths, sources)
+            self.batch_data[i] = (
+                paths, sources, self.variable_files, self.external_files
+            )
 
     def get_batch_data(self):
         return self.batch_data

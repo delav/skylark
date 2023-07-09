@@ -2,9 +2,12 @@ from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
 from infra.django.response import JsonResponse
+from application.constant import KeywordGroupType
 from application.constant import KeywordType, ModuleStatus
 from application.userkeyword.models import UserKeyword
 from application.userkeyword.serializers import UserKeywordSerializers
+from application.keywordgroup.models import KeywordGroup
+from application.keywordgroup.serializers import KeywordGroupSerializers
 from application.common.keyword.formatkeyword import format_keyword_data
 
 # Create your views here.
@@ -17,6 +20,12 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
     def list(self, request, *args, **kwargs):
         logger.info(f'get project user keyword: {request.query_params}')
         try:
+            user_group = KeywordGroup.objects.filter(
+                group_type=KeywordGroupType.USER
+            )
+            if not user_group.exists():
+                return JsonResponse(data=[])
+            group = KeywordGroupSerializers(user_group.first()).data
             project_id = request.query_params.get('project')
             queryset = UserKeyword.objects.filter(
                 project_id=project_id,
@@ -41,5 +50,6 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
                 status=serializer_data['status']
             )
             user_keywords.append(format_keyword_data(**keyword_data))
-        return JsonResponse(data=user_keywords)
+        group['keywords'] = user_keywords
+        return JsonResponse(data=[group])
 

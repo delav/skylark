@@ -10,7 +10,7 @@ from skylark.celeryapp import app
 
 
 @app.task
-def robot_runner(env, region, task_id, batch_no, run_suite, run_data):
+def robot_runner(env, region, task_id, batch_no, run_suite, run_data, variable_files, external_files):
     """robot execute task, no logic needed here, worker will do it"""
     pass
 

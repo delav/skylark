@@ -1,6 +1,6 @@
 from pathlib import Path
 from django.conf import settings
-from infra.utils.timehanldler import get_partial_timestamp
+from infra.utils.timehanldler import get_timestamp
 from application.constant import *
 from application.project.models import Project
 from application.testsuite.models import TestSuite
@@ -41,7 +41,7 @@ class SuiteOperator(object):
             timeout=suite_obj.timeout,
             status=suite_obj.status
         )
-        if suite_obj.category in (ModuleCategory.RESOURCE, ModuleCategory.FILE):
+        if suite_obj.category in (ModuleCategory.VARIABLE, ModuleCategory.FILE):
             self._copy_virtual_file(suite_obj, new_suite)
             return new_suite
         if suite_obj.category == ModuleCategory.TESTCASE:
@@ -64,7 +64,7 @@ class SuiteOperator(object):
     def generate_new_name(self, old_name):
         if self.suite_name is not None:
             return
-        self.suite_name = old_name + f'-{get_partial_timestamp(4)}copy'
+        self.suite_name = old_name + f'-{get_timestamp(4)}copy'
 
     def _copy_fixture(self, old_suite_id, new_suite_id):
         old_fixtures = SetupTeardown.objects.filter(

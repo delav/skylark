@@ -1,7 +1,7 @@
 from datetime import datetime
 
 
-def get_partial_timestamp(number=10):
+def get_timestamp(number=10):
     timestamp = datetime.now().timestamp()
     int_float = str(timestamp).split('.')
     int_number_str = int_float[0]
@@ -15,4 +15,4 @@ def get_partial_timestamp(number=10):
 
 
 if __name__ == '__main__':
-    print(get_partial_timestamp(4))
+    print(get_timestamp(13))

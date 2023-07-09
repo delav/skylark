@@ -15,6 +15,12 @@ ENTITY_NAME_KEY = 'entity_name'
 ENTITY_PARAMS_KEY = 'entity_input'
 ENTITY_RETURN_KEY = 'entity_output'
 
+# resource save key
+BASE_RESOURCE_KEY = 'base_resources'
+USER_KEYWORD_KEY = 'user_keywords'
+VARIABLE_FILE_KEY = 'variable_files'
+PROJECT_FILE_KEY = 'project_files'
+
 # project variable dict key
 VARIABLE_NAME_KEY = 'name'
 VARIABLE_VALUE_KEY = 'value'
@@ -22,7 +28,7 @@ VARIABLE_VALUE_KEY = 'value'
 # robot file path config
 PATH_SEP = '/'
 INIT_FILE_NAME = '__init__'
-COMMON_RESOURCE_PREFIX = 'common-'
+COMMON_RESOURCE_PREFIX = 'common'
 ROBOT_FILE_SUFFIX = '.robot'
 RESOURCE_FILE_SUFFIX = '.resource'
 

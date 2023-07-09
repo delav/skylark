@@ -3,7 +3,7 @@ from application.constant import *
 from application.testsuite.models import TestSuite
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers
-from application.common.reader.filereader import FileReader
+from application.common.reader.filereader import VariableFileReader, ProjectFileReader
 from application.common.reader.resourcereader import ResourceKeywordReader, ResourceCommonReader
 from .treeformat import list_to_tree, get_path_from_tree
 
@@ -15,18 +15,24 @@ class CommonParser(object):
         self.project_name = project_name
         self.env_id = env_id
         self.region_id = region_id
+        self._base_variable_map = {}
         self._variable_file_map = {}
-        self._resource_map = {}
+        self._user_keyword_map = {}
         self._project_file_map = {}
 
     def init_sources(self):
+        self._base_variable_map = self._get_base_variable_resources()
         self._variable_file_map = self._get_common_variable_files()
-        self._resource_map = self._get_common_resources(self._variable_file_map)
+        self._user_keyword_map = self._get_common_user_keywords(self._base_variable_map)
         self._project_file_map = self._get_common_project_file()
 
     @property
-    def common_resources(self):
-        return self._resource_map
+    def common_base_resources(self):
+        return self._base_variable_map
+
+    @property
+    def common_user_keywords(self):
+        return self._user_keyword_map
 
     @property
     def common_variable_files(self):
@@ -43,10 +49,16 @@ class CommonParser(object):
                 kwargs['suite_id'] = suite.id
             rd = reader(**kwargs)
             file_name = suite.name
+            # user keyword will add suffix
             if suite.category == ModuleCategory.KEYWORD:
                 file_name = suite.name + RESOURCE_FILE_SUFFIX
+            # file type will read name from reader
+            if suite.category == ModuleCategory.VARIABLE or suite.category == ModuleCategory.FILE:
+                file_name = rd.name() if hasattr(rd, 'name') else suite.name
             file = PATH_SEP.join([self.project_name, path, file_name])
             text = rd.read()
+            if not text:
+                continue
             suite_map[file] = text
         return suite_map
 
@@ -78,12 +90,12 @@ class CommonParser(object):
             result_map.update(suite_map)
         return result_map
 
-    def _get_common_variable_resources(self):
+    def _get_base_variable_resources(self):
         """
         handle common variable file. belong resource file, too
         """
-        un_name = f'{self.env_id}-{self.region_id}' if self.region_id else f'{self.env_id}'
-        common_name = f'{COMMON_RESOURCE_PREFIX}{un_name}{RESOURCE_FILE_SUFFIX}'
+        un_name = f'{self.env_id}_{self.region_id}' if self.region_id else f'{self.env_id}'
+        common_name = f'{un_name}_{COMMON_RESOURCE_PREFIX}{RESOURCE_FILE_SUFFIX}'
         common_file = PATH_SEP.join([self.project_name, common_name])
         common_text = ResourceCommonReader(
             env_id=self.env_id,
@@ -97,33 +109,29 @@ class CommonParser(object):
 
     def _get_common_variable_files(self):
         return self._recursion_suite_path(
-            ModuleCategory.RESOURCE,
-            FileReader,
+            ModuleCategory.VARIABLE,
+            VariableFileReader,
             env_id=self.env_id,
             region_id=self.region_id,
             suite_id=True,
         )
 
-    def _get_common_resources(self, common_variable_file_list):
-        resource_map = {}
-        common_resource_map = self._get_common_variable_resources()
-        resource_map.update(common_resource_map)
-        common_resource_list = list(common_resource_map.keys())
-        keyword_map = self._recursion_suite_path(
+    def _get_common_user_keywords(self, common_resource_list, variable_file_list=None):
+        if variable_file_list is None:
+            variable_file_list = []
+        return self._recursion_suite_path(
             ModuleCategory.KEYWORD,
             ResourceKeywordReader,
             suite_id=True,
             module_type=ModuleType.SUITE,
             resource_list=common_resource_list,
-            variable_files=common_variable_file_list
+            variable_files=variable_file_list
         )
-        resource_map.update(keyword_map)
-        return resource_map
 
     def _get_common_project_file(self):
         return self._recursion_suite_path(
             ModuleCategory.FILE,
-            FileReader,
+            ProjectFileReader,
             env_id=self.env_id,
             region_id=self.region_id,
             suite_id=True,

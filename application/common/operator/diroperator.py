@@ -1,4 +1,4 @@
-from infra.utils.timehanldler import get_partial_timestamp
+from infra.utils.timehanldler import get_timestamp
 from application.constant import *
 from application.setupteardown.models import SetupTeardown
 from application.suitedir.models import SuiteDir
@@ -80,7 +80,7 @@ class DirOperator(object):
         return new_dir
 
     def generate_new_name(self, old_name):
-        return old_name + f'-{get_partial_timestamp(4)}copy'
+        return old_name + f'-{get_timestamp(4)}copy'
 
     def _copy_all_suite(self, old_dir, new_dir):
         suite_query = TestSuite.objects.filter(

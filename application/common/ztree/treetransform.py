@@ -1,5 +1,4 @@
 import copy
-import json
 import uuid
 from application.constant import *
 from application.project.models import Project
@@ -18,13 +17,15 @@ def generate_build_data(project_id, root_id=0):
         status=ModuleStatus.NORMAL
     ).values('id', 'name', 'category', 'project_id', 'parent_dir_id')
     dir_node_map = {}
+    simple_node_uid_map = {}
     for dir_data in dir_queryset.iterator():
         dir_data['extra_data'] = get_model_simple_extra_data(
             dir_data['id'],
             ModuleType.DIR
         )
-        dir_node = fill_build_node(dir_data, '', 'dir')
+        dir_node = fill_build_node(dir_data, 'dir')
         dir_node_map[dir_data['id']] = dir_node
+        simple_node_uid_map[dir_data['id']] = str(uuid.uuid1())
     for dir_data in dir_queryset.iterator():
         dir_node = dir_node_map.get(dir_data['id'])
         parent_dir_id = dir_data['parent_dir_id']
@@ -32,41 +33,35 @@ def generate_build_data(project_id, root_id=0):
         if not parent_dir_id:
             parent_id = root_id
         else:
-            parent_id = dir_node_map[parent_dir_id]['id']
+            parent_id = simple_node_uid_map.get(parent_dir_id)
         simple_dir_node = filter_simple_node(dir_node, parent_id, 'dir')
         tree_nodes.append(simple_dir_node)
-
         suites = TestSuite.objects.filter(
             suite_dir_id=dir_data['id'],
             category=ModuleCategory.TESTCASE,
             status=ModuleStatus.NORMAL
         ).values('id', 'name', 'category', 'suite_dir_id', 'timeout')
-        # print("dir_name::::::::::::::::::", dir_data['name'])
-        dir_node['children'] = get_suite_tree(dir_node['id'], suites, tree_nodes)
+        if 'children' not in dir_node:
+            dir_node['children'] = []
+        dir_node['children'].append(get_suite_tree(simple_dir_node['id'], suites, tree_nodes))
         if not parent_dir_id:
-            print("+++++++++++++++++", dir_node)
-            dir_node['pid'] = root_id
             run_data.append(dir_node)
             continue
         parent_node = dir_node_map[parent_dir_id]
         if 'children' not in parent_node:
             parent_node['children'] = []
-        dir_node['pid'] = parent_node['id']
-        print("================", dir_node)
         parent_node['children'].append(dir_node)
-    print("&&&&&&&&&&", json.dumps(dir_node_map))
-    # print("**********", json.dumps(run_data))
     return project.name, run_data, tree_nodes
 
 
-def get_suite_tree(dir_node_id, suite_queryset, tree_nodes):
+def get_suite_tree(simple_dir_node_id, suite_queryset, tree_nodes):
     suite_tree = []
     for suite_data in suite_queryset.iterator():
         suite_data['extra_data'] = get_model_simple_extra_data(
             suite_data['id'],
             ModuleType.SUITE
         )
-        suite_node = fill_build_node(suite_data, dir_node_id, 'suite')
+        suite_node = fill_build_node(suite_data, 'suite')
         case_queryset = TestCase.objects.filter(
             test_suite_id=suite_data['id'],
             category=ModuleCategory.TESTCASE,
@@ -74,7 +69,7 @@ def get_suite_tree(dir_node_id, suite_queryset, tree_nodes):
         ).values('id', 'name', 'category', 'test_suite_id', 'inputs', 'outputs', 'timeout')
         suite_node['children'] = []
         # simple node
-        simple_suite_node = filter_simple_node(suite_node, dir_node_id, 'suite')
+        simple_suite_node = filter_simple_node(suite_node, simple_dir_node_id, 'suite')
         tree_nodes.append(simple_suite_node)
         for case_data in case_queryset.iterator():
             case_data['extra_data'] = get_model_simple_extra_data(
@@ -82,21 +77,18 @@ def get_suite_tree(dir_node_id, suite_queryset, tree_nodes):
                 ModuleType.CASE,
                 include_entity=True
             )
-            case_node = fill_build_node(case_data, suite_node['id'], 'case')
+            case_node = fill_build_node(case_data, 'case')
             # simple node
-            simple_case_node = filter_simple_node(case_node, suite_node['id'], 'case')
+            simple_case_node = filter_simple_node(case_node, simple_suite_node['id'], 'case')
             tree_nodes.append(simple_case_node)
             suite_node['children'].append(case_node)
         suite_tree.append(suite_node)
-    # print("child:::::::::::", suite_tree)
     return suite_tree
 
 
-def fill_build_node(meta_data, parent_id, desc_key):
+def fill_build_node(meta_data, desc_key):
     return {
         'mid': meta_data.get('id'),
-        'id': str(uuid.uuid1()),
-        'pid': parent_id,
         'name': meta_data.get('name'),
         'desc': NODE_DESC[desc_key],
         'type': meta_data.get('category'),

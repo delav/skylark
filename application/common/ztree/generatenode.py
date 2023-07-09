@@ -52,7 +52,7 @@ def handler_suite_node(suite_data):
         rename_menu['action'] = MENU_ACTION_MAP.get('rename_keyword_file')
         delete_menu['action'] = MENU_ACTION_MAP.get('delete_keyword_file')
         node['menu'] = [rename_menu, delete_menu]
-    elif node['type'] == ModuleCategory.RESOURCE:
+    elif node['type'] == ModuleCategory.VARIABLE:
         node['nocheck'] = True
         node['isParent'] = False
         node['action'] = []
@@ -92,7 +92,7 @@ def handler_dir_node(dir_data):
         node['nocheck'] = True
         node['action'].append(NODE_ACTION_MAP.get('create_keyword_file'))
         node['menu'] = [rename_menu, delete_menu]
-    elif node['type'] == ModuleCategory.RESOURCE:
+    elif node['type'] == ModuleCategory.VARIABLE:
         node['nocheck'] = True
         node['action'].append(NODE_ACTION_MAP.get('create_resource_file'))
         node['menu'] = [rename_menu, delete_menu]

@@ -20,7 +20,7 @@ from django.views.static import serve
 from rest_framework import routers
 from application.user.views import NoAuthUserViewSets, AdminUserViewSets, NormalUserViewSets
 from application.project.views import AdminProjectViewSets
-from application.group.views import GroupViewSets
+from application.usergroup.views import UserGroupViewSets
 from application.libkeyword.views import LibKeywordViewSets
 from application.userkeyword.views import UserKeywordViewSets
 from application.caseentity.views import CaseEntityViewSets
@@ -47,28 +47,28 @@ router.register('admin/user/info', AdminUserViewSets, basename='admin_uio')
 router.register('admin/user/group', AdminUserViewSets, basename='admin_ugp')
 router.register('admin/project', AdminProjectViewSets, basename='admin_project')
 router.register('user/info', NormalUserViewSets, basename='user_info')
-router.register('user/group', GroupViewSets, basename='user_group')
-router.register('keyword/lib-keyword', LibKeywordViewSets, basename='lib_keyword')
-router.register('keyword/user-keyword', UserKeywordViewSets, basename='user_keyword')
+router.register('user/group', UserGroupViewSets, basename='user_group')
+router.register('keyword/lib_keyword', LibKeywordViewSets, basename='lib_keyword')
+router.register('keyword/user_keyword', UserKeywordViewSets, basename='user_keyword')
 router.register('project', ProjectViewSets, basename='project')
-router.register('suite-dir', SuiteDirViewSets, basename='suite_dir')
-router.register('test-suite', TestSuiteViewSets, basename='test_suite')
-router.register('test-case', TestCaseViewSets, basename='test_case')
-router.register('case-entity', CaseEntityViewSets, basename='case_entity')
-router.register('setup-teardown', SetupTeardownViewSets, basename='setup_teardown')
-router.register('keyword-group', KeywordGroupViewSets, basename='keyword_group')
+router.register('suite_dir', SuiteDirViewSets, basename='suite_dir')
+router.register('test_suite', TestSuiteViewSets, basename='test_suite')
+router.register('test_case', TestCaseViewSets, basename='test_case')
+router.register('case_entity', CaseEntityViewSets, basename='case_entity')
+router.register('setup_teardown', SetupTeardownViewSets, basename='setup_teardown')
+router.register('keyword_group', KeywordGroupViewSets, basename='keyword_group')
 router.register('environment', EnvironmentViewSets, basename='environment')
 router.register('region', RegionViewSets, basename='region')
 router.register('variable', VariableViewSets, basename='variable')
-router.register('project-version', ProjectVersionViewSets, basename='project_version')
+router.register('project_version', ProjectVersionViewSets, basename='project_version')
 router.register('build/plan', BuildPlanViewSets, basename='build_plan')
 router.register('build/record', BuildRecordViewSets, basename='build_record')
 router.register('build/history', BuildHistoryViewSets, basename='build_history')
 router.register('tag', TagViewSets, basename='tag')
-router.register('case-priority', CasePriorityViewSets, basename='case_priority')
+router.register('case_priority', CasePriorityViewSets, basename='case_priority')
 router.register('builder', BuilderViewSets, basename='builder')
-router.register('virtual-file', VirtualFileViewSets, basename='virtual_file')
-router.register('project-file', FileViewSets, basename='project_file')
+router.register('file/virtual_file', VirtualFileViewSets, basename='virtual_file')
+router.register('file/project_file', FileViewSets, basename='project_file')
 
 
 urlpatterns = [

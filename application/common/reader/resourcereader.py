@@ -69,7 +69,7 @@ class ResourceCommonReader(object):
 
     def _get_variable_list(self):
         variable_list, name_dict = self._get_non_region_variables()
-        if self.region_id is not None:
+        if self.region_id is None:
             return variable_list
         var_queryset = Variable.objects.filter(
             env_id=self.env_id,

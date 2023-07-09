@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from infra.django.pagination.paginator import PagePagination
 from infra.django.response import JsonResponse
 from infra.utils.buildhandler import generate_task_name, convert_task_name
-from application.group.models import Group
+from application.usergroup.models import UserGroup
 from application.user.models import User
 from application.project.models import Project
 from application.buildplan.models import BuildPlan
@@ -27,7 +27,7 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
         logger.info(f'get build plan list: {request.query_params}')
         try:
             project_id = request.query_params.get('project')
-            groups_queryset = Group.objects.filter(user=request.user)
+            groups_queryset = UserGroup.objects.filter(user=request.user)
             users = User.objects.none()
             for group in groups_queryset:
                 users |= group.user_set.all()

@@ -1,9 +1,11 @@
 
 
 class CommonStructure(object):
-    def __init__(self, init_file_paths, common_file_sources):
+    def __init__(self, init_file_paths, common_file_sources, common_variable_files, external_files):
         self.init_paths = init_file_paths
         self.sources = common_file_sources
+        self.variable_files = common_variable_files
+        self.external_files = external_files
 
     def get_init_file_path(self):
         return self.init_paths
@@ -13,6 +15,12 @@ class CommonStructure(object):
 
     def get_common_source(self):
         return self.sources
+
+    def get_variable_files(self):
+        return self.variable_files
+
+    def get_external_files(self):
+        return self.external_files
 
 
 class SuiteStructure(object):

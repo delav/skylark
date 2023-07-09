@@ -2,15 +2,15 @@ from loguru import logger
 from rest_framework import viewsets
 from rest_framework import mixins
 from rest_framework.permissions import AllowAny, IsAdminUser
-from application.group.models import Group
-from application.group.serializers import GroupSerializers
+from application.usergroup.models import UserGroup
+from application.usergroup.serializers import UserGroupSerializers
 from infra.django.response import JsonResponse
 
 
-class GroupViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
-                    mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializers
+class UserGroupViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
+                        mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = UserGroup.objects.all()
+    serializer_class = UserGroupSerializers
 
     def list(self, request, *args, **kwargs):
         logger.info('get all user groups')

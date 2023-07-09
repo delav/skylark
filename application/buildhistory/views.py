@@ -8,7 +8,7 @@ from application.buildhistory.serializers import BuildHistorySerializers
 # Create your views here.
 
 
-class BuildHistoryViewSets(mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
+class BuildHistoryViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = BuildHistory.objects.all()
     serializer_class = BuildHistorySerializers
 
@@ -19,11 +19,9 @@ class BuildHistoryViewSets(mixins.RetrieveModelMixin, mixins.ListModelMixin, vie
             queryset = BuildHistory.objects.filter(
                 record_id=record_id
             )
-            data = self.get_serializer(queryset, many=True).data
-            return JsonResponse(data=data)
+            serializer = self.get_serializer(queryset, many=True)
         except (Exception,) as e:
             logger.error(f'get history failed: {e}')
             return JsonResponse(code=10500, msg='get history failed')
+        return JsonResponse(data=serializer.data)
 
-    def retrieve(self, request, *args, **kwargs):
-        pass
