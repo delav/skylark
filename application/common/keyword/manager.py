@@ -1,4 +1,4 @@
-from application.common.reader.module import LIB_KEYWORD_MAP, USER_KEYWORD_MAP
+from application.common.keyword import LIB_KEYWORD_MAP, USER_KEYWORD_MAP
 
 
 STATUSES = ['FAIL', 'PASS', 'SKIP', 'NOT RUN']
@@ -13,6 +13,7 @@ class _Keyword(object):
         self._inputs = inputs
         self._outputs = outputs
         self._keyword_name = ''
+        self.__callback__()
 
     def __callback__(self):
         func_name = self._get_func_name()

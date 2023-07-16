@@ -1,5 +1,6 @@
 from infra.constant.constants import ENTITY_NAME_KEY, ENTITY_PARAMS_KEY, ENTITY_RETURN_KEY
-from application.common.reader.module.keyword import LibKeywordManager
+from application.constant import KeywordType
+from application.common.keyword.manager import LibKeywordManager, UserKeywordManager
 from application.caseentity.models import CaseEntity
 from application.caseentity.serializers import CaseEntitySerializers
 
@@ -8,7 +9,15 @@ class EntityReader(object):
 
     @staticmethod
     def format_entity(entity):
-        info = LibKeywordManager(entity)
+        if entity.get('keyword_type') == KeywordType.LIB:
+            keyword_manager = LibKeywordManager
+        else:
+            keyword_manager = UserKeywordManager
+        info = keyword_manager(
+            entity.get('keyword_id'),
+            entity.get('input_args'),
+            entity.get('output_args')
+        )
         return {
             ENTITY_NAME_KEY: info.keyword_name,
             ENTITY_PARAMS_KEY: info.entity_input,

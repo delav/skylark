@@ -17,10 +17,10 @@ def get_file_content(suite_id, **kwargs):
         return {}
     instance = queryset.first()
     data = VirtualFileSerializers(instance).data
-    if instance.file_suffix not in settings.SUPPORT_FILE_TYPE:
-        data['file_text'] = ''
+    if instance.save_mode == FileSaveMode.DB:
         return data
-    if instance.save_mode == FileSaveMode.FILE:
+    elif instance.save_mode == FileSaveMode.FILE:
+        data['file_text'] = ''
         child_path_list = instance.file_path.split(PATH_SEPARATOR)
         file_path = Path(settings.PROJECT_FILES, *child_path_list)
         file_name = instance.file_name
@@ -28,7 +28,10 @@ def get_file_content(suite_id, **kwargs):
         if not file.exists():
             return data
         reader = FILE_READER_MAP.get(instance.file_suffix.lower())
-        data['file_text'] = reader(file)
+        if reader:
+            data['file_text'] = reader(file)
+        else:
+            data['file_text'] = '***暂不支持该类型的文件展示！***'
     return data
 
 
@@ -70,7 +73,7 @@ def get_file_download_info(suite_id, **kwargs):
     file = Path(file_path, file_name)
     data['file_info'] = {
         'host': '127.0.0.1:8000',
-        'api': '/api/internal/download-file',
+        'api': '/api/internal/download_file',
         'params': {'path': str(file)}
     }
     return data

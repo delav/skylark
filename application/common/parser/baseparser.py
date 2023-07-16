@@ -47,16 +47,16 @@ class CommonParser(object):
         for suite in iterator:
             if kwargs.get('suite_id'):
                 kwargs['suite_id'] = suite.id
-            rd = reader(**kwargs)
+            instance = reader(**kwargs)
             file_name = suite.name
             # user keyword will add suffix
             if suite.category == ModuleCategory.KEYWORD:
                 file_name = suite.name + RESOURCE_FILE_SUFFIX
             # file type will read name from reader
             if suite.category == ModuleCategory.VARIABLE or suite.category == ModuleCategory.FILE:
-                file_name = rd.name() if hasattr(rd, 'name') else suite.name
+                file_name = instance.name() if hasattr(instance, 'name') else suite.name
             file = PATH_SEP.join([self.project_name, path, file_name])
-            text = rd.read()
+            text = instance.read()
             if not text:
                 continue
             suite_map[file] = text
@@ -132,7 +132,5 @@ class CommonParser(object):
         return self._recursion_suite_path(
             ModuleCategory.FILE,
             ProjectFileReader,
-            env_id=self.env_id,
-            region_id=self.region_id,
             suite_id=True,
         )

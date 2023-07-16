@@ -9,7 +9,7 @@ from application.keywordgroup.models import KeywordGroup
 from application.keywordgroup.serializers import KeywordGroupSerializers
 from application.libkeyword.models import LibKeyword
 from application.libkeyword.serializers import LibKeywordSerializers
-from application.common.keyword.formatkeyword import format_keyword_data
+from application.common.keyword.formatter import format_keyword_data
 
 # Create your views here.
 
@@ -18,16 +18,13 @@ class LibKeywordViewSets(viewsets.GenericViewSet):
 
     @action(methods=['post'], detail=False)
     def get_keyword_list(self, request, *args, **kwargs):
-        logger.info('get lib keywords by group type')
-        is_base = request.data.get('base', True)
-        if is_base:
-            group_queryset = KeywordGroup.objects.filter(
-                group_type=KeywordGroupType.LIB
-            )
-        else:
-            group_queryset = KeywordGroup.objects.filter().exclude(
-                group_type__in=[KeywordGroupType.LIB, KeywordGroupType.USER]
-            )
+        logger.info('get lib keywords by project')
+        project_id = request.data.get('project_id')
+        group_queryset = KeywordGroup.objects.filter(
+            group_type=KeywordGroupType.LIB
+        ) | KeywordGroup.objects.filter(
+            project_id=project_id
+        )
         group_map = {}
         group_id_list = []
         for group in group_queryset.iterator():
@@ -45,6 +42,8 @@ class LibKeywordViewSets(viewsets.GenericViewSet):
                 **serializer.data,
                 keyword_type=KeywordType.LIB
             )
+            if not keyword_data:
+                continue
             group_map[item.group_id]['keywords'].append(keyword_data)
         return JsonResponse(data=group_map.values())
 

@@ -1,5 +1,5 @@
 def txt_reader(file):
-    with open(file, 'rb') as f:
+    with open(file, 'r', encoding='utf-8') as f:
         return str(f.readlines())
 
 

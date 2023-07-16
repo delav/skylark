@@ -6,7 +6,6 @@ from django.db import transaction
 from django.utils.http import urlquote
 from django.http import FileResponse
 from django.conf import settings
-from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from infra.django.response import JsonResponse
@@ -22,13 +21,12 @@ from application.common.handler.filedatahandler import PATH_SEPARATOR, get_file_
 # Create your views here.
 
 
-class VirtualFileViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
-    queryset = VirtualFile.objects.all()
-    serializer_class = VirtualFileSerializers
+class VirtualFileViewSets(viewsets.GenericViewSet):
 
-    def create(self, request, *args, **kwargs):
+    @action(methods=['post'], detail=False)
+    def save_content(self, request, *args, **kwargs):
         logger.info(f'create file: {request.data}')
-        serializer = self.get_serializer(data=request.data)
+        serializer = VirtualFileSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
             file_data = serializer.data
@@ -36,7 +34,8 @@ class VirtualFileViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewse
             suffix = str(search(r'\w*(.\w*)', file_name).group(1))
             file_data['file_suffix'] = suffix
             file_data['update_time'] = int(get_timestamp(10))
-            if suffix not in settings.SUPPORT_FILE_TYPE:
+            file_data['edit_file'] = True
+            if suffix not in settings.VARIABLE_FILE_TYPE:
                 return JsonResponse(code=10308, data='file type not supported')
             instance, _ = VirtualFile.objects.update_or_create(
                 suite_id=file_data.get('suite_id'),
@@ -45,10 +44,11 @@ class VirtualFileViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewse
         except (Exception,) as e:
             logger.error(f'save virtual file failed: {e}')
             return JsonResponse(code=10300, msg='save virtual file failed')
-        data = self.get_serializer(instance).data
+        data = VirtualFileSerializers(instance).data
         return JsonResponse(data=data)
 
-    def list(self, request, *args, **kwargs):
+    @action(methods=['get'], detail=False)
+    def get_content(self, request, *args, **kwargs):
         logger.info(f'get file content by suite id: {request.query_params}')
         suite_id = request.query_params.get('suite')
         try:
@@ -59,7 +59,7 @@ class VirtualFileViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewse
         return JsonResponse(data=data)
 
 
-class FileViewSets(viewsets.GenericViewSet):
+class ProjectFileViewSets(viewsets.GenericViewSet):
 
     @transaction.atomic
     @action(methods=['post'], detail=False)
@@ -158,7 +158,7 @@ class FileViewSets(viewsets.GenericViewSet):
     def save_file_to_disk(file_path, f):
         Path(file_path).mkdir(parents=True, exist_ok=True)
         file = file_path / f.name
-        destination = open(file, 'wb+', encoding='utf-8')
+        destination = open(file, 'wb+')
         for chunk in f.chunks():
             destination.write(chunk)
         destination.close()

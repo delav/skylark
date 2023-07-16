@@ -32,13 +32,14 @@ class ModuleStatus:
 
 
 class KeywordType:
-    LIB = 0
-    USER = 1
+    LIB = 1
+    USER = 2
 
 
 class KeywordGroupType:
     LIB = 0
     USER = 1
+    PRO = 2
 
 
 class ParamMode:

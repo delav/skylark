@@ -8,7 +8,7 @@ from application.userkeyword.models import UserKeyword
 from application.userkeyword.serializers import UserKeywordSerializers
 from application.keywordgroup.models import KeywordGroup
 from application.keywordgroup.serializers import KeywordGroupSerializers
-from application.common.keyword.formatkeyword import format_keyword_data
+from application.common.keyword.formatter import format_keyword_data
 
 # Create your views here.
 
@@ -49,6 +49,8 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
                 image=serializer_data['image'],
                 status=serializer_data['status']
             )
+            if not keyword_data:
+                continue
             user_keywords.append(format_keyword_data(**keyword_data))
         group['keywords'] = user_keywords
         return JsonResponse(data=[group])

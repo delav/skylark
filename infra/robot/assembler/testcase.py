@@ -4,22 +4,22 @@ from infra.constant import SPECIAL_SEP, ENTITY_NAME_KEY, ENTITY_PARAMS_KEY, ENTI
 config = Config()
 
 
-class KOCAssembler(object):
+class StatementAssembler(object):
 
-    def _combine_koc_str(self, key, *args):
+    def _combine_statement_str(self, key, *args):
         return config.small_sep + config.small_sep.join([key, *args])
 
-    def _add_koc_setting(self, key, value):
+    def _add_statement_setting(self, key, value):
         if not value:
             return ''
         if '|' in value:
             cci_var = value.split('|')
         else:
             cci_var = [value]
-        _line = self._combine_koc_str(key, *cci_var)
+        _line = self._combine_statement_str(key, *cci_var)
         return _line
 
-    def _get_koc_line(self, keyword_name, outputs, inputs):
+    def _get_statement_line(self, keyword_name, outputs, inputs):
         kw = EntityAssembler(
             keyword_name,
             outputs,
@@ -39,7 +39,7 @@ class KOCAssembler(object):
         return case_line
 
 
-class TestcaseAssembler(KOCAssembler):
+class TestcaseAssembler(StatementAssembler):
     # not use
     setup_prefix = '[Setup]'
     # not use
@@ -60,13 +60,13 @@ class TestcaseAssembler(KOCAssembler):
     def _get_case_document(self):
         if not self.cid:
             return ''
-        document_line = self._add_koc_setting(self.document_prefix, str(self.cid))
+        document_line = self._add_statement_setting(self.document_prefix, str(self.cid))
         return document_line + config.linefeed
 
     def _get_case_timeout(self):
         if not self.timeout:
             return ''
-        timeout_line = self._add_koc_setting(self.timeout_prefix, self.timeout)
+        timeout_line = self._add_statement_setting(self.timeout_prefix, self.timeout)
         return timeout_line + config.linefeed
 
     def _get_case_setup(self, setup_str):
@@ -85,7 +85,7 @@ class TestcaseAssembler(KOCAssembler):
         case_content += self._get_case_timeout()
         # add case body
         for item in self.entities:
-            case_content += self._get_koc_line(
+            case_content += self._get_statement_line(
                 item.get(ENTITY_NAME_KEY),
                 item.get(ENTITY_RETURN_KEY),
                 item.get(ENTITY_PARAMS_KEY)
@@ -95,7 +95,7 @@ class TestcaseAssembler(KOCAssembler):
         return case_content
 
 
-class KeywordAssembler(KOCAssembler):
+class KeywordAssembler(StatementAssembler):
     input_prefix = '[Arguments]'
     output_prefix = '[Return]'
 
@@ -109,14 +109,14 @@ class KeywordAssembler(KOCAssembler):
         input_str = self.inputs
         if not input_str:
             return ''
-        arg_line = self._add_koc_setting(self.input_prefix, self.inputs)
+        arg_line = self._add_statement_setting(self.input_prefix, self.inputs)
         return arg_line + config.linefeed
 
     def _get_keyword_output(self):
         output_str = self.outputs
         if not output_str:
             return ''
-        ret_line = self._add_koc_setting(self.output_prefix, self.outputs)
+        ret_line = self._add_statement_setting(self.output_prefix, self.outputs)
         return ret_line + config.linefeed
 
     def get_keyword_content(self):
@@ -127,7 +127,7 @@ class KeywordAssembler(KOCAssembler):
         keyword_content += self._get_keyword_input()
         # add keyword body
         for item in self.entities:
-            keyword_content += self._get_koc_line(
+            keyword_content += self._get_statement_line(
                 item.get(ENTITY_NAME_KEY),
                 item.get(ENTITY_RETURN_KEY),
                 item.get(ENTITY_PARAMS_KEY)
@@ -147,13 +147,13 @@ class EntityAssembler(object):
         self.outputs = outputs
 
     def _get_inout(self, outputs_or_inputs):
-        inout_str = ''
-        if outputs_or_inputs:
-            if SPECIAL_SEP in outputs_or_inputs:
-                cco_var = outputs_or_inputs.split(SPECIAL_SEP)
-                inout_str = config.small_sep.join(cco_var)
-            else:
-                inout_str = outputs_or_inputs
+        if not outputs_or_inputs:
+            return ''
+        if SPECIAL_SEP in outputs_or_inputs:
+            cco_var = outputs_or_inputs.split(SPECIAL_SEP)
+            inout_str = config.small_sep.join(cco_var)
+        else:
+            inout_str = outputs_or_inputs
         return inout_str
 
     def get_name(self):

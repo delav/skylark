@@ -40,7 +40,7 @@ from application.buildhistory.views import BuildHistoryViewSets
 from application.projectversion.views import ProjectVersionViewSets
 from application.tag.views import TagViewSets
 from application.casepriority.views import CasePriorityViewSets
-from application.virtualfile.views import VirtualFileViewSets, FileViewSets
+from application.virtualfile.views import VirtualFileViewSets, ProjectFileViewSets
 
 router = routers.SimpleRouter(trailing_slash=False)
 router.register('admin/user/info', AdminUserViewSets, basename='admin_uio')
@@ -68,7 +68,7 @@ router.register('tag', TagViewSets, basename='tag')
 router.register('case_priority', CasePriorityViewSets, basename='case_priority')
 router.register('builder', BuilderViewSets, basename='builder')
 router.register('file/virtual_file', VirtualFileViewSets, basename='virtual_file')
-router.register('file/project_file', FileViewSets, basename='project_file')
+router.register('file/project_file', ProjectFileViewSets, basename='project_file')
 
 
 urlpatterns = [
