@@ -17,9 +17,9 @@ class LibKeyword(models.Model):
     output_desc = models.TextField(default=None, blank=True, null=True, help_text='output params desc')
     input_type = models.IntegerField(default=0, help_text='input arg type')
     output_type = models.IntegerField(default=0, help_text='output  arg type')
-    image = models.ImageField(default='icons/keyword/default.svg', upload_to='icons/keyword',
-                              blank=True, null=True, help_text='keyword icon')
+    image = models.ImageField(default='icons/keyword/default.svg', upload_to='icons/keyword', help_text='keyword icon')
     status = models.IntegerField(default=0, help_text='lib keyword status')
+    source = models.CharField(default='built-in', max_length=255, help_text='keyword source')
     mark = models.CharField(default=None, blank=True, null=True, max_length=255, help_text='keyword other mark')
 
     class Meta:

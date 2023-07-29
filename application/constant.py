@@ -53,3 +53,9 @@ class ParamMode:
 class FileSaveMode:
     DB = 1
     FILE = 2
+
+
+class NoticeSwitch:
+    WECOM = 1
+    DING_TALK = 2
+    lARK = 3

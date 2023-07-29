@@ -13,8 +13,8 @@ class BuildPlanSerializers(serializers.ModelSerializer):
         model = BuildPlan
         fields = (
             'id', 'title', 'total_case', 'create_at', 'update_at', 'create_by',
-            'update_by', 'build_cases', 'periodic_expr', 'periodic_switch',
-            'env_list', 'region_list', 'project_id', 'project_name', 'branch', 'expect_pass', 'extra_data'
+            'update_by', 'build_cases', 'periodic_expr', 'periodic_switch', 'env_list',
+            'region_list', 'project_id', 'project_name', 'branch', 'expect_pass', 'notice_open', 'extra_data'
         )
         read_only_fields = ('create_by', 'update_by')
 

@@ -16,7 +16,7 @@ from application.testsuite.serializers import TestSuiteSerializers
 from application.virtualfile.models import VirtualFile
 from application.virtualfile.serializers import VirtualFileSerializers, UploadForm
 from application.common.ztree.generatenode import handler_suite_node
-from application.common.handler.filedatahandler import PATH_SEPARATOR, get_file_content
+from application.virtualfile.handler import PATH_SEPARATOR, get_file_content
 
 # Create your views here.
 

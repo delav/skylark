@@ -1,14 +1,15 @@
 from json import loads
 from django.conf import settings
 from infra.engine.dcsengine import DcsEngine
-from infra.utils.buildhandler import generate_test_task_id
 from infra.utils.typetransform import id_str_to_set
 from application.buildplan.models import BuildPlan
 from application.buildrecord.models import BuildRecord
 from application.projectversion.models import ProjectVersion
 from application.buildhistory.models import BuildHistory
 from application.common.parser.jsonparser import JsonParser
-from application.common.handler.modelmaphandler import get_env_id_map, get_region_id_map
+from application.environment.handler import get_env_id_map
+from application.region.handler import get_region_id_map
+from application.builder.handler import generate_test_task_id
 from skylark.celeryapp import app
 
 

@@ -85,27 +85,33 @@ class VariableViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
             module_id = serializer.data.get('module_id')
             module_type = serializer.data.get('module_type')
             from_env_id = serializer.data.get('from_env_id')
+            from_region_id = serializer.data.get('from_region_id')
             to_env_id = serializer.data.get('to_env_id')
+            to_region_id = serializer.data.get('to_region_id')
+            variable_id_list = serializer.data.get('variable_id_list')
+            params = {
+                'module_id': module_id,
+                'module_type': module_type,
+                'env_id': from_env_id
+            }
+            if from_region_id:
+                params['region_id'] = from_region_id
+            if variable_id_list:
+                params['id__in'] = variable_id_list
             copied_variables = Variable.objects.filter(
-                module_id=module_id,
-                module_type=module_type,
-                env_id=from_env_id,
+                **params
             )
-            copy_list = []
+            copy_create_list = []
             for item in copied_variables.iterator():
                 new_item = VariableSerializers(item).data
                 del new_item['id']
                 new_item['env_id'] = to_env_id
+                if to_region_id:
+                    new_item['region_id'] = to_region_id
                 obj = Variable(**new_item)
-                copy_list.append(obj)
-            Variable.objects.bulk_create(copy_list)
-            new_variables = Variable.objects.filter(
-                module_id=module_id,
-                module_type=module_type,
-                env_id=to_env_id
-            )
+                copy_create_list.append(obj)
+            Variable.objects.bulk_create(copy_create_list)
         except Exception as e:
             logger.error(f'copy variable failed: {e}')
             return JsonResponse(code=10508, msg='copy variable failed')
-        result = VariableSerializers(new_variables, many=True).data
-        return JsonResponse(data=result)
+        return JsonResponse(data='success')

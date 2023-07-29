@@ -9,7 +9,7 @@ from application.setupteardown.models import SetupTeardown
 from application.variable.models import Variable
 from application.tag.models import Tag
 from application.virtualfile.models import VirtualFile
-from application.common.handler.filedatahandler import PATH_SEPARATOR
+from application.virtualfile.handler import PATH_SEPARATOR
 from application.common.operator.caseoperator import CaseOperator
 
 

@@ -6,9 +6,7 @@ from rest_framework.decorators import action
 from infra.django.response import JsonResponse
 from infra.client.redisclient import RedisClient
 from infra.engine.dcsengine import DcsEngine
-from infra.utils.buildhandler import *
 from infra.utils.typetransform import join_id_to_str
-from infra.utils.buildhandler import generate_test_task_id
 from application.buildplan.models import BuildPlan
 from application.projectversion.models import ProjectVersion
 from application.buildplan.serializers import BuildPlanSerializers
@@ -17,6 +15,7 @@ from application.buildrecord.serializers import BuildRecordSerializers
 from application.buildhistory.models import BuildHistory
 from application.builder.serializers import DebugBuildSerializers
 from application.builder.serializers import TestQuickBuildSerializers
+from application.builder.handler import generate_test_task_id, generate_debug_task_id
 from application.common.parser.jsonparser import JsonParser
 from skylark.celeryapp import app
 

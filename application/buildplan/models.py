@@ -22,6 +22,7 @@ class BuildPlan(models.Model):
     project_name = models.CharField(max_length=255, help_text='project name')
     branch = models.CharField(max_length=255, help_text='project branch')
     expect_pass = models.FloatField(default=100, help_text='expected pass rate')
+    notice_open = models.BooleanField(default=False, help_text='notice switch for plan')
     extra_data = models.TextField(default='{}',  help_text='build extra data of json')
 
     class Meta:

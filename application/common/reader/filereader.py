@@ -1,5 +1,5 @@
 from infra.robot.variablefile import VariableFile
-from application.common.handler.filedatahandler import get_file_content, get_file_download_info
+from application.virtualfile.handler import get_file_content, get_file_download_info
 
 
 class VariableFileReader(object):

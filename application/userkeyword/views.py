@@ -46,8 +46,7 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
                 keyword_type=KeywordType.USER,
                 input_params=item.test_case.inputs,
                 output_params=item.test_case.outputs,
-                image=serializer_data['image'],
-                status=serializer_data['status']
+                image=serializer_data['image']
             )
             if not keyword_data:
                 continue

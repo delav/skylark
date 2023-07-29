@@ -11,11 +11,10 @@ from application.testsuite.models import TestSuite
 from application.testsuite.serializers import TestSuiteSerializers, DuplicateTestSuiteSerializers
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers
-from application.virtualfile.models import VirtualFile
+from application.virtualfile.handler import update_file
 from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_dir_node, handler_suite_node
 from application.common.operator.suiteoperator import SuiteOperator
-from application.common.handler.filedatahandler import update_file
 from infra.utils.timehanldler import get_timestamp
 
 # Create your views here.

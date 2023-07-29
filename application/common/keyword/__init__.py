@@ -8,7 +8,7 @@ LIB_ALIAS_MAP = {}
 USER_KEYWORD_MAP = {}
 
 
-def init_lib_keyword():
+def init_lib_keyword_cache():
     lid_keywords = LibKeyword.objects.filter(
         status=ModuleStatus.NORMAL
     )
@@ -24,7 +24,7 @@ def init_lib_keyword():
         LIB_ALIAS_MAP[keyword.ext_name] = keyword.name
 
 
-def init_user_keyword():
+def init_user_keyword_cache():
     user_keywords = UserKeyword.objects.filter(
         status=ModuleStatus.NORMAL
     ).select_related('test_case')
@@ -38,9 +38,9 @@ def init_user_keyword():
         USER_KEYWORD_MAP[keyword.id] = data
 
 
-def update_user_keyword(user_keyword_id):
+def update_user_keyword_cache(case_id):
     user_keyword = UserKeyword.objects.filter(
-        id=user_keyword_id,
+        test_case_id=case_id,
         status=ModuleStatus.NORMAL,
     ).select_related('test_case')
     if not user_keyword.exists():

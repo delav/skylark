@@ -1,10 +1,10 @@
 import json
 from datetime import datetime
 from django.conf import settings
-from application.buildhistory.models import BuildHistory, HistoryDetail
 from infra.client.redisclient import RedisClient
 from infra.utils.makedir import make_path
-from infra.utils.buildhandler import is_test_mode, convert_test_task_id
+from application.builder.handler import convert_test_task_id, is_test_mode
+from application.buildhistory.models import BuildHistory, HistoryDetail
 from worker.robot.rebot import rebot
 from skylark.celeryapp import app
 

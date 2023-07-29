@@ -12,6 +12,7 @@ from application.testsuite.models import TestSuite
 from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_case_node
 from application.common.operator.caseoperator import CaseOperator
+from application.common.keyword import update_user_keyword_cache
 from infra.utils.timehanldler import get_timestamp
 
 # Create your views here.
@@ -65,6 +66,7 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
                         group_id=KeywordGroupType.USER,
                         project_id=project_id
                     )
+                    update_user_keyword_cache(instance.id)
         except Exception as e:
             logger.error(f'create test case failed: {e}')
             return JsonResponse(code=10051, msg='create test case failed')
@@ -85,6 +87,8 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
             serializer = self.get_serializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
+            if instance.category == ModuleCategory.KEYWORD:
+                update_user_keyword_cache(instance.id)
         except Exception as e:
             logger.error(f'update test case failed: {e}')
             return JsonResponse(code=10053, msg='update test case failed')

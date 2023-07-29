@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     'application.casepriority.apps.CasePriorityConfig',
     'application.pythonlib.apps.PythonlibConfig',
     'application.projectversion.apps.ProjectVersionConfig',
+    'application.notice.apps.NoticeConfig'
 ]
 
 MIDDLEWARE = [

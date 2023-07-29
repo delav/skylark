@@ -13,8 +13,7 @@ fields = {
     'output_desc': '',
     'input_type': 2,
     'output_type': 0,
-    'image': '',
-    'status': 0
+    'image': ''
 }
 
 
