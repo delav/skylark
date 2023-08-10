@@ -66,6 +66,8 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'application.user.apps.UserConfig',
     'application.usergroup.apps.UserGroupConfig',
+    'application.department.apps.DepartmentConfig',
+    'application.product.apps.ProductConfig',
     'application.tag.apps.TagConfig',
     'application.keywordgroup.apps.KeywordGroupConfig',
     'application.libkeyword.apps.LibKeywordConfig',
@@ -135,6 +137,14 @@ DATABASES = {
         'HOST': '127.0.0.1',
         'USER': 'root',
         'PASSWORD': '729814'
+    }
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+        'TIMEOUT': None  # never expire
     }
 }
 
@@ -259,4 +269,6 @@ BUILDER_QUEUE = 'builder'
 BUILDER_ROUTING_KEY = 'periodic.builder'
 INSTANT_TASK = 'task.builder.tasks.instant_builder'
 PERIODIC_TASK = 'task.builder.tasks.periodic_builder'
+REPORT_TASK = 'task.reporter.tasks.send_report'
+
 

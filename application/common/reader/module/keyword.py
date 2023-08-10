@@ -1,4 +1,5 @@
-from application.common.keyword import LIB_KEYWORD_MAP, USER_KEYWORD_MAP
+from application.storage import LIB_KEYWORD_MAP
+from application.storage import USER_KEYWORD_MAP
 
 
 STATUSES = ['FAIL', 'PASS', 'SKIP', 'NOT RUN']

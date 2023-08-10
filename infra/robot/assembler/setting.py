@@ -81,7 +81,7 @@ class SetupTeardownSetting(Settings):
 
     def _contain(self, word_list, word):
         for item in word_list:
-            if item.upper() == word:
+            if item.strip().upper() == word:
                 return True
         return False
 

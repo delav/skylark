@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from application.notice.models import Notice
-from infra.utils.typetransform import id_str_to_set, join_id_to_str
 
 
 class NoticeSerializers(serializers.ModelSerializer):

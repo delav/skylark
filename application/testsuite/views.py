@@ -1,6 +1,4 @@
 from loguru import logger
-from pathlib import Path
-from django.conf import settings
 from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets

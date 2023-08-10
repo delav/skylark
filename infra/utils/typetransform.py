@@ -2,6 +2,8 @@
 
 def id_str_to_set(strings, sep=',', to_int=False):
     result = set()
+    if not isinstance(strings, str):
+        return result
     strings = strings + sep
     length = len(strings)
     index = 0

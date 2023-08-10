@@ -1,3 +1,4 @@
+import re
 from application.constant import KeywordType, ParamMode
 
 fields = {
@@ -36,10 +37,14 @@ def format_keyword_data(**kwargs):
 def handler_user_keyword_type(inputs):
     if inputs is None or inputs == '':
         return ParamMode.NONE
+    list_pattern = re.compile(r'\@\{(.*)\}')
+    list_arg = list_pattern.search(inputs)
+    if list_arg:
+        return ParamMode.LIST
+    dict_pattern = re.compile(r'\&|\&\{(.*)\}')
+    dict_arg = dict_pattern.search(inputs)
+    if dict_arg:
+        return ParamMode.DICT
     elif '|' in inputs:
         return ParamMode.MULTI
-    elif inputs == '@{LIST}':
-        return ParamMode.LIST
-    elif inputs == '&{DICT}':
-        return ParamMode.DICT
     return ParamMode.SINGLE

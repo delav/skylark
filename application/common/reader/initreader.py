@@ -1,6 +1,7 @@
 from application.setupteardown.models import SetupTeardown
 from application.tag.models import Tag
 from application.variable.models import Variable
+from application.common.reader.module.fixture import FixtureManager
 from infra.robot.initfile import DirInitFile
 from infra.constant.constants import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
 
@@ -15,21 +16,34 @@ class JsonDirInitReader(object):
         self.tag_list = tag_list
 
     def read(self):
-        if not any([self.setup_teardown_data, self.tag_list, self.variable_list]):
+        setup_teardown_data = self._get_setup_teardown()
+        tags = self._get_tag_list()
+        if not any([setup_teardown_data, tags, self.variable_list]):
             return ''
         return DirInitFile(
-            self.setup_teardown_data.get('test_setup', ''),
-            self.setup_teardown_data.get('test_teardown', ''),
-            self.setup_teardown_data.get('suite_setup', ''),
-            self.setup_teardown_data.get('suite_teardown', ''),
+            setup_teardown_data[0],
+            setup_teardown_data[1],
+            setup_teardown_data[2],
+            setup_teardown_data[3],
             self.resource_list,
             self.variable_files,
-            self._get_tag_list(),
+            tags,
             self.variable_list
         ).get_text()
 
     def _get_tag_list(self):
         return [item.get('name') for item in self.tag_list]
+
+    def _get_setup_teardown(self):
+        fixture_list = [
+            self.setup_teardown_data.get('test_setup', ''),
+            self.setup_teardown_data.get('test_teardown', ''),
+            self.setup_teardown_data.get('suite_setup', ''),
+            self.setup_teardown_data.get('suite_teardown', '')
+        ]
+        fixture_manager = FixtureManager(fixture_list)
+        fixture_manager.replace_fixture_names()
+        return fixture_manager.get_new_fixtures()
 
 
 class DBDirInitReader(object):
@@ -65,12 +79,15 @@ class DBDirInitReader(object):
         if not st_queryset.exists():
             return None
         setup_teardown = st_queryset.first()
-        return [
+        fixture_list = [
             setup_teardown.test_setup,
             setup_teardown.test_teardown,
             setup_teardown.suite_setup,
             setup_teardown.suite_teardown
         ]
+        fixture_manager = FixtureManager(fixture_list)
+        fixture_manager.replace_fixture_names()
+        return fixture_manager.get_new_fixtures()
 
     def _get_tag_list(self):
         tag_queryset = Tag.objects.filter(

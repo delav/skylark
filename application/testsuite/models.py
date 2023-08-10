@@ -14,6 +14,7 @@ class TestSuite(models.Model):
     create_by = models.CharField(max_length=255, help_text='create user')
     update_by = models.CharField(max_length=255, help_text='last update user')
     suite_dir = models.ForeignKey(SuiteDir, related_name='suites', on_delete=models.CASCADE, help_text='associated dir')
+    project_id = models.IntegerField(help_text='associated project')
     timeout = models.CharField(default=None, blank=True, null=True, max_length=255, help_text='all case run timeout')
     status = models.IntegerField(default=0, help_text='test suite status')
 

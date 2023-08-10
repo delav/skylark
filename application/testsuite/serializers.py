@@ -8,7 +8,7 @@ class TestSuiteSerializers(serializers.ModelSerializer):
     class Meta:
         model = TestSuite
         fields = ('id', 'name', 'document', 'category', 'create_at',
-                  'update_at', 'create_by', 'update_by', 'suite_dir_id', 'timeout')
+                  'update_at', 'create_by', 'update_by', 'suite_dir_id', 'project_id', 'timeout')
         read_only_fields = ('create_by', 'update_by')
 
     def to_internal_value(self, data):
@@ -21,6 +21,13 @@ class TestSuiteSerializers(serializers.ModelSerializer):
             ret['create_by'] = user_email
         ret['update_by'] = user_email
         return ret
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+        if request.method == 'PUT':
+            # not allowed update project id
+            del attrs['project_id']
+        return attrs
 
 
 class DuplicateTestSuiteSerializers(serializers.ModelSerializer):

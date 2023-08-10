@@ -1,5 +1,4 @@
 from django.db import models
-from django.conf import settings
 
 # Create your models here.
 
@@ -11,6 +10,7 @@ class Project(models.Model):
     update_at = models.DateTimeField(auto_now=True, help_text='update time')
     create_by = models.CharField(max_length=255, help_text='create user')
     update_by = models.CharField(max_length=255, help_text='last update user')
+    group_id = models.IntegerField(help_text='belong to group or team')
     status = models.IntegerField(default=0, help_text='project status')
     personal = models.BooleanField(default=False, help_text='personal project')
 

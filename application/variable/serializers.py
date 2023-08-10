@@ -3,15 +3,10 @@ from application.variable.models import Variable
 
 
 class VariableSerializers(serializers.ModelSerializer):
-    edit = serializers.BooleanField(read_only=True, help_text='edit mode')
 
     class Meta:
         model = Variable
         fields = '__all__'
-
-    def to_representation(self, instance):
-        instance.edit = False
-        return super().to_representation(instance)
 
 
 class CopyVariableSerializers(serializers.ModelSerializer):

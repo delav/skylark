@@ -41,11 +41,7 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
                 queryset = self.get_queryset().filter(
                     project_id__in=project_ids).order_by('-create_at')
             pg_queryset = self.paginate_queryset(queryset)
-            plan_list = []
-            for item in pg_queryset:
-                item_dict = self.get_serializer(item).data
-                item_dict['periodic'] = get_periodic_task(id=item.periodic_task_id)
-                plan_list.append(item_dict)
+            plan_list = self.get_serializer(pg_queryset, many=True).data
         except (Exception,) as e:
             logger.error(f'get plan list failed: {e}')
             return JsonResponse(code=10500, msg='get plan list failed')
@@ -89,7 +85,7 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
         logger.info(f'update build plan: {request.data}')
 
     def retrieve(self, request, *args, **kwargs):
-        logger.info(f'get build plan: {kwargs.get("pk")}')
+        logger.info(f'get plan detail: {kwargs.get("pk")}')
         try:
             instance = self.get_object()
         except (Exception,):
@@ -109,7 +105,7 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
         return JsonResponse(data=instance.id)
 
     @action(methods=['get'], detail=False)
-    def instantly(self, request, *args, **kwargs):
+    def get_instantly_plan_list(self, request, *args, **kwargs):
         logger.info(f'get instantly build plan')
         try:
             limit = request.query_params.get('limit')

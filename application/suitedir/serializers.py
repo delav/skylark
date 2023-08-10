@@ -25,3 +25,10 @@ class SuiteDirSerializers(serializers.ModelSerializer):
             ret['create_by'] = user_email
         ret['update_by'] = user_email
         return ret
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+        if request.method == 'PUT':
+            # not allowed update project id
+            del attrs['project_id']
+        return attrs

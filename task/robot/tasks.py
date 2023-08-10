@@ -70,6 +70,12 @@ def robot_notifier(task_id):
         item['history_id'] = history_id
         case_detail_list.append(HistoryDetail(**item))
     HistoryDetail.objects.bulk_create(case_detail_list)
+    app.send_task(
+        settings.REPORT_TASK,
+        queue=settings.DEFAULT_QUEUE,
+        routing_key=settings.DEFAULT_ROUTING_KEY,
+        args=(history_id,)
+    )
 
 
 

@@ -8,8 +8,8 @@ class TestCaseSerializers(serializers.ModelSerializer):
     class Meta:
         model = TestCase
         fields = (
-            'id', 'name', 'category', 'document', 'priority_id',
-            'create_at', 'update_at', 'create_by', 'update_by', 'test_suite_id', 'inputs', 'outputs', 'timeout'
+            'id', 'name', 'category', 'document', 'priority_id', 'create_at',
+            'update_at', 'create_by', 'update_by', 'test_suite_id', 'project_id', 'inputs', 'outputs', 'timeout'
         )
         read_only_fields = ('create_by', 'update_by')
 
@@ -23,6 +23,13 @@ class TestCaseSerializers(serializers.ModelSerializer):
             ret['create_by'] = user_email
         ret['update_by'] = user_email
         return ret
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+        if request.method == 'PUT':
+            # not allowed update project id
+            del attrs['project_id']
+        return attrs
 
 
 class DuplicateTestCaseSerializers(serializers.ModelSerializer):
