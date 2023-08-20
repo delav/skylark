@@ -10,6 +10,7 @@ from application.testsuite.serializers import TestSuiteSerializers, DuplicateTes
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers
 from application.virtualfile.handler import update_file
+from application.common.access.projectaccess import has_project_permission
 from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_dir_node, handler_suite_node
 from application.common.operator.suiteoperator import SuiteOperator
@@ -31,6 +32,8 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
                 id=dir_id,
                 status=ModuleStatus.NORMAL
             )
+            if not has_project_permission(dir_obj.project_id, request.user):
+                return JsonResponse(code=40300, data='403_FORBIDDEN')
         except (Exception,) as e:
             logger.error(f'get dir child info failed: {e}')
             return JsonResponse(code=10060, msg='get dir child info failed')
@@ -58,6 +61,9 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
+            project_id = serializer.data.get('project_id')
+            if not has_project_permission(project_id, request.user):
+                return JsonResponse(code=40300, data='403_FORBIDDEN')
             self.perform_create(serializer)
         except (Exception,) as e:
             logger.error(f'save test suite failed: {e}')
@@ -76,6 +82,8 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         try:
             with transaction.atomic():
                 instance = self.get_object()
+                if not has_project_permission(instance.project_id, request.user):
+                    return JsonResponse(code=40300, data='403_FORBIDDEN')
                 if instance.status != ModuleStatus.NORMAL:
                     return JsonResponse(code=10064, data='test suite not exist')
                 serializer = self.get_serializer(instance, data=request.data, partial=True)
@@ -94,6 +102,8 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         try:
             with transaction.atomic():
                 instance = self.get_object()
+                if not has_project_permission(instance.project_id, request.user):
+                    return JsonResponse(code=40300, data='403_FORBIDDEN')
                 instance.status = ModuleStatus.DELETED
                 instance.name = instance.name + f'-{get_timestamp(6)}'
                 instance.update_by = request.user.email
@@ -113,6 +123,8 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         serializer.is_valid(raise_exception=True)
         try:
             to_project_id = serializer.data.get('to_project_id')
+            if not has_project_permission(to_project_id, request.user):
+                return JsonResponse(code=40300, data='403_FORBIDDEN')
             to_dir_id = serializer.data.get('to_dir_id')
             copy_suite_id = serializer.data.get('raw_suite_id')
             user = request.user.email

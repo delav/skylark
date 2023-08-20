@@ -10,6 +10,7 @@ from application.testcase.models import TestCase
 from application.testcase.serializers import TestCaseSerializers, DuplicateTestCaseSerializers
 from application.userkeyword.models import UserKeyword
 from application.testsuite.models import TestSuite
+from application.common.access.projectaccess import has_project_permission
 from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_case_node
 from application.common.operator.caseoperator import CaseOperator
@@ -31,6 +32,8 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
                 id=suite_id,
                 status=ModuleStatus.NORMAL
             )
+            if not has_project_permission(suite_obj.project_id, request.user):
+                return JsonResponse(code=40300, data='403_FORBIDDEN')
         except (Exception,) as e:
             logger.error(f'get test case failed: {e}')
             return JsonResponse(code=10050, msg='get test case failed')
@@ -51,6 +54,9 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
+            project_id = serializer.data.get('project_id')
+            if not has_project_permission(project_id, request.user):
+                return JsonResponse(code=40300, data='403_FORBIDDEN')
             with transaction.atomic():
                 instance = TestCase.objects.create(
                     **serializer.validated_data,
@@ -77,6 +83,8 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         logger.info(f'update test case: {request.data}')
         try:
             instance = self.get_object()
+            if not has_project_permission(instance.project_id, request.user):
+                return JsonResponse(code=40300, data='403_FORBIDDEN')
             if instance.status != ModuleStatus.NORMAL:
                 return JsonResponse(code=10054, data='test case not exist')
             serializer = self.get_serializer(instance, data=request.data, partial=True)
@@ -95,6 +103,8 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         try:
             with transaction.atomic():
                 instance = self.get_object()
+                if not has_project_permission(instance.project_id, request.user):
+                    return JsonResponse(code=40300, data='403_FORBIDDEN')
                 instance.status = ModuleStatus.DELETED
                 instance.name = instance.name + f'-{get_timestamp(6)}'
                 instance.update_by = request.user.email
@@ -116,6 +126,8 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         serializer.is_valid(raise_exception=True)
         try:
             to_project_id = serializer.data.get('to_project_id')
+            if not has_project_permission(to_project_id, request.user):
+                return JsonResponse(code=40300, data='403_FORBIDDEN')
             to_suite_id = serializer.data.get('to_suite_id')
             copy_case_id = serializer.data.get('raw_case_id')
             user = request.user.email

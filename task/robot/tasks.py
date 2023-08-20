@@ -5,6 +5,8 @@ from infra.client.redisclient import RedisClient
 from infra.utils.makedir import make_path
 from application.builder.handler import convert_test_task_id, is_test_mode
 from application.buildhistory.models import BuildHistory, HistoryDetail
+from application.storage import LIB_ALIAS_MAP
+from worker.plugin.RebotModifier import RobotModifier
 from worker.robot.rebot import rebot
 from skylark.celeryapp import app
 
@@ -55,7 +57,11 @@ def robot_notifier(task_id):
     build_result['start_time'] = datetime.fromtimestamp(build_result['start_time'])
     build_result['end_time'] = datetime.fromtimestamp(build_result['end_time'])
     output_path = make_path(settings.REPORT_PATH, task_id)
-    rebot(*output_list, outputdir=output_path)
+    rebot(
+        *output_list,
+        outputdir=output_path,
+        prerebotmodifier=RobotModifier(LIB_ALIAS_MAP)
+    )
     build_result['report_path'] = output_path
     # build_result['report_content'] = str(output_list)
     queryset.update(**build_result)

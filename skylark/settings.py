@@ -67,7 +67,7 @@ INSTALLED_APPS = [
     'application.user.apps.UserConfig',
     'application.usergroup.apps.UserGroupConfig',
     'application.department.apps.DepartmentConfig',
-    'application.product.apps.ProductConfig',
+    'application.projectpermission.apps.ProjectPermissionConfig',
     'application.tag.apps.TagConfig',
     'application.keywordgroup.apps.KeywordGroupConfig',
     'application.libkeyword.apps.LibKeywordConfig',

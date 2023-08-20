@@ -9,6 +9,7 @@ from application.caseentity.models import CaseEntity
 from application.caseentity.serializers import CaseEntitySerializers, CaseEntityListSerializers
 from application.libkeyword.models import LibKeyword
 from application.userkeyword.models import UserKeyword
+from application.common.access.projectaccess import has_project_permission
 
 # Create your views here.
 
@@ -21,6 +22,11 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
         logger.info(f'get test case entities by case id: {request.query_params}')
         try:
             case_id = request.query_params.get('case')
+            test_case = TestCase.objects.get(id=case_id)
+            if not has_project_permission(test_case.project_id, request.user):
+                return JsonResponse(code=40300, data='403_FORBIDDEN')
+            if test_case.status == ModuleStatus.DELETED:
+                return JsonResponse(code=10042, data='test case not exist')
             entity_queryset = CaseEntity.objects.filter(test_case_id=case_id).order_by('seq_number')
         except (Exception,) as e:
             logger.error(f'get entities failed: {e}')
@@ -39,6 +45,8 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
         try:
             with transaction.atomic():
                 test_case = TestCase.objects.get(id=case_id)
+                if not has_project_permission(test_case.project_id, request.user):
+                    return JsonResponse(code=40300, data='403_FORBIDDEN')
                 if test_case.status == ModuleStatus.DELETED:
                     return JsonResponse(code=10042, data='test case not exist')
                 test_case.update_by = request.user.email
@@ -47,15 +55,16 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
                 old_entities = test_case.entities.all()
                 old_entities.delete()
                 # save new case entities
-                keyword_list = self.validate_keywords(case_id, entity_list)
-                CaseEntity.objects.bulk_create(keyword_list)
+                new_entities = self.get_new_entities(case_id, entity_list)
+                CaseEntity.objects.bulk_create(new_entities)
         except Exception as e:
             logger.error(f'update case entities failed: {case_id}, {e}')
             return JsonResponse(code=10041, msg='update case entities failed')
         return JsonResponse(msg='update case entities successful')
 
-    def validate_keywords(self, case_id, entity_list):
-        result_list = []
+    def get_new_entities(self, case_id, entity_list):
+        lib_keyword_ids, user_keyword_ids = set(), set()
+        entity_object_list = []
         for i in range(len(entity_list)):
             entity = entity_list[i]
             entity['seq_number'] = i
@@ -63,11 +72,24 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
             keyword_id = entity['keyword_id']
             keyword_type = entity['keyword_type']
             if keyword_type == KeywordType.LIB:
-                LibKeyword.objects.get(id=keyword_id)
+                lib_keyword_ids.add(keyword_id)
             elif keyword_type == KeywordType.USER:
-                UserKeyword.objects.get(id=keyword_id)
+                user_keyword_ids.add(keyword_id)
             else:
-                logger.error(f'keyword is not exists: {keyword_id}')
+                logger.error(f'keyword error: {keyword_id}')
                 raise Exception
-            result_list.append(CaseEntity(**entity))
-        return result_list
+            entity_object_list.append(CaseEntity(**entity))
+        # validate keyword valid
+        lib_keywords = LibKeyword.objects.filter(
+            id__in=lib_keyword_ids
+        )
+        if lib_keywords.count() != len(lib_keyword_ids):
+            logger.error(f'lib keyword exception:')
+            raise Exception
+        user_keywords = UserKeyword.objects.filter(
+            id__in=user_keyword_ids
+        )
+        if user_keywords.count() != len(user_keyword_ids):
+            logger.error(f'user keyword exception:')
+            raise Exception
+        return entity_object_list

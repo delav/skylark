@@ -6,6 +6,7 @@ from application.constant import *
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers
 from application.project.models import Project
+from application.common.access.projectaccess import has_project_permission
 from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_dir_node
 from infra.utils.timehanldler import get_timestamp
@@ -22,6 +23,8 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         logger.info(f'get project base dir by project id: {request.query_params}')
         try:
             project_id = request.query_params.get('project')
+            if not has_project_permission(project_id, request.user):
+                return JsonResponse(code=40300, data='403_FORBIDDEN')
             project = Project.objects.get(id=project_id)
         except (Exception,) as e:
             logger.error(f'get base dir info failed: {e}')
@@ -45,6 +48,9 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
+            project_id = serializer.data.get('project_id')
+            if not has_project_permission(project_id, request.user):
+                return JsonResponse(code=40300, data='403_FORBIDDEN')
             self.perform_create(serializer)
         except (Exception,) as e:
             logger.error(f'save suite dir failed: {e}')
@@ -61,6 +67,8 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         logger.info(f'update suite dir: {request.data}')
         try:
             instance = self.get_object()
+            if not has_project_permission(instance.project_id, request.user):
+                return JsonResponse(code=40300, data='403_FORBIDDEN')
             if instance.status != ModuleStatus.NORMAL:
                 return JsonResponse(code=10074, data='suite sir not exist')
             serializer = self.get_serializer(instance, data=request.data, partial=True)
@@ -75,6 +83,8 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         logger.info(f'delete suite dir: {kwargs.get("pk")}')
         try:
             instance = self.get_object()
+            if not has_project_permission(instance.project_id, request.user):
+                return JsonResponse(code=40300, data='403_FORBIDDEN')
             if not instance.parent_dir:
                 return JsonResponse(code=10074, msg='dir not allowed delete')
             instance.status = ModuleStatus.DELETED

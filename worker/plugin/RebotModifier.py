@@ -3,10 +3,13 @@
 @Date   ：2020/11/13 16:25
 @Desc   ：
 =================================================="""
-from robot.api import SuiteVisitor
+from robot.model import SuiteVisitor
 
 
 class RobotModifier(SuiteVisitor):
+
+    def __init__(self, name_map):
+        self.name_map = name_map
 
     def visit_test(self, test):
         """Implements traversing through the test and its keywords.
@@ -39,20 +42,10 @@ class RobotModifier(SuiteVisitor):
 
     def end_keyword(self, keyword):
         """Called when keyword ends. Default implementation does nothing."""
-        pass
-        # keyword.libname = None
-        # key = keyword.kwname
-        # if key in key_alias_dict:
-        #     keyword.kwname = key_alias_dict[key]
-        # if key == "Run Keyword And Continue On Failure":
-        #     new_kw_args = []
-        #     kw_args = keyword.args
-        #     for i in range(len(kw_args)):
-        #         item = kw_args[i]
-        #         if item in key_alias_dict:
-        #             item = key_alias_dict[item]
-        #         new_kw_args.append(item)
-        #     keyword.args = tuple(new_kw_args)
+        keyword.libname = None
+        key = keyword.kwname
+        if key in self.name_map:
+            keyword.kwname = self.name_map[key]
 
     def visit_message(self, msg):
         """Implements visiting the message.
