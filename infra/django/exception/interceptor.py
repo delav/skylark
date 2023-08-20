@@ -1,3 +1,4 @@
+import traceback
 from loguru import logger
 from rest_framework.views import exception_handler as rest_handler
 from rest_framework.status import HTTP_500_INTERNAL_SERVER_ERROR
@@ -11,12 +12,12 @@ def exception_handler(exc, context):
     deal with the response exception
     """
     response = rest_handler(exc, context)
-    logger.warning(exc)
-    # if response is None:
-    #     return JsonResponse(
-    #         code=99999,
-    #         msg='System Error',
-    #         status=HTTP_500_INTERNAL_SERVER_ERROR)
+    if response is None:
+        traceback.print_exc()
+        return JsonResponse(
+            code=99999,
+            msg='System Error',
+            status=HTTP_500_INTERNAL_SERVER_ERROR)
     if isinstance(response.data, list):
         if response.data and isinstance(response.data[0], DetailError):
             return JsonResponse(

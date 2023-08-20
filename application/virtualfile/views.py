@@ -29,7 +29,7 @@ class VirtualFileViewSets(viewsets.GenericViewSet):
         serializer = VirtualFileSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            file_data = serializer.data
+            file_data = serializer.validated_data
             file_name = file_data.get('file_name')
             suffix = str(search(r'\w*(.\w*)', file_name).group(1))
             file_data['file_suffix'] = suffix
@@ -61,7 +61,6 @@ class VirtualFileViewSets(viewsets.GenericViewSet):
 
 class ProjectFileViewSets(viewsets.GenericViewSet):
 
-    @transaction.atomic
     @action(methods=['post'], detail=False)
     def upload(self, request, *args, **kwargs):
         logger.info(f'upload files')
@@ -69,9 +68,9 @@ class ProjectFileViewSets(viewsets.GenericViewSet):
         if not form.is_valid():
             return JsonResponse(code=10302, msg='upload failed')
         files = request.FILES.getlist('file')
+        node_list = []
+        dir_id = form.cleaned_data.get('dir_id')
         try:
-            node_list = []
-            dir_id = form.cleaned_data.get('dir_id')
             with transaction.atomic():
                 for f in files:
                     if f.size > settings.FILE_SIZE_LIMIT:

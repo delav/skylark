@@ -18,23 +18,15 @@ class NoticeViewSets(mixins.CreateModelMixin,
         logger.info(f'create notice setting: {self.request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            self.perform_create(serializer)
-        except Exception as e:
-            logger.error(f'set notice failed: {e}')
-            return JsonResponse(code=10121, msg='set notice failed')
+        self.perform_create(serializer)
         return JsonResponse(data=serializer.data)
 
     def update(self, request, *args, **kwargs):
         logger.info(f'update notice: {request.data}')
-        try:
-            instance = self.get_object()
-            serializer = self.get_serializer(instance, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
-        except Exception as e:
-            logger.error(f'update notice failed: {e}')
-            return JsonResponse(code=10202, msg='update notice failed')
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
         return JsonResponse(serializer.data)
 
     def list(self, request, *args, **kwargs):

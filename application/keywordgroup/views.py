@@ -23,22 +23,15 @@ class KeywordGroupViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, m
         logger.info(f'create keyword group: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            self.perform_create(serializer)
-        except Exception as e:
-            logger.error(f'create keyword group failed: {e}')
-            return JsonResponse(code=10101, msg='create test case failed')
+        self.perform_create(serializer)
         return JsonResponse(data=serializer.data)
 
     def update(self, request, *args, **kwargs):
         logger.info(f'update keyword group: {request.data}')
-        try:
-            instance = self.get_object()
-            serializer = self.get_serializer(instance, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
-        except (Exception,):
-            return JsonResponse(code=10102, msg='keyword group not found')
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
         return JsonResponse(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):

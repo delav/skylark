@@ -27,21 +27,16 @@ class NoAuthUserViewSets(viewsets.GenericViewSet):
         user_info.update(serializer.validated_data)
         return JsonResponse(data=user_info)
 
-    @transaction.atomic
     @action(methods=['post'], detail=False)
     def register(self, request, *args, **kwargs):
         logger.info(f'register user: {request.data}')
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            with transaction.atomic():
-                user = serializer.save()
-                group_id = request.data.get('group_id')
-                group = UserGroup.objects.get(id=group_id)
-                user.groups.add(group)
-        except Exception as e:
-            logger.error(f'register failed: {e}')
-            return JsonResponse(code=10010, msg='register fail')
+        with transaction.atomic():
+            user = serializer.save()
+            group_id = request.data.get('group_id')
+            group = UserGroup.objects.get(id=group_id)
+            user.groups.add(group)
         ser = self.get_serializer(user)
         return JsonResponse(data=ser.data)
 
@@ -62,14 +57,10 @@ class NormalUserViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, vie
 
     def update(self, request, *args, **kwargs):
         logger.info(f'update current user info: {request.data}')
-        try:
-            instance = self.get_object()
-            serializer = self.get_serializer(instance, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
-        except (Exception,) as e:
-            logger.error(f'update user failed: {e}')
-            return JsonResponse(code=10013, msg='update user failed')
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
         return JsonResponse(data=serializer.data)
 
 
@@ -81,23 +72,18 @@ class AdminUserViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
     permission_classes = (IsAdminUser,)
     pagination_class = (PagePagination,)
 
-    @transaction.atomic
     def create(self, request, *args, **kwargs):
         logger.info(f'add user: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            with transaction.atomic():
-                data = serializer.data
-                username = data.get('email').split('@')[0]
-                user = User(username=username, email=data.get('email'),
-                            group_id=data.get('email'), is_superuser=data.get('is_superuser'))
-                user.save()
-                group = UserGroup.objects.get(id=data.get('group_id'))
-                user.groups.add(group)
-        except Exception as e:
-            logger.error(f'add user failed: {e}')
-            return JsonResponse(code=10010, msg='add user failed')
+        with transaction.atomic():
+            data = serializer.data
+            username = data.get('email').split('@')[0]
+            user = User(username=username, email=data.get('email'),
+                        group_id=data.get('email'), is_superuser=data.get('is_superuser'))
+            user.save()
+            group = UserGroup.objects.get(id=data.get('group_id'))
+            user.groups.add(group)
         data = self.get_serializer(user)
         return JsonResponse(data=data)
 
@@ -110,22 +96,14 @@ class AdminUserViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
     def update(self, request, *args, **kwargs):
         logger.info(f'update user info: {request.data}')
         update_data = request.data
-        try:
-            instance = self.get_object()
-            serializer = self.get_serializer(instance, data=update_data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
-        except (Exception,) as e:
-            logger.error(f'update user info error: {e}')
-            return JsonResponse(code=10011, msg='user not found')
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=update_data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
         return JsonResponse(data=serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         logger.info(f'delete user: {kwargs.get("pk")}')
-        try:
-            instance = self.get_object()
-            self.perform_destroy(instance)
-        except (Exception,) as e:
-            logger.error(f'delete user error: {e}')
-            return JsonResponse(code=10012, msg='delete user failed')
+        instance = self.get_object()
+        self.perform_destroy(instance)
         return JsonResponse(msg=instance.id)

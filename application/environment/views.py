@@ -23,23 +23,15 @@ class EnvironmentViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mi
         logger.info(f'create environment: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            self.perform_create(serializer)
-        except Exception as e:
-            logger.error(f'create environment failed: {e}')
-            return JsonResponse(code=10201, msg='create environment failed')
+        self.perform_create(serializer)
         return JsonResponse(data=serializer.data)
 
     def update(self, request, *args, **kwargs):
         logger.info(f'update environment: {request.data}')
-        try:
-            instance = self.get_object()
-            serializer = self.get_serializer(instance, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
-        except Exception as e:
-            logger.error(f'update environment failed: {e}')
-            return JsonResponse(code=10203, msg='update environment failed')
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
         return JsonResponse(serializer.data)
 
     def retrieve(self, request, *args, **kwargs):

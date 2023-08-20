@@ -23,22 +23,14 @@ class CasePriorityViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         logger.info(f'create case priority: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            self.perform_create(serializer)
-        except Exception as e:
-            logger.error(f'create case priority failed: {e}')
-            return JsonResponse(code=10130, msg='create case priority failed')
+        self.perform_create(serializer)
         return JsonResponse(data=serializer.data)
 
     def update(self, request, *args, **kwargs):
         logger.info(f'update case priority: {request.data}')
-        try:
-            instance = self.get_object()
-            serializer = self.get_serializer(instance, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
-        except Exception as e:
-            logger.error(f'update case priority failed: {e}')
-            return JsonResponse(code=10131, msg='update case priority failed')
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
         return JsonResponse(serializer.data)
 

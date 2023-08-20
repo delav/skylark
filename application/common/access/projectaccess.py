@@ -5,6 +5,8 @@ from application.projectpermission.models import ProjectPermission
 def has_project_permission(project_id, user):
     if not project_id:
         return False
+    if user.is_superuser:
+        return True
     permission_project_ids = ProjectPermission.objects.filter(
         user_id__exact=user.id
     ).values_list('project_id').all()

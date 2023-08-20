@@ -14,14 +14,10 @@ class BuildHistoryViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     def list(self, request, *args, **kwargs):
         logger.info(f'get history by record id: {request.query_params}')
-        try:
-            record_id = request.query_params.get('record')
-            queryset = BuildHistory.objects.filter(
-                record_id=record_id
-            )
-            serializer = self.get_serializer(queryset, many=True)
-        except (Exception,) as e:
-            logger.error(f'get history failed: {e}')
-            return JsonResponse(code=10500, msg='get history failed')
+        record_id = request.query_params.get('record')
+        queryset = BuildHistory.objects.filter(
+            record_id=record_id
+        )
+        serializer = self.get_serializer(queryset, many=True)
         return JsonResponse(data=serializer.data)
 

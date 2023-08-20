@@ -20,46 +20,36 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
 
     def list(self, request, *args, **kwargs):
         logger.info(f'get test case entities by case id: {request.query_params}')
-        try:
-            case_id = request.query_params.get('case')
-            test_case = TestCase.objects.get(id=case_id)
-            if not has_project_permission(test_case.project_id, request.user):
-                return JsonResponse(code=40300, data='403_FORBIDDEN')
-            if test_case.status == ModuleStatus.DELETED:
-                return JsonResponse(code=10042, data='test case not exist')
-            entity_queryset = CaseEntity.objects.filter(test_case_id=case_id).order_by('seq_number')
-        except (Exception,) as e:
-            logger.error(f'get entities failed: {e}')
-            return JsonResponse(code=10040, msg='get entities failed')
+        case_id = request.query_params.get('case')
+        test_case = TestCase.objects.get(id=case_id)
+        if not has_project_permission(test_case.project_id, request.user):
+            return JsonResponse(code=40300, data='403_FORBIDDEN')
+        if test_case.status == ModuleStatus.DELETED:
+            return JsonResponse(code=10042, data='test case not exist')
+        entity_queryset = CaseEntity.objects.filter(test_case_id=case_id).order_by('seq_number')
         ser = self.get_serializer(entity_queryset, many=True)
         return JsonResponse(data=ser.data)
 
-    @transaction.atomic
     def create(self, request, *args, **kwargs):
         logger.info(f'save test case entities: {request.data}')
         serializer = CaseEntityListSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
         case_id = serializer.validated_data.get('case_id')
         entity_list = serializer.validated_data.get('entity_list')
-
-        try:
-            with transaction.atomic():
-                test_case = TestCase.objects.get(id=case_id)
-                if not has_project_permission(test_case.project_id, request.user):
-                    return JsonResponse(code=40300, data='403_FORBIDDEN')
-                if test_case.status == ModuleStatus.DELETED:
-                    return JsonResponse(code=10042, data='test case not exist')
-                test_case.update_by = request.user.email
-                test_case.save()
-                # delete old case entities
-                old_entities = test_case.entities.all()
-                old_entities.delete()
-                # save new case entities
-                new_entities = self.get_new_entities(case_id, entity_list)
-                CaseEntity.objects.bulk_create(new_entities)
-        except Exception as e:
-            logger.error(f'update case entities failed: {case_id}, {e}')
-            return JsonResponse(code=10041, msg='update case entities failed')
+        with transaction.atomic():
+            test_case = TestCase.objects.get(id=case_id)
+            if not has_project_permission(test_case.project_id, request.user):
+                return JsonResponse(code=40300, data='403_FORBIDDEN')
+            if test_case.status == ModuleStatus.DELETED:
+                return JsonResponse(code=10042, data='test case not exist')
+            test_case.update_by = request.user.email
+            test_case.save()
+            # delete old case entities
+            old_entities = test_case.entities.all()
+            old_entities.delete()
+            # save new case entities
+            new_entities = self.get_new_entities(case_id, entity_list)
+            CaseEntity.objects.bulk_create(new_entities)
         return JsonResponse(msg='update case entities successful')
 
     def get_new_entities(self, case_id, entity_list):

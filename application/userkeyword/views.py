@@ -19,21 +19,19 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     def list(self, request, *args, **kwargs):
         logger.info(f'get project user keyword: {request.query_params}')
-        try:
-            user_group = KeywordGroup.objects.filter(
-                group_type=KeywordGroupType.USER
-            )
-            if not user_group.exists():
-                return JsonResponse(data=[])
-            group = KeywordGroupSerializers(user_group.first()).data
-            project_id = request.query_params.get('project')
-            queryset = UserKeyword.objects.filter(
-                project_id=project_id,
-                status=ModuleStatus.NORMAL
-            ).select_related('test_case')
-        except (Exception,) as e:
-            logger.error(f'get user keyword failed: {e}')
-            return JsonResponse(code=1000030, msg='request params error')
+        user_group = KeywordGroup.objects.filter(
+            group_type=KeywordGroupType.USER
+        )
+        if not user_group.exists():
+            return JsonResponse(data=[])
+        group = KeywordGroupSerializers(user_group.first()).data
+        project_id = request.query_params.get('project')
+        queryset = UserKeyword.objects.filter(
+            project_id=project_id,
+            status=ModuleStatus.NORMAL
+        ).select_related('test_case')
+        if not queryset.exists():
+            return JsonResponse(data=[])
         user_keywords = []
         for item in queryset.iterator():
             serializer_data = self.get_serializer(item).data
