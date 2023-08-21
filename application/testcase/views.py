@@ -37,7 +37,7 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
             return JsonResponse(code=40308, msg='suite data error')
         suite_obj = suite_queryset.first()
         if not has_project_permission(suite_obj.project_id, request.user):
-            return JsonResponse(code=40300, data='403_FORBIDDEN')
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         test_cases = suite_obj.cases.filter(status=ModuleStatus.NORMAL)
         case_list = []
         for item in test_cases.iterator():
@@ -55,7 +55,7 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         serializer.is_valid(raise_exception=True)
         project_id = serializer.data.get('project_id')
         if not has_project_permission(project_id, request.user):
-            return JsonResponse(code=40300, data='403_FORBIDDEN')
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         try:
             with transaction.atomic():
                 instance = TestCase.objects.create(
@@ -82,9 +82,9 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         logger.info(f'update test case: {request.data}')
         instance = self.get_object()
         if not has_project_permission(instance.project_id, request.user):
-            return JsonResponse(code=40300, data='403_FORBIDDEN')
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         if instance.status != ModuleStatus.NORMAL:
-            return JsonResponse(code=10054, data='test case not exist')
+            return JsonResponse(code=10054, msg='test case not exist')
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         try:
@@ -99,7 +99,7 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         logger.info(f'delete test case: {kwargs.get("pk")}')
         instance = self.get_object()
         if not has_project_permission(instance.project_id, request.user):
-            return JsonResponse(code=40300, data='403_FORBIDDEN')
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         with transaction.atomic():
             instance.status = ModuleStatus.DELETED
             instance.name = instance.name + f'-{get_timestamp(6)}'
@@ -118,7 +118,7 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         serializer.is_valid(raise_exception=True)
         to_project_id = serializer.data.get('to_project_id')
         if not has_project_permission(to_project_id, request.user):
-            return JsonResponse(code=40300, data='403_FORBIDDEN')
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         to_suite_id = serializer.data.get('to_suite_id')
         copy_case_id = serializer.data.get('raw_case_id')
         user = request.user.email

@@ -23,9 +23,9 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
         case_id = request.query_params.get('case')
         test_case = TestCase.objects.get(id=case_id)
         if not has_project_permission(test_case.project_id, request.user):
-            return JsonResponse(code=40300, data='403_FORBIDDEN')
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         if test_case.status == ModuleStatus.DELETED:
-            return JsonResponse(code=10042, data='test case not exist')
+            return JsonResponse(code=10042, msg='test case not exist')
         entity_queryset = CaseEntity.objects.filter(test_case_id=case_id).order_by('seq_number')
         ser = self.get_serializer(entity_queryset, many=True)
         return JsonResponse(data=ser.data)
@@ -39,9 +39,9 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
         with transaction.atomic():
             test_case = TestCase.objects.get(id=case_id)
             if not has_project_permission(test_case.project_id, request.user):
-                return JsonResponse(code=40300, data='403_FORBIDDEN')
+                return JsonResponse(code=40300, msg='403_FORBIDDEN')
             if test_case.status == ModuleStatus.DELETED:
-                return JsonResponse(code=10042, data='test case not exist')
+                return JsonResponse(code=10042, msg='test case not exist')
             test_case.update_by = request.user.email
             test_case.save()
             # delete old case entities

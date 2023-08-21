@@ -36,7 +36,7 @@ class VirtualFileViewSets(viewsets.GenericViewSet):
             file_data['update_time'] = int(get_timestamp(10))
             file_data['edit_file'] = True
             if suffix not in settings.VARIABLE_FILE_TYPE:
-                return JsonResponse(code=10308, data='file type not supported')
+                return JsonResponse(code=10308, msg='file type not supported')
             instance, _ = VirtualFile.objects.update_or_create(
                 suite_id=file_data.get('suite_id'),
                 defaults=file_data
@@ -132,7 +132,7 @@ class ProjectFileViewSets(viewsets.GenericViewSet):
         try:
             instance = VirtualFile.objects.get(suite_id=suite_id)
             if instance.status == ModuleStatus.DELETED:
-                return JsonResponse(code=100308, data='file not exist')
+                return JsonResponse(code=100308, msg='file not exist')
             child_path_list = instance.file_path.split(PATH_SEPARATOR)
             file_path = Path(settings.PROJECT_FILES, *child_path_list)
             file_name = instance.file_name

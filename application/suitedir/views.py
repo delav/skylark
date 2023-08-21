@@ -24,7 +24,7 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         logger.info(f'get project base dir by project id: {request.query_params}')
         project_id = request.query_params.get('project')
         if not has_project_permission(project_id, request.user):
-            return JsonResponse(code=40300, data='403_FORBIDDEN')
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         project_queryset = Project.objects.filter(id=project_id)
         if not project_queryset.exists():
             return JsonResponse(code=10078, msg='project not exists')
@@ -51,7 +51,7 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         serializer.is_valid(raise_exception=True)
         project_id = serializer.validated_data.get('project_id')
         if not has_project_permission(project_id, request.user):
-            return JsonResponse(code=40300, data='403_FORBIDDEN')
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         try:
             self.perform_create(serializer)
         except IntegrityError:
@@ -68,9 +68,9 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         logger.info(f'update suite dir: {request.data}')
         instance = self.get_object()
         if not has_project_permission(instance.project_id, request.user):
-            return JsonResponse(code=40300, data='403_FORBIDDEN')
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         if instance.status != ModuleStatus.NORMAL:
-            return JsonResponse(code=10074, data='suite sir not exist')
+            return JsonResponse(code=10074, msg='suite sir not exist')
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         try:
@@ -83,7 +83,7 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         logger.info(f'delete suite dir: {kwargs.get("pk")}')
         instance = self.get_object()
         if not has_project_permission(instance.project_id, request.user):
-            return JsonResponse(code=40300, data='403_FORBIDDEN')
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         if not instance.parent_dir:
             return JsonResponse(code=10074, msg='dir not allowed delete')
         instance.status = ModuleStatus.DELETED

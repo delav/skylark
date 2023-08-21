@@ -19,14 +19,17 @@ class DirOperator(object):
             project_id=self.old_project_id,
             parent_dir_id=None
         )
+        new_dir_objects = []
         for dir_obj in first_level_dir_queryset.iterator():
-            SuiteDir.objects.create(
+            new_object = SuiteDir(
                 project_id=self.new_project_id,
                 name=dir_obj.name,
                 category=dir_obj.category,
                 document=dir_obj.document,
                 parent_dir_id=dir_obj.parent_dir_id
             )
+            new_dir_objects.append(new_object)
+        SuiteDir.objects.bulk_create(new_dir_objects)
 
     def deep_copy_all_dir(self):
         dir_queryset = SuiteDir.objects.filter(
