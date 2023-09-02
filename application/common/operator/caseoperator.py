@@ -6,7 +6,7 @@ from application.userkeyword.models import UserKeyword
 from application.caseentity.models import CaseEntity
 
 
-class CaseOperator(object):
+class CaseCopyOperator(object):
 
     def __init__(self, project_id, new_suite_id, create_user, case_name=None):
         self.project_id = project_id

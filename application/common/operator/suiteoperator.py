@@ -10,10 +10,10 @@ from application.variable.models import Variable
 from application.tag.models import Tag
 from application.virtualfile.models import VirtualFile
 from application.virtualfile.handler import PATH_SEPARATOR
-from application.common.operator.caseoperator import CaseOperator
+from application.common.operator.caseoperator import CaseCopyOperator
 
 
-class SuiteOperator(object):
+class SuiteCopyOperator(object):
 
     def __init__(self, project_id, new_dir_id, create_user, suite_name=None):
         self.project_id = project_id
@@ -53,7 +53,7 @@ class SuiteOperator(object):
             status=ModuleStatus.NORMAL
         )
         for old_case in case_queryset.iterator():
-            CaseOperator(
+            CaseCopyOperator(
                 self.project_id,
                 new_suite.id,
                 self.create_by,
@@ -129,3 +129,13 @@ class SuiteOperator(object):
         new_file = new_file_full_path / file_obj.name
         new_file.write_text(old_file.read_text(encoding='utf-8'), encoding='utf-8')
 
+
+class SuiteDeleteOperator(object):
+
+    def __init__(self, delete_user):
+        self.update_by = delete_user
+
+    def delete_by_obj(self, suite_obj):
+        suite_obj.name = suite_obj.name + f'-{get_timestamp(6)}'
+        suite_obj.update_by = self.update_by
+        suite_obj.save()

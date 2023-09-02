@@ -16,8 +16,10 @@ class JsonDirInitReader(object):
         self.tag_list = tag_list
 
     def read(self):
+        # not need tag for run now
+        tags = []
+        # tags = self._get_tag_list()
         setup_teardown_data = self._get_setup_teardown()
-        tags = self._get_tag_list()
         if not any([setup_teardown_data, tags, self.variable_list]):
             return ''
         return DirInitFile(
@@ -90,13 +92,14 @@ class DBDirInitReader(object):
         return fixture_manager.get_new_fixtures()
 
     def _get_tag_list(self):
-        tag_queryset = Tag.objects.filter(
-            module_id=self.dir_id,
-            module_type=self.module_type
-        )
-        if not tag_queryset.exists():
-            return None
-        return [t.name for t in tag_queryset.iterator()]
+        return []
+        # tag_queryset = Tag.objects.filter(
+        #     module_id=self.dir_id,
+        #     module_type=self.module_type
+        # )
+        # if not tag_queryset.exists():
+        #     return []
+        # return [t.name for t in tag_queryset.iterator()]
 
     def _get_variable_list(self):
         """

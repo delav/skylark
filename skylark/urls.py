@@ -13,13 +13,13 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from skylark.admin.urls import admin_router
 from django.urls import path
 from django.conf import settings
 from django.conf.urls import include, url
 from django.views.static import serve
 from rest_framework import routers
-from application.user.views import NoAuthUserViewSets, AdminUserViewSets, NormalUserViewSets
-from application.project.views import AdminProjectViewSets
+from application.user.views import NoAuthUserViewSets, NormalUserViewSets
 from application.usergroup.views import UserGroupViewSets
 from application.libkeyword.views import LibKeywordViewSets
 from application.userkeyword.views import UserKeywordViewSets
@@ -44,9 +44,6 @@ from application.virtualfile.views import VirtualFileViewSets, ProjectFileViewSe
 from application.notice.views import NoticeViewSets
 
 router = routers.SimpleRouter(trailing_slash=False)
-router.register('admin/user/info', AdminUserViewSets, basename='admin_uio')
-router.register('admin/user/group', AdminUserViewSets, basename='admin_ugp')
-router.register('admin/project', AdminProjectViewSets, basename='admin_project')
 router.register('user/info', NormalUserViewSets, basename='user_info')
 router.register('user/group', UserGroupViewSets, basename='user_group')
 router.register('keyword/lib_keyword', LibKeywordViewSets, basename='lib_keyword')
@@ -75,6 +72,7 @@ router.register('notice', NoticeViewSets, basename='notice')
 
 urlpatterns = [
     url(r'^api/', include(router.urls)),
+    url(r'^api/admin/', include(admin_router.urls)),
     url(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     path(r'api/user/login', NoAuthUserViewSets.as_view({'post': 'login'})),
     path(r'api/user/register', NoAuthUserViewSets.as_view({'post': 'register'})),

@@ -1,18 +1,19 @@
 from loguru import logger
 from django.conf import settings
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from infra.django.pagination.paginator import PagePagination
 from infra.django.response import JsonResponse
+from application.constant import ModuleStatus
 from application.builder.handler import generate_task_name, convert_task_name
-from application.usergroup.models import UserGroup
-from application.user.models import User
+from application.projectpermission.models import ProjectPermission
 from application.project.models import Project
 from application.buildplan.models import BuildPlan
 from application.buildplan.serializers import BuildPlanSerializers
 from application.common.scheduler.periodic import PeriodicHandler, get_periodic_task, get_periodic_list
+from application.common.access.projectaccess import has_project_permission
 
 # Create your views here.
 
@@ -26,17 +27,28 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
     def list(self, request, *args, **kwargs):
         logger.info(f'get build plan list: {request.query_params}')
         project_id = request.query_params.get('project')
-        groups_queryset = UserGroup.objects.filter(user=request.user)
-        users = User.objects.none()
-        for group in groups_queryset:
-            users |= group.user_set.all()
-        group_emails = [user.email for user in users]
-        projects = Project.objects.filter(create_by__in=group_emails, status=0)
-        project_ids = [item.id for item in projects]
         if project_id:
+            if not project_id.isdigit():
+                return JsonResponse(code=40309, msg='Param error')
+            if not has_project_permission(project_id, request.user):
+                return JsonResponse(code=40300, msg='403_FORBIDDEN')
             queryset = self.get_queryset().filter(
                 project_id=project_id).order_by('-create_at')
         else:
+            user_project_ids = ProjectPermission.objects.filter(
+                user_id__exact=request.user.id
+            ).values_list('project_id').all()
+            common_project_queryset = Project.objects.filter(
+                status=ModuleStatus.NORMAL,
+                personal=False,
+                id__in=user_project_ids
+            ).values_list('id')
+            personal_project_queryset = Project.objects.filter(
+                status=ModuleStatus.NORMAL,
+                personal=True,
+                create_by=request.user.email
+            ).values_list('id')
+            project_ids = common_project_queryset | personal_project_queryset
             queryset = self.get_queryset().filter(
                 project_id__in=project_ids).order_by('-create_at')
         pg_queryset = self.paginate_queryset(queryset)
@@ -48,8 +60,11 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
         logger.info(f'create build plan: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        valid_data = serializer.validated_data
+        project_id = valid_data.get('project_id')
+        if not has_project_permission(project_id, request.user):
+            return JsonResponse(code=40301, msg='403_FORBIDDEN')
         with transaction.atomic():
-            valid_data = serializer.validated_data
             plan = BuildPlan.objects.create(**valid_data)
             plan_id = plan.id
             periodic_expr = valid_data.get('periodic_expr', '')
@@ -74,6 +89,16 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
 
     def update(self, request, *args, **kwargs):
         logger.info(f'update build plan: {request.data}')
+        instance = self.get_object()
+        if not has_project_permission(instance.project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        try:
+            self.perform_update(serializer)
+        except IntegrityError:
+            return JsonResponse(code=40302, msg='update dir name already exist')
+        return JsonResponse(data=serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
         logger.info(f'get plan detail: {kwargs.get("pk")}')
@@ -85,6 +110,8 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
     def destroy(self, request, *args, **kwargs):
         logger.info(f'delete build plan: {kwargs.get("pk")}')
         instance = self.get_object()
+        if not has_project_permission(instance.project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         self.perform_destroy(instance)
         return JsonResponse(data=instance.id)
 

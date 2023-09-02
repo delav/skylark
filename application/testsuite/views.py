@@ -13,8 +13,7 @@ from application.virtualfile.handler import update_file
 from application.common.access.projectaccess import has_project_permission
 from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_dir_node, handler_suite_node
-from application.common.operator.suiteoperator import SuiteOperator
-from infra.utils.timehanldler import get_timestamp
+from application.common.operator.suiteoperator import SuiteCopyOperator, SuiteDeleteOperator
 
 # Create your views here.
 
@@ -100,10 +99,8 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         if not has_project_permission(instance.project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         with transaction.atomic():
-            instance.status = ModuleStatus.DELETED
-            instance.name = instance.name + f'-{get_timestamp(6)}'
-            instance.update_by = request.user.email
-            instance.save()
+            delete_operator = SuiteDeleteOperator(request.user.email)
+            delete_operator.delete_by_obj(instance)
             if instance.category in (ModuleCategory.VARIABLE, ModuleCategory.FILE):
                 update_file(instance.id, status=ModuleStatus.DELETED)
         return JsonResponse(instance.id)
@@ -120,7 +117,7 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         copy_suite_id = serializer.data.get('raw_suite_id')
         user = request.user.email
         with transaction.atomic():
-            new_suite = SuiteOperator(
+            new_suite = SuiteCopyOperator(
                 to_project_id,
                 to_dir_id,
                 user

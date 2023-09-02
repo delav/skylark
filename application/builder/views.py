@@ -134,7 +134,8 @@ class BuilderViewSets(viewsets.GenericViewSet):
                 settings.RUNNER_TASK,
                 queue=settings.RUNNER_QUEUE,
                 routing_key=settings.RUNNER_ROUTING_KEY,
-                args=(env_name, region_name, task_id, str(batch_no), suites, sources, resources, files)
+                priority=0,
+                args=(project_name, env_name, region_name, task_id, str(batch_no), suites, sources, resources, files)
             )
         child_dir = date.today().strftime('%Y/%m/%d')
         report_path = str(settings.REPORT_PATH) + f'/{child_dir}/' + task_id

@@ -18,16 +18,13 @@ class TagViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         logger.info(f'get all tags by project: {request.query_params}')
         project_id = request.query_params.get('project')
         result_list = []
-        try:
+        if project_id and isinstance(project_id, str) and project_id.isdigit():
             project_id = int(project_id)
             query_sql = f'select id,name from tag where project_id={project_id} group by name'
             queryset = Tag.objects.raw(query_sql)
             for item in queryset.iterator():
                 item_data = {'id': item.id, 'name': item.name}
                 result_list.append(item_data)
-        except (Exception,) as e:
-            logger.error(f'get tags failed: {e}')
-            return JsonResponse(code=10121, msg='get tags failed')
         return JsonResponse(data=result_list)
 
     def create(self, request, *args, **kwargs):

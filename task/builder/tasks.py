@@ -64,7 +64,7 @@ def _create_task(record_id, project_id, project_name,
         env_name = env_map.get(env_id)
         env_common = common_sources.get(env_id)
         if not region_id_list:
-            region_id, region_name = None, None
+            region_id, region_name = None, ''
             env_region_common = env_common.get('base')
             _execute(
                 record_id, project_id, project_name, env_id, env_name,
@@ -88,7 +88,7 @@ def _execute(record_id, project_id, project_name, env_id, env_name,
         env_id=env_id,
         region_id=region_id,
         include_cases=build_cases
-    ).parse(run_data, env_region_common)
+    ).parse(run_data, env_region_common, True)
     engine = DcsEngine(
         distributed=settings.DISTRIBUTED_BUILD,
         limit=settings.WORKER_MAX_CASE_LIMIT
@@ -113,7 +113,8 @@ def _execute(record_id, project_id, project_name, env_id, env_name,
             settings.RUNNER_TASK,
             queue=settings.RUNNER_QUEUE,
             routing_key=settings.RUNNER_ROUTING_KEY,
-            args=(env_name, region_name, task_id, str(batch_no), suites, sources, resources, files)
+            priority=1,
+            args=(project_name, env_name, region_name, task_id, str(batch_no), suites, sources, resources, files)
         )
         celery_task_list.append(celery_task.id)
     instance.celery_task = ','.join(celery_task_list)

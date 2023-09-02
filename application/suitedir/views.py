@@ -10,7 +10,7 @@ from application.project.models import Project
 from application.common.access.projectaccess import has_project_permission
 from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_dir_node
-from infra.utils.timehanldler import get_timestamp
+from application.common.operator.diroperator import DirDeleteOperator
 
 # Create your views here.
 
@@ -86,8 +86,6 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         if not instance.parent_dir:
             return JsonResponse(code=10074, msg='dir not allowed delete')
-        instance.status = ModuleStatus.DELETED
-        instance.name = instance.name + f'-{get_timestamp(6)}'
-        instance.update_by = request.user.email
-        instance.save()
+        delete_operator = DirDeleteOperator(instance.project_id, request.user.email)
+        delete_operator.delete_by_obj(instance)
         return JsonResponse(data=instance.id)

@@ -5,6 +5,7 @@ from rest_framework import viewsets
 from infra.django.response import JsonResponse
 from application.projectversion.models import ProjectVersion
 from application.projectversion.serializers import ProjectVersionSerializers
+from application.common.access.projectaccess import has_project_permission
 from skylark.celeryapp import app
 
 # Create your views here.
@@ -40,6 +41,8 @@ class ProjectVersionViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         project_id = serializer.validated_data.get('project_id')
+        if not has_project_permission(project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         app.send_task(
             settings.VERSION_TASK,
             queue=settings.DEFAULT_QUEUE,

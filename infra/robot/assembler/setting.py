@@ -139,7 +139,7 @@ class TagSetting(Settings):
         self.tag_list = tag_list
 
     def get_tag_setting(self):
-        tags = ''
-        for tag in self.tag_list:
-            tags += self.get_settings(self.tag_prefix, tag)
-        return tags
+        if not self.tag_list:
+            return ''
+        tags = config.large_sep.join(self.tag_list)
+        return self.get_settings(self.tag_prefix, tags)

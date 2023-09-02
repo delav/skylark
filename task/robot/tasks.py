@@ -5,20 +5,21 @@ from infra.client.redisclient import RedisClient
 from infra.utils.makedir import make_path
 from application.builder.handler import convert_test_task_id, is_test_mode
 from application.buildhistory.models import BuildHistory, HistoryDetail
-from application.storage import LIB_ALIAS_MAP
+from application.storage import LIB_NAME_MAP
 from worker.plugin.RebotModifier import RobotModifier
 from worker.robot.rebot import rebot
 from skylark.celeryapp import app
 
 
 @app.task
-def robot_runner(env, region, task_id, batch_no, run_suite, run_data, variable_files, external_files):
+def robot_runner(project, env, region, task_id,
+                 batch_no, run_suite, run_data, variable_files, external_files):
     """robot execute task, no logic needed here, worker will do it"""
     pass
 
 
 @app.task
-def robot_notifier(task_id):
+def robot_notifier(task_id, project, env, region):
     conn = RedisClient(settings.ROBOT_REDIS_URL).connector
     task_redis_key = settings.TASK_RESULT_KEY_PREFIX + task_id
     current_result = conn.hgetall(task_redis_key)
@@ -28,11 +29,19 @@ def robot_notifier(task_id):
         batch = current_result.pop('batch')
         if len(current_result) != int(batch):
             return
-        output_path = make_path(settings.REPORT_PATH, task_id)
+        project_report_dir = settings.REPORT_PATH / project
+        output_path = make_path(project_report_dir, task_id)
         for _, data in current_result.items():
             batch_result = json.loads(data)
             output_list.append(batch_result['output'].encode())
-        rebot(*output_list, outputdir=output_path)
+        title = f'{env}-{region}-{project}' if region else f'{env}-{project}'
+        rebot(
+            *output_list,
+            logtitle=title + ' Log',
+            reporttitle=title + ' Report',
+            outputdir=output_path,
+            prerebotmodifier=RobotModifier(LIB_NAME_MAP)
+        )
         return
     # test mode operate
     history_id = convert_test_task_id(task_id)
@@ -56,11 +65,15 @@ def robot_notifier(task_id):
     build_result['status'] = 0
     build_result['start_time'] = datetime.fromtimestamp(build_result['start_time'])
     build_result['end_time'] = datetime.fromtimestamp(build_result['end_time'])
-    output_path = make_path(settings.REPORT_PATH, task_id)
+    project_report_dir = settings.REPORT_PATH / project
+    output_path = make_path(project_report_dir, task_id)
+    title = f'{env}-{region}-{project}' if region else f'{env}-{project}'
     rebot(
         *output_list,
+        logtitle=title + ' Log',
+        reporttitle=title + ' Report',
         outputdir=output_path,
-        prerebotmodifier=RobotModifier(LIB_ALIAS_MAP)
+        prerebotmodifier=RobotModifier(LIB_NAME_MAP)
     )
     build_result['report_path'] = output_path
     # build_result['report_content'] = str(output_list)

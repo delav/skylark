@@ -19,7 +19,7 @@ class LibKeyword(models.Model):
     output_type = models.IntegerField(default=0, help_text='output  arg type')
     image = models.ImageField(default='icons/keyword/default.svg', upload_to='icons/keyword', help_text='keyword icon')
     status = models.IntegerField(default=0, help_text='lib keyword status')
-    source = models.CharField(default='built-in', max_length=255, help_text='keyword source')
+    source = models.CharField(default='BuiltIn', max_length=255, help_text='keyword source')
     mark = models.CharField(default=None, blank=True, null=True, max_length=255, help_text='keyword other mark')
 
     class Meta:

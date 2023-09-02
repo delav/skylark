@@ -29,6 +29,7 @@ class ModuleStatus:
     NORMAL = 0
     DISCARDED = 1
     DELETED = 2
+    DISABLED = 4
 
 
 class KeywordType:

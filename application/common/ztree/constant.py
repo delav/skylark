@@ -21,6 +21,16 @@ base_node = {
     'meta': {}
 }
 
+
+simple_node = {
+    'mid': 1,
+    'id': 1,
+    'pid': ROOT_ID,
+    'name': '',
+    'desc': None,
+}
+
+
 # front tree node desc
 NODE_DESC = {
     'case': 'C',

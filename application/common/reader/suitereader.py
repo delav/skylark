@@ -26,6 +26,8 @@ class JsonSuiteReader(object):
         self.include_cases = include_cases
 
     def read(self):
+        # not need tag for run now
+        self.tag_list = []
         setup_teardown_data = self._get_setup_teardown()
         file = SuiteFile(
             setup_teardown_data[0],
@@ -110,11 +112,12 @@ class DBSuiteReader(object):
         return fixture_manager.get_new_fixtures()
 
     def _get_tag_list(self):
-        tag_queryset = Tag.objects.filter(
-            module_id=self.suite_id,
-            module_type=self.module_type
-        )
-        return [t.name for t in tag_queryset.iterator()]
+        return []
+        # tag_queryset = Tag.objects.filter(
+        #     module_id=self.suite_id,
+        #     module_type=self.module_type
+        # )
+        # return [t.name for t in tag_queryset.iterator()]
 
     def _get_variable_list(self):
         variable_list = []

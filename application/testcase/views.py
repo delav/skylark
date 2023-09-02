@@ -13,7 +13,7 @@ from application.testsuite.models import TestSuite
 from application.common.access.projectaccess import has_project_permission
 from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_case_node
-from application.common.operator.caseoperator import CaseOperator
+from application.common.operator.caseoperator import CaseCopyOperator
 from infra.utils.timehanldler import get_timestamp
 
 # Create your views here.
@@ -123,7 +123,7 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         copy_case_id = serializer.data.get('raw_case_id')
         user = request.user.email
         with transaction.atomic():
-            new_case = CaseOperator(
+            new_case = CaseCopyOperator(
                 to_project_id,
                 to_suite_id,
                 user

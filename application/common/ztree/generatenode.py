@@ -4,18 +4,24 @@ from application.constant import *
 from application.common.ztree.constant import *
 
 
-def fill_base_node(base_data: dict):
+def fill_base_node(**kwargs):
     node = deepcopy(base_node)
-    node['id'] = uuid1()
-    node['mid'] = base_data.get('id')
-    node['name'] = base_data.get('name')
-    node['type'] = base_data.get('category')
-    node['meta'] = base_data
+    node['id'] = str(uuid1())
+    node['mid'] = kwargs.get('id')
+    node['name'] = kwargs.get('name')
+    node['type'] = kwargs.get('category')
+    node['meta'] = kwargs
+    return node
+
+
+def fill_simple_node(**kwargs):
+    node = deepcopy(simple_node)
+    node.update(**kwargs)
     return node
 
 
 def handler_case_node(case_data):
-    node = fill_base_node(case_data)
+    node = fill_base_node(**case_data)
     node['desc'] = NODE_DESC['case']
     node['isParent'] = False
     rename_menu = deepcopy(NODE_MENU.get('rename'))
@@ -34,7 +40,7 @@ def handler_case_node(case_data):
 
 
 def handler_suite_node(suite_data):
-    node = fill_base_node(suite_data)
+    node = fill_base_node(**suite_data)
     node['desc'] = NODE_DESC['suite']
     rename_menu = deepcopy(NODE_MENU.get('rename'))
     delete_menu = deepcopy(NODE_MENU.get('delete'))
@@ -70,7 +76,7 @@ def handler_suite_node(suite_data):
 
 
 def handler_dir_node(dir_data):
-    node = fill_base_node(dir_data)
+    node = fill_base_node(**dir_data)
     node['desc'] = NODE_DESC['dir']
     node['action'] = [NODE_ACTION_MAP.get('create_dir')]
     node['isParent'] = True

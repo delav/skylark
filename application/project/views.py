@@ -1,11 +1,9 @@
-import logging
 from loguru import logger
 from django.conf import settings
 from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from infra.utils.timehanldler import get_timestamp
 from infra.django.pagination.paginator import PagePagination
 from infra.django.response import JsonResponse
 from application.constant import ModuleStatus
@@ -14,13 +12,9 @@ from application.department.models import Department
 from application.project.models import Project
 from application.projectpermission.models import ProjectPermission
 from application.project.serializers import ProjectSerializers
-from application.common.operator import ProjectOperator
-from application.common.access.projectaccess import (
-    has_project_permission,
-    add_self_project_permission,
-    add_group_project_permission
-)
-
+from application.common.operator import ProjectCopyOperator, ProjectDeleteOperator
+from application.common.access.projectaccess import has_project_permission
+from application.common.access.projectaccess import add_self_project_permission, add_group_project_permission
 # Create your views here.
 
 
@@ -76,7 +70,7 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
         groups_queryset = current_user.groups.all()
         user_group_id = groups_queryset.first().id
         is_personal = serializer.validated_data.get('personal')
-        operator = ProjectOperator(
+        operator = ProjectCopyOperator(
             project_name,
             copied_project,
             create_by=current_user.email,
@@ -115,15 +109,13 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
         instance = self.get_object()
         if not has_project_permission(instance.id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
-        instance.status = ModuleStatus.DELETED
-        instance.name = instance.name + f'-{get_timestamp(6)}'
-        instance.update_by = request.user.email
-        instance.save()
-        return JsonResponse()
+        delete_operator = ProjectDeleteOperator(instance.id, request.user.email)
+        delete_operator.delete_project()
+        return JsonResponse(data=instance.id)
 
     @action(methods=['get'], detail=False)
     def tree(self, request, *args, **kwargs):
-        logging.info(f'get project tree')
+        logger.info(f'get project tree')
         department_queryset = Department.objects.all()
         department_map = {}
         for item in department_queryset:

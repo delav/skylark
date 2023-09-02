@@ -4,10 +4,10 @@ from application.setupteardown.models import SetupTeardown
 from application.suitedir.models import SuiteDir
 from application.testsuite.models import TestSuite
 from application.variable.models import Variable
-from application.common.operator.suiteoperator import SuiteOperator
+from application.common.operator.suiteoperator import SuiteCopyOperator
 
 
-class DirOperator(object):
+class DirCopyOperator(object):
 
     def __init__(self, new_project_id, old_project_id, create_user):
         self.new_project_id = new_project_id
@@ -91,7 +91,7 @@ class DirOperator(object):
             status=ModuleStatus.NORMAL
         )
         for old_suite in suite_query.iterator():
-            SuiteOperator(
+            SuiteCopyOperator(
                 self.new_project_id,
                 new_dir.id,
                 self.create_by,
@@ -118,3 +118,33 @@ class DirOperator(object):
             variable.module_id = new_dir_id
             new_variables.append(variable)
         Variable.objects.bulk_create(new_variables)
+
+
+class DirDeleteOperator(object):
+
+    def __init__(self, project_id, delete_user):
+        self.project_id = project_id
+        self.update_by = delete_user
+
+    def delete_by_project(self):
+        dir_queryset = SuiteDir.objects.filter(
+            project_id=self.project_id
+        )
+        dir_queryset.update(
+            status=ModuleStatus.DELETED,
+            update_by=self.update_by
+        )
+
+    def delete_by_obj(self, dir_obj):
+        self._recursion_delete(dir_obj)
+
+    def _recursion_delete(self, dir_obj):
+        dir_obj.status = ModuleStatus.DELETED
+        dir_obj.name = dir_obj.name + f'-{get_timestamp(6)}'
+        dir_obj.update_by = self.update_by
+        dir_obj.save()
+        child_dirs = dir_obj.children
+        if not child_dirs:
+            return
+        for child_dir in child_dirs:
+            self._recursion_delete(child_dir)
