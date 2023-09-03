@@ -29,6 +29,9 @@ task_routes = {
     settings.PERIODIC_TASK: {
         'queue': settings.BUILDER_QUEUE, 'routing_key': settings.BUILDER_ROUTING_KEY
     },
+    settings.REPORT_TASK: {
+        'queue': settings.DEFAULT_QUEUE, 'routing_key': settings.DEFAULT_ROUTING_KEY
+    }
  }
 # notify mq message is consumed only task finish, notifier not need
 # ack_late = True

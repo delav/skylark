@@ -20,6 +20,8 @@ class JsonParser(CommonParser):
             common = self.get_common_from_parse()
         if from_db:
             build_data = parse_version_data(run_data, PATH_SEP)
+            import json
+            print(json.dumps(build_data))
         else:
             build_data = parse_front_data(run_data, PATH_SEP)
         return self._parse(build_data, common)
@@ -35,6 +37,7 @@ class JsonParser(CommonParser):
 
     def _extract(self, path, reader):
         file_text = reader.read()
+        print(reader.body_text_list)
         if len(reader.body_text_list) == 0:
             return
         struct = SuiteStructure()

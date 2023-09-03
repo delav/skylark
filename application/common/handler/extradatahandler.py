@@ -55,7 +55,7 @@ def get_model_simple_extra_data(module_id, module_type, include_entity=False):
         'name',
     )
     entity_simple_fields = (
-        'input_args', 'output_args', 'keyword_id'
+        'input_args', 'output_args', 'keyword_id', 'keyword_type'
     )
     if module_type != ModuleType.CASE:
         variable_queryset = Variable.objects.filter(

@@ -32,6 +32,12 @@ class ModuleStatus:
     DISABLED = 4
 
 
+# build status
+class BuildStatus:
+    RUNNING = 0
+    FINNISH = 1
+
+
 class KeywordType:
     LIB = 1
     USER = 2

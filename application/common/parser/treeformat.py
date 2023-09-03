@@ -50,8 +50,10 @@ def parse_front_data(tree_data, split='.'):
     if not tree_data:
         return result
 
-    def parse_tree(data, parent_name=''):
-        for item in data:
+    def parse_tree(data_list, parent_name=''):
+        for item in data_list:
+            if not item or not isinstance(item, dict):
+                continue
             node_name = item['name']
             if parent_name:
                 node_name = split.join([parent_name, node_name])
@@ -111,7 +113,7 @@ def generate_version_data(project_id, root_id=0):
         if 'children' not in dir_data:
             dir_data['children'] = []
         if suites.exists():
-            dir_data['children'].append(_get_suite_tree(node_id, suites, tree_nodes))
+            dir_data['children'].extend(_get_suite_tree(node_id, suites, tree_nodes))
         if not parent_dir_id:
             run_data.append(dir_data)
             continue
@@ -182,12 +184,13 @@ def parse_version_data(tree_data, split='.'):
             item_name = item['name']
             if parent_name:
                 item_name = split.join([parent_name, item_name])
+            children = item.pop('children', [])
             _data = {'path': item_name, 'data': item}
             if item['type'] == NODE_DESC['dir']:
                 result['dirs'][item['id']] = _data
-                parse_tree(item['children'], item_name)
+                parse_tree(children, item_name)
             if item['type'] == NODE_DESC['suite']:
                 result['suites'][item['id']] = _data
-                result['cases'][item['id']] = item['children']
+                result['cases'][item['id']] = children
         return result
     return parse_tree(tree_data, '')

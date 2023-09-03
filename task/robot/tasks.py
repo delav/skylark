@@ -3,6 +3,7 @@ from datetime import datetime
 from django.conf import settings
 from infra.client.redisclient import RedisClient
 from infra.utils.makedir import make_path
+from application.constant import BuildStatus
 from application.builder.handler import convert_test_task_id, is_test_mode
 from application.buildhistory.models import BuildHistory, HistoryDetail
 from application.storage import LIB_NAME_MAP
@@ -62,7 +63,7 @@ def robot_notifier(task_id, project, env, region):
         build_result['start_time'] = min(batch_result['start_time'], min_start_time)
         build_result['end_time'] = max(batch_result['end_time'], max_end_time)
         output_list.append(batch_result['output'].encode())
-    build_result['status'] = 0
+    build_result['status'] = BuildStatus.FINNISH
     build_result['start_time'] = datetime.fromtimestamp(build_result['start_time'])
     build_result['end_time'] = datetime.fromtimestamp(build_result['end_time'])
     project_report_dir = settings.REPORT_PATH / project

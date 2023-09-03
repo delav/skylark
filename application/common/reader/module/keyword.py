@@ -39,7 +39,7 @@ class _Keyword(object):
         self._keyword_name = 'LOG'
         self._outputs = ''
         self._inputs = f'This keyword invalid: {self._keyword_id}!'
-        return None
+        return 'log'
 
     @property
     def keyword_name(self):
