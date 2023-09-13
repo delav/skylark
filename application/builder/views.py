@@ -7,6 +7,7 @@ from infra.django.response import JsonResponse
 from infra.client.redisclient import RedisClient
 from infra.engine.dcsengine import DcsEngine
 from infra.utils.typetransform import join_id_to_str
+from application.common.access.projectaccess import has_project_permission
 from application.buildplan.models import BuildPlan
 from application.projectversion.models import ProjectVersion
 from application.buildplan.serializers import BuildPlanSerializers
@@ -35,6 +36,8 @@ class BuilderViewSets(viewsets.GenericViewSet):
         project_name = data.get('project_name')
         str_envs = data.get('envs')
         str_regions = data.get('regions')
+        if not has_project_permission(project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         version = ProjectVersion.objects.get(
             project_id=project_id,
             branch=data.get('branch')
@@ -76,6 +79,8 @@ class BuilderViewSets(viewsets.GenericViewSet):
         branch = serializer.validated_data.get('branch')
         env_list = serializer.validated_data.get('env_list')
         region_list = serializer.validated_data.get('region_list')
+        if not has_project_permission(project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         version = ProjectVersion.objects.get(
             project_id=project_id,
             branch=branch

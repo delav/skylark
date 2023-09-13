@@ -4,16 +4,16 @@ from application.suitedir.models import SuiteDir
 
 class SuiteDirSerializers(serializers.ModelSerializer):
 
-    parent_dir_id = serializers.IntegerField(allow_null=True, help_text='parent dir id')
     project_id = serializers.IntegerField(help_text='associated project id')
+    parent_dir_id = serializers.IntegerField(help_text='parent dir id')
 
     class Meta:
         model = SuiteDir
         fields = (
             'id', 'name', 'document', 'category', 'create_at',
-            'update_at', 'create_by', 'update_by', 'parent_dir_id', 'project_id'
+            'update_at', 'create_by', 'update_by', 'parent_dir_id', 'project_id', 'status'
         )
-        read_only_fields = ('create_by', 'update_by')
+        read_only_fields = ('create_by', 'update_by', 'category', 'status')
 
     def to_internal_value(self, data):
         ret = super().to_internal_value(data)

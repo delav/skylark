@@ -8,6 +8,8 @@ from application.projectpermission.models import ProjectPermission
 from application.project.models import Project
 from application.buildrecord.models import BuildRecord
 from application.buildrecord.serializers import BuildRecordSerializers
+from application.buildplan.models import BuildPlan
+from application.buildplan.serializers import BuildPlanSerializers
 from application.buildhistory.models import BuildHistory
 from application.buildhistory.serializers import BuildHistorySerializers
 from application.common.access.projectaccess import has_project_permission
@@ -22,7 +24,7 @@ class BuildRecordViewSets(mixins.RetrieveModelMixin, mixins.ListModelMixin, view
 
     def list(self, request, *args, **kwargs):
         logger.info(f'get record by param: {request.query_params}')
-        project_id = request.query_params.get('project')
+        project_id = request.query_params.get('project_id')
         if project_id:
             if not project_id.isdigit():
                 return JsonResponse(code=40309, msg='Param error')
@@ -56,10 +58,15 @@ class BuildRecordViewSets(mixins.RetrieveModelMixin, mixins.ListModelMixin, view
         logger.info(f'get record detail')
         instance = self.get_object()
         record = self.get_serializer(instance).data
+        related_plan = BuildPlan.objects.get(
+            id=instance.plan_id
+        )
+        plan_data = BuildPlanSerializers(related_plan).data
+        record['plan'] = plan_data
         history_queryset = BuildHistory.objects.filter(
             record_id=instance.id
         )
-        histories = BuildHistorySerializers(history_queryset, many=True)
+        histories = BuildHistorySerializers(history_queryset, many=True).data
         record['history'] = histories
         return JsonResponse(record)
 

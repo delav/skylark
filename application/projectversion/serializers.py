@@ -9,9 +9,9 @@ class ProjectVersionSerializers(serializers.ModelSerializer):
         model = ProjectVersion
         fields = (
             'id', 'project_id', 'branch', 'version',
-            'nodes', 'remark', 'create_at', 'update_at', 'create_by', 'update_by'
+            'nodes', 'remark', 'create_at', 'update_at', 'create_by', 'update_by', 'status'
         )
-        read_only_fields = ('create_by', 'update_by', 'nodes')
+        read_only_fields = ('create_by', 'update_by', 'nodes', 'status')
 
     def to_internal_value(self, data):
         ret = super().to_internal_value(data)

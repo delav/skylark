@@ -12,6 +12,8 @@ from application.projectpermission.models import ProjectPermission
 from application.project.models import Project
 from application.buildplan.models import BuildPlan
 from application.buildplan.serializers import BuildPlanSerializers
+from application.buildrecord.models import BuildRecord
+from application.buildrecord.serializers import BuildRecordSerializers
 from application.common.scheduler.periodic import PeriodicHandler, get_periodic_task, get_periodic_list
 from application.common.access.projectaccess import has_project_permission
 
@@ -26,7 +28,7 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
 
     def list(self, request, *args, **kwargs):
         logger.info(f'get build plan list: {request.query_params}')
-        project_id = request.query_params.get('project')
+        project_id = request.query_params.get('project_id')
         if project_id:
             if not project_id.isdigit():
                 return JsonResponse(code=40309, msg='Param error')
@@ -51,6 +53,9 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
             project_ids = common_project_queryset | personal_project_queryset
             queryset = self.get_queryset().filter(
                 project_id__in=project_ids).order_by('-create_at')
+        create_by = request.query_params.get('create_by')
+        if create_by:
+            queryset = queryset.filter(create_by=create_by)
         pg_queryset = self.paginate_queryset(queryset)
         plan_list = self.get_serializer(pg_queryset, many=True).data
         result = {'data': plan_list, 'total': queryset.count()}
@@ -104,6 +109,10 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
         logger.info(f'get plan detail: {kwargs.get("pk")}')
         instance = self.get_object()
         result = self.get_serializer(instance).data
+        queryset = BuildRecord.objects.filter(
+                plan_id=instance.id).order_by('-create_at')[:5]
+        records = BuildRecordSerializers(queryset, many=True).data
+        result['record'] = records
         result['periodic'] = get_periodic_task(id=instance.periodic_task_id)
         return JsonResponse(result)
 

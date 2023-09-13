@@ -5,6 +5,7 @@ from infra.client.redisclient import RedisClient
 from infra.utils.makedir import make_path
 from application.constant import BuildStatus
 from application.builder.handler import convert_test_task_id, is_test_mode
+from application.buildrecord.models import BuildRecord
 from application.buildhistory.models import BuildHistory, HistoryDetail
 from application.storage import LIB_NAME_MAP
 from worker.plugin.RebotModifier import RobotModifier
@@ -49,8 +50,6 @@ def robot_notifier(task_id, project, env, region):
     queryset = BuildHistory.objects.filter(id=history_id)
     instance = queryset.first()
     batch = instance.batch
-    if len(current_result) != int(batch):
-        return
     build_result = {
         'status': 0, 'start_time': 0, 'failed_case': 0,
         'passed_case': 0, 'skipped_case': 0, 'end_time': 0
@@ -58,14 +57,19 @@ def robot_notifier(task_id, project, env, region):
     output_list = []
     for _, data in current_result.items():
         batch_result = json.loads(data)
+        build_result['failed_case'] += batch_result['failed']
+        build_result['passed_case'] += batch_result['passed']
+        build_result['skipped_case'] += batch_result['skipped']
         min_start_time = build_result['start_time'] or batch_result['start_time']
         max_end_time = build_result['end_time'] or batch_result['end_time']
         build_result['start_time'] = min(batch_result['start_time'], min_start_time)
         build_result['end_time'] = max(batch_result['end_time'], max_end_time)
         output_list.append(batch_result['output'].encode())
-    build_result['status'] = BuildStatus.FINNISH
     build_result['start_time'] = datetime.fromtimestamp(build_result['start_time'])
-    build_result['end_time'] = datetime.fromtimestamp(build_result['end_time'])
+    if len(current_result) != int(batch):
+        del build_result['end_time']
+        queryset.update(**build_result)
+        return
     project_report_dir = settings.REPORT_PATH / project
     output_path = make_path(project_report_dir, task_id)
     title = f'{env}-{region}-{project}' if region else f'{env}-{project}'
@@ -76,7 +80,9 @@ def robot_notifier(task_id, project, env, region):
         outputdir=output_path,
         prerebotmodifier=RobotModifier(LIB_NAME_MAP)
     )
+    build_result['status'] = BuildStatus.FINNISH
     build_result['report_path'] = output_path
+    build_result['end_time'] = datetime.fromtimestamp(build_result['end_time'])
     # build_result['report_content'] = str(output_list)
     queryset.update(**build_result)
     case_redis_key = settings.CASE_RESULT_KEY_PREFIX + task_id
@@ -90,6 +96,16 @@ def robot_notifier(task_id, project, env, region):
         item['history_id'] = history_id
         case_detail_list.append(HistoryDetail(**item))
     HistoryDetail.objects.bulk_create(case_detail_list)
+    history_queryset = BuildHistory.objects.filter(
+        record_id=instance.record_id
+    )
+    # status=-1, is running, wait all finish
+    if any(item.status == -1 for item in history_queryset):
+        return
+    record = BuildRecord.objects.get(id=instance.record_id)
+    record.status = 1
+    record.finish_at = datetime.now()
+    record.save()
     app.send_task(
         settings.REPORT_TASK,
         queue=settings.DEFAULT_QUEUE,

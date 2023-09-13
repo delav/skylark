@@ -1,5 +1,6 @@
 from infra.utils.timehanldler import get_timestamp
 from application.constant import *
+from application.testsuite.models import TestSuite
 from application.testcase.models import TestCase
 from application.tag.models import Tag
 from application.userkeyword.models import UserKeyword
@@ -24,6 +25,13 @@ class CaseCopyOperator(object):
         return self.copy_case(case_obj)
 
     def copy_case(self, case_obj):
+        suite = TestSuite.objects.get(id=self.suite_id)
+        if suite.status == ModuleStatus.DELETED:
+            return None
+        if suite.category != case_obj.category:
+            return None
+        if case_obj.category not in [ModuleCategory.TESTCASE, ModuleCategory.KEYWORD]:
+            return None
         self.generate_new_name(case_obj.name)
         new_case = TestCase.objects.create(
             name=self.case_name,

@@ -28,13 +28,12 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         dir_id = request.query_params.get('dir')
         dir_queryset = SuiteDir.objects.filter(
             id=dir_id,
-            status=ModuleStatus.NORMAL
         )
         if not dir_queryset.exists():
             return JsonResponse(code=10068, msg='dir not exist')
-        if dir_queryset.count() > 1:
-            return JsonResponse(code=10069, msg='dir data error')
         dir_obj = dir_queryset.first()
+        if dir_obj.status == ModuleStatus.DELETED:
+            return JsonResponse(code=10068, msg='dir not exist')
         if not has_project_permission(dir_obj.project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         child_dirs = dir_obj.children.filter(status=ModuleStatus.NORMAL)
@@ -60,14 +59,25 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         logger.info(f'create test suite: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        project_id = serializer.data.get('project_id')
+        project_id = serializer.validated_data.get('project_id')
         if not has_project_permission(project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
+        suite_dir = SuiteDir.objects.filter(id=serializer.validated_data.get('suite_dir_id'))
+        if not suite_dir.exists():
+            return JsonResponse(code=40308, msg='dir not exist')
+        suite_dir = suite_dir.first()
+        if suite_dir.status == ModuleStatus.DELETED:
+            return JsonResponse(code=40308, msg='dir not exist')
+        if project_id != suite_dir.project_id:
+            return JsonResponse(code=40309, msg='create data error')
         try:
-            self.perform_create(serializer)
+            instance = TestSuite.objects.create(
+                **serializer.validated_data,
+                category=suite_dir.category,
+            )
         except IntegrityError:
             return JsonResponse(code=10061, msg='create test suite failed')
-        suite_data = serializer.data
+        suite_data = self.get_serializer(instance).data
         if suite_data['category'] != ModuleCategory.TESTCASE:
             suite_data['extra_data'] = {}
         else:
@@ -84,6 +94,8 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
             return JsonResponse(code=10064, msg='test suite not exist')
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
+        if instance.project_id != serializer.validated_data.get('project_id'):
+            return JsonResponse(code=10069, msg='not support update project')
         try:
             with transaction.atomic():
                 self.perform_update(serializer)

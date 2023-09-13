@@ -11,8 +11,8 @@ from skylark.celeryapp import app
 # Create your views here.
 
 
-class ProjectVersionViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
-                             mixins.ListModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
+class ProjectVersionViewSets(mixins.RetrieveModelMixin,
+                             mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = ProjectVersion.objects.all()
     serializer_class = ProjectVersionSerializers
 
@@ -51,5 +51,3 @@ class ProjectVersionViewSets(mixins.RetrieveModelMixin, mixins.CreateModelMixin,
         )
         return JsonResponse(data='send task success')
 
-    def update(self, request, *args, **kwargs):
-        pass

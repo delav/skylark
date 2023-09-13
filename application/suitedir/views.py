@@ -25,12 +25,14 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         project_id = request.query_params.get('project')
         if not has_project_permission(project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
-        project_queryset = Project.objects.filter(id=project_id)
+        project_queryset = Project.objects.filter(
+            id=project_id
+        )
         if not project_queryset.exists():
             return JsonResponse(code=10078, msg='project not exists')
-        if project_queryset.count() > 1:
-            return JsonResponse(code=10079, msg='project data error')
         project = project_queryset.first()
+        if project.status == ModuleStatus.DELETED:
+            return JsonResponse(code=10078, msg='project not exists')
         dirs = project.dirs.filter(
             parent_dir=None,
             status=ModuleStatus.NORMAL
@@ -52,11 +54,25 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         project_id = serializer.validated_data.get('project_id')
         if not has_project_permission(project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
+        project = Project.objects.filter(id=project_id)
+        if not project.exists():
+            return JsonResponse(code=40078, msg='project not exist')
+        project = project.first()
+        if project.status == ModuleStatus.DELETED:
+            return JsonResponse(code=40078, msg='project not exist')
+        parent_dir = SuiteDir.objects.filter(id=serializer.validated_data.get('parent_dir_id'))
+        if not parent_dir.exists():
+            return JsonResponse(code=40079, msg='parent dir not exist')
+        parent_dir = parent_dir.first()
         try:
+            instance = SuiteDir.objects.create(
+                **serializer.validated_data,
+                category=parent_dir.category,
+            )
             self.perform_create(serializer)
         except IntegrityError:
             return JsonResponse(code=10071, msg='dir name already exist')
-        dir_data = serializer.data
+        dir_data = self.get_serializer(instance).data
         if dir_data['category'] != ModuleCategory.TESTCASE:
             dir_data['extra_data'] = {}
         else:
@@ -73,6 +89,8 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
             return JsonResponse(code=10074, msg='suite sir not exist')
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
+        if instance.project_id != serializer.validated_data.get('project_id'):
+            return JsonResponse(code=10069, msg='not support update project')
         try:
             self.perform_update(serializer)
         except IntegrityError:

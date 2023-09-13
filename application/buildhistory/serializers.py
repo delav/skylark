@@ -6,7 +6,7 @@ class BuildHistorySerializers(serializers.ModelSerializer):
 
     class Meta:
         model = BuildHistory
-        fields = '__all__'
+        exclude = ('batch', 'celery_task', 'report_path')
 
 
 class HistoryDetailSerializers(serializers.ModelSerializer):

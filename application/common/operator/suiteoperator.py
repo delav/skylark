@@ -3,6 +3,7 @@ from django.conf import settings
 from infra.utils.timehanldler import get_timestamp
 from application.constant import *
 from application.project.models import Project
+from application.suitedir.models import SuiteDir
 from application.testsuite.models import TestSuite
 from application.testcase.models import TestCase
 from application.setupteardown.models import SetupTeardown
@@ -31,6 +32,13 @@ class SuiteCopyOperator(object):
         return self.copy_suite(suite_obj)
 
     def copy_suite(self, suite_obj):
+        suite_dir = SuiteDir.objects.get(id=self.dir_id)
+        if suite_dir.status == ModuleStatus.DELETED:
+            return None
+        if suite_dir.category != suite_obj.category:
+            return None
+        if suite_obj.category not in [ModuleCategory.TESTCASE, ModuleCategory.KEYWORD]:
+            return None
         self.generate_new_name(suite_obj.name)
         new_suite = TestSuite.objects.create(
             name=self.suite_name,

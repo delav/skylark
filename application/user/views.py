@@ -23,9 +23,7 @@ class NoAuthUserViewSets(viewsets.GenericViewSet):
         user = serializer.validated_data.pop('user')
         user.last_login = datetime.now()
         user.save()
-        user_info = UserSerializer(user).data
-        user_info.update(serializer.validated_data)
-        return JsonResponse(data=user_info)
+        return JsonResponse(data=serializer.validated_data)
 
     @action(methods=['post'], detail=False)
     def register(self, request, *args, **kwargs):

@@ -29,13 +29,12 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         suite_id = request.query_params.get('suite')
         suite_queryset = TestSuite.objects.filter(
             id=suite_id,
-            status=ModuleStatus.NORMAL
         )
         if not suite_queryset.exists():
-            return JsonResponse(code=40308, msg='case not exist')
-        if suite_queryset.count() > 1:
-            return JsonResponse(code=40308, msg='suite data error')
+            return JsonResponse(code=40308, msg='suite not exist')
         suite_obj = suite_queryset.first()
+        if suite_obj.status == ModuleStatus.DELETED:
+            return JsonResponse(code=40308, msg='suite not exist')
         if not has_project_permission(suite_obj.project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         test_cases = suite_obj.cases.filter(status=ModuleStatus.NORMAL)
@@ -53,13 +52,23 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         logger.info(f'create test case: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        project_id = serializer.data.get('project_id')
+        project_id = serializer.validated_data.get('project_id')
         if not has_project_permission(project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         try:
+            test_suite = TestSuite.objects.filter(id=serializer.validated_data.get('test_suite_id'))
+            if not test_suite.exists():
+                return JsonResponse(code=40308, msg='suite not exist')
+            test_suite = test_suite.first()
+            if test_suite.status == ModuleStatus.DELETED:
+                return JsonResponse(code=40308, msg='suite not exist')
+            if project_id != test_suite.project_id:
+                return JsonResponse(code=40309, msg='create data error')
             with transaction.atomic():
+                print(serializer.validated_data)
                 instance = TestCase.objects.create(
                     **serializer.validated_data,
+                    category=test_suite.category,
                 )
                 if instance.category == ModuleCategory.KEYWORD:
                     UserKeyword.objects.create(
@@ -70,7 +79,7 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
                     update_user_keyword_storage(UserKeyword, instance.id)
         except IntegrityError:
             return JsonResponse(code=40301, msg='case name already exist')
-        case_data = self.get_serializer(instance)
+        case_data = self.get_serializer(instance).data
         if case_data['category'] != ModuleCategory.TESTCASE:
             case_data['extra_data'] = {}
         else:
@@ -87,6 +96,8 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
             return JsonResponse(code=10054, msg='test case not exist')
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
+        if instance.project_id != serializer.validated_data.get('project_id'):
+            return JsonResponse(code=10079, msg='not support update project')
         try:
             self.perform_update(serializer)
         except IntegrityError:
@@ -129,7 +140,7 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
                 user
             ).copy_case_by_id(copy_case_id)
         if not new_case:
-            return JsonResponse(code=10056, msg='case not exist')
+            return JsonResponse(code=10056, msg='copy error')
         case_data = self.get_serializer(new_case).data
         if case_data['category'] != ModuleCategory.TESTCASE:
             case_data['extra_data'] = {}

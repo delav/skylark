@@ -8,8 +8,8 @@ class TestSuiteSerializers(serializers.ModelSerializer):
     class Meta:
         model = TestSuite
         fields = ('id', 'name', 'document', 'category', 'create_at',
-                  'update_at', 'create_by', 'update_by', 'suite_dir_id', 'project_id', 'timeout')
-        read_only_fields = ('create_by', 'update_by')
+                  'update_at', 'create_by', 'update_by', 'suite_dir_id', 'project_id', 'timeout', 'status')
+        read_only_fields = ('create_by', 'update_by', 'category', 'status')
 
     def to_internal_value(self, data):
         ret = super().to_internal_value(data)

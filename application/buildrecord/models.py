@@ -8,6 +8,7 @@ class BuildRecord(models.Model):
     desc = models.TextField(default='', help_text='build record desc')
     create_at = models.DateTimeField(auto_now_add=True, help_text='create time')
     create_by = models.CharField(max_length=255, help_text='create user')
+    finish_at = models.DateTimeField(default=None, blank=True, null=True, help_text='build finish time')
     plan_id = models.IntegerField(default=None, blank=True, null=True, help_text='associated build plan')
     project_id = models.IntegerField(help_text='associated project')
     branch = models.CharField(max_length=255, help_text='project branch')
