@@ -1,21 +1,23 @@
 from datetime import date, datetime
 from loguru import logger
 from django.conf import settings
+from django.core.cache import cache
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from infra.django.response import JsonResponse
 from infra.client.redisclient import RedisClient
 from infra.engine.dcsengine import DcsEngine
-from infra.utils.typetransform import join_id_to_str
+from infra.utils.typetransform import id_str_to_set, join_id_to_str
+from application.constant import ModuleStatus
 from application.common.access.projectaccess import has_project_permission
+from application.project.models import Project
 from application.buildplan.models import BuildPlan
 from application.projectversion.models import ProjectVersion
-from application.buildplan.serializers import BuildPlanSerializers
 from application.buildrecord.models import BuildRecord
 from application.buildrecord.serializers import BuildRecordSerializers
 from application.buildhistory.models import BuildHistory
 from application.builder.serializers import DebugBuildSerializers
-from application.builder.serializers import TestQuickBuildSerializers
+from application.builder.serializers import TestQuickBuildSerializers, TestInstantBuildSerializers
 from application.builder.handler import generate_test_task_id, generate_debug_task_id
 from application.common.parser.jsonparser import JsonParser
 from skylark.celeryapp import app
@@ -28,34 +30,49 @@ class BuilderViewSets(viewsets.GenericViewSet):
     @action(methods=['post'], detail=False)
     def instant(self, request, *args, **kwargs):
         logger.info(f'test instant build: {request.data}')
-        serializer = BuildPlanSerializers(data=request.data)
+        serializer = TestInstantBuildSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
-        plan_id = request.data.get('id')
-        data = serializer.validated_data
-        project_id = data.get('project_id')
-        project_name = data.get('project_name')
-        str_envs = data.get('envs')
-        str_regions = data.get('regions')
+        plan_id = serializer.validated_data.get('plan_id')
+        env_list = serializer.validated_data.get('env_list')
+        region_list = serializer.validated_data.get('region_list')
+        plan_query = BuildPlan.objects.filter(id=plan_id)
+        if not plan_query.exists():
+            return JsonResponse(code=10001, msg='plan not found')
+        plan = plan_query.first()
+        project_id = plan.project_id
+        project_query = Project.objects.filter(
+            id=project_id,
+            status=ModuleStatus.NORMAL
+        )
+        if not project_query.exists():
+            return JsonResponse(code=10001, msg='project not exist')
+        project_name = project_query.first().name
         if not has_project_permission(project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         version = ProjectVersion.objects.get(
             project_id=project_id,
-            branch=data.get('branch')
+            branch=plan.branch
         )
         plan = BuildPlan.objects.get(id=plan_id)
-        if not str_envs:
-            str_envs = plan.envs
+        if not env_list:
+            env_ids_str = plan.envs
+        else:
+            env_ids_str = join_id_to_str(env_list)
+        if not region_list:
+            region_ids_str = plan.regions
+        else:
+            region_ids_str = join_id_to_str(region_list)
         run_data = version.run_data
         common_sources = version.sources
-        build_cases = data.get('build_cases')
+        build_cases = plan.build_cases
         record = BuildRecord.objects.create(
             desc=plan.title,
             create_by=request.user.email,
             plan_id=plan_id,
             project_id=project_id,
-            branch=data.get('branch'),
-            envs=str_envs,
-            regions=str_regions,
+            branch=plan.branch,
+            envs=env_ids_str,
+            regions=region_ids_str,
         )
         app.send_task(
             settings.INSTANT_TASK,
@@ -63,7 +80,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
             routing_key=settings.BUILDER_ROUTING_KEY,
             args=(
                 record.id, project_id, project_name,
-                str_envs, str_regions, run_data, common_sources, build_cases
+                env_ids_str, region_ids_str, run_data, common_sources, build_cases
             )
         )
         result = BuildRecordSerializers(record).data
@@ -90,13 +107,15 @@ class BuilderViewSets(viewsets.GenericViewSet):
         build_cases = set(serializer.validated_data.get('case_list'))
         user = request.user
         buidl_desc = f'QUICK_BUILD-@{user.username}-{datetime.now().timestamp()}'
+        env_ids_str = join_id_to_str(env_list)
+        region_ids_str = join_id_to_str(region_list)
         record = BuildRecord.objects.create(
             desc=buidl_desc,
             create_by=user.email,
             project_id=project_id,
             branch=branch,
-            envs=join_id_to_str(env_list),
-            regions=join_id_to_str(region_list),
+            envs=env_ids_str,
+            regions=region_ids_str,
         )
         app.send_task(
             settings.INSTANT_TASK,
@@ -104,7 +123,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
             routing_key=settings.BUILDER_ROUTING_KEY,
             args=(
                 record.id, project_id, project_name,
-                env_list, region_list, run_data, common_sources, build_cases
+                env_ids_str, region_ids_str, run_data, common_sources, build_cases
             )
         )
         result = BuildRecordSerializers(record).data
@@ -133,6 +152,8 @@ class BuilderViewSets(viewsets.GenericViewSet):
         conn = RedisClient(settings.ROBOT_REDIS_URL).connector
         task_redis_key = settings.TASK_RESULT_KEY_PREFIX + task_id
         conn.hset(task_redis_key, 'batch', len(batch_data))
+        # waiting django-redis add feature to support hash
+        # cache.hset(task_redis_key, 'batch', len(batch_data))
         for batch_no, data in batch_data.items():
             suites, sources, resources, files = data[0], data[1], data[2], data[3]
             app.send_task(
@@ -159,6 +180,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
             task_id = request.data.get('task_id')
             redis_key = settings.CASE_RESULT_KEY_PREFIX+task_id
             current_build_result = conn.hgetall(redis_key)
+            # current_build_result = cache.hgetall(redis_key)
             logger.debug("build progress: {}".format(current_build_result))
             return JsonResponse(data=current_build_result or {})
         record_id_list = request.data.get('records', [])
@@ -169,6 +191,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
                 task_id = generate_test_task_id(item.id)
                 redis_keys.append(settings.CASE_RESULT_KEY_PREFIX + task_id)
         cases_result = conn.mget(redis_keys)
+        # cases_result = cache.get_many(redis_keys)
         return JsonResponse(data=cases_result or [])
 
 

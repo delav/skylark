@@ -7,6 +7,7 @@ def has_project_permission(project_id, user):
         return False
     if user.is_superuser:
         return True
+    print(f'permission: uid[{user.id}]|pid[{project_id}]')
     permission_project = ProjectPermission.objects.filter(
         user_id=user.id,
         project_id=project_id

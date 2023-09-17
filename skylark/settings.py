@@ -140,19 +140,22 @@ DATABASES = {
     }
 }
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-        'TIMEOUT': None  # never expire
-    }
-}
-
 # Redis
 REDIS = {
     'HOST': '127.0.0.1',
     'PORT': '6379',
     'PASSWORD': '',
+}
+
+# cache
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': f'redis://{REDIS.get("HOST")}:{REDIS.get("PORT")}/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient'
+        },
+    }
 }
 
 # rest framework

@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 from django.conf import settings
+from django.core.cache import cache
 from infra.client.redisclient import RedisClient
 from infra.utils.makedir import make_path
 from application.constant import BuildStatus
@@ -25,6 +26,7 @@ def robot_notifier(task_id, project, env, region):
     conn = RedisClient(settings.ROBOT_REDIS_URL).connector
     task_redis_key = settings.TASK_RESULT_KEY_PREFIX + task_id
     current_result = conn.hgetall(task_redis_key)
+    # current_result = cache.hgetall(task_redis_key)
     output_list = []
     # debug mode operate
     if not is_test_mode(task_id):
@@ -88,6 +90,7 @@ def robot_notifier(task_id, project, env, region):
     case_redis_key = settings.CASE_RESULT_KEY_PREFIX + task_id
     case_detail_list = []
     cases_result = conn.hgetall(case_redis_key)
+    # cases_result = cache.hgetall(case_redis_key)
     for case_id, item in cases_result.items():
         item = json.loads(item)
         item['case_id'] = int(case_id)

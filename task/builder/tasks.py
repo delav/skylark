@@ -1,8 +1,11 @@
 from json import loads
+from loguru import logger
 from django.conf import settings
 from infra.engine.dcsengine import DcsEngine
 from infra.utils.typetransform import id_str_to_set
+from application.constant import ModuleStatus
 from application.buildplan.models import BuildPlan
+from application.project.models import Project
 from application.buildrecord.models import BuildRecord
 from application.projectversion.models import ProjectVersion
 from application.buildhistory.models import BuildHistory
@@ -16,13 +19,32 @@ from skylark.celeryapp import app
 @app.task
 def periodic_builder(plan_id):
     """period task will execute real build task to run case"""
-    plan = BuildPlan.objects.get(id=plan_id)
-    version = ProjectVersion.objects.get(
+    plan_query = BuildPlan.objects.filter(
+        id=plan_id,
+        status=ModuleStatus.NORMAL
+    )
+    if not plan_query.exists():
+        logger.warning(f'periodic builder not found plan: {plan_id}')
+        return
+    plan = plan_query.first()
+    project_query = Project.objects.filter(
+        id=plan.project_id,
+        status=ModuleStatus.NORMAL
+    )
+    if not project_query.exists():
+        logger.warning(f'periodic builder not found project: {plan.project_id}')
+        return
+    project_name = project_query.first().name
+    version_query = ProjectVersion.objects.filter(
         project_id=plan.project_id,
         branch=plan.branch
     )
-    env_ids = id_str_to_set(plan.envs)
-    region_ids = id_str_to_set(plan.regions)
+    if not version_query.exists():
+        logger.warning(f'periodic builder not found version: {plan.branch}')
+        return
+    version = version_query.first()
+    env_list = id_str_to_set(plan.envs, to_int=True)
+    region_list = id_str_to_set(plan.regions, to_int=True)
     run_data = loads(version.run_data)
     common_sources = loads(version.sources)
     build_cases = id_str_to_set(plan.build_cases, to_int=True)
@@ -37,22 +59,22 @@ def periodic_builder(plan_id):
         periodic=True,
     )
     _create_task(
-        record.id, plan.project_id, plan.project_name, env_ids,
-        region_ids, run_data, common_sources, build_cases
+        record.id, plan.project_id, project_name, env_list,
+        region_list, run_data, common_sources, build_cases
     )
 
 
 @app.task
 def instant_builder(record_id, project_id, project_name,
                     env_ids, region_ids, run_data, common_sources, build_cases):
-    env_ids = id_str_to_set(env_ids)
-    region_ids = id_str_to_set(region_ids)
+    env_list = id_str_to_set(env_ids, to_int=True)
+    region_list = id_str_to_set(region_ids, to_int=True)
     run_data = loads(run_data)
     common_sources = loads(common_sources)
     build_cases = id_str_to_set(build_cases, to_int=True)
     _create_task(
-        record_id, project_id, project_name, env_ids,
-        region_ids, run_data, common_sources, build_cases
+        record_id, project_id, project_name, env_list,
+        region_list, run_data, common_sources, build_cases
     )
 
 
@@ -62,7 +84,10 @@ def _create_task(record_id, project_id, project_name,
     region_map = get_region_id_map()
     for env_id in env_id_list:
         env_name = env_map.get(env_id)
-        env_common = common_sources.get(env_id)
+        if not env_name:
+            logger.warning(f'create task not found env: {env_id}')
+            continue
+        env_common = common_sources.get(str(env_id))
         if not region_id_list:
             region_id, region_name = None, ''
             env_region_common = env_common.get('base')
@@ -73,7 +98,10 @@ def _create_task(record_id, project_id, project_name,
             continue
         for region_id in region_id_list:
             region_name = region_map.get(region_id)
-            env_region_common = env_common.get(region_id)
+            if not region_name:
+                logger.warning(f'create task not found region: {region_id}')
+                continue
+            env_region_common = env_common.get(str(region_id))
             _execute(
                 record_id, project_id, project_name, env_id, env_name,
                 region_id, region_name, run_data, env_region_common, build_cases

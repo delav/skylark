@@ -94,8 +94,6 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
             return JsonResponse(code=10064, msg='test suite not exist')
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        if instance.project_id != serializer.validated_data.get('project_id'):
-            return JsonResponse(code=10069, msg='not support update project')
         try:
             with transaction.atomic():
                 self.perform_update(serializer)

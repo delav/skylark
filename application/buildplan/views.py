@@ -52,6 +52,7 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
             ).values_list('id')
             project_ids = common_project_queryset | personal_project_queryset
             queryset = self.get_queryset().filter(
+                status=ModuleStatus.NORMAL,
                 project_id__in=project_ids).order_by('-create_at')
         create_by = request.query_params.get('create_by')
         if create_by:
@@ -109,11 +110,13 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
         logger.info(f'get plan detail: {kwargs.get("pk")}')
         instance = self.get_object()
         result = self.get_serializer(instance).data
+        result['periodic'] = get_periodic_task(id=instance.periodic_task_id)
+        result['record'] = []
         queryset = BuildRecord.objects.filter(
                 plan_id=instance.id).order_by('-create_at')[:5]
-        records = BuildRecordSerializers(queryset, many=True).data
-        result['record'] = records
-        result['periodic'] = get_periodic_task(id=instance.periodic_task_id)
+        if queryset.exists():
+            records = BuildRecordSerializers(queryset, many=True).data
+            result['record'] = records
         return JsonResponse(result)
 
     def destroy(self, request, *args, **kwargs):
@@ -121,7 +124,9 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
         instance = self.get_object()
         if not has_project_permission(instance.project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
-        self.perform_destroy(instance)
+        instance.status = ModuleStatus.DELETED
+        instance.update_by = request.user.email
+        instance.save()
         return JsonResponse(data=instance.id)
 
     @action(methods=['get'], detail=False)
@@ -138,7 +143,10 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
             plan_id = convert_task_name(periodic.get('name'))
             plan_id_list.append(plan_id)
             periodic_dict[plan_id] = periodic
-        queryset = BuildPlan.objects.filter(id__in=plan_id_list)
+        queryset = BuildPlan.objects.filter(
+            status=ModuleStatus.NORMAL,
+            id__in=plan_id_list
+        )
         result = []
         for item in queryset.iterator():
             data = self.get_serializer(item).data

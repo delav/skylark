@@ -96,8 +96,6 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
             return JsonResponse(code=10054, msg='test case not exist')
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        if instance.project_id != serializer.validated_data.get('project_id'):
-            return JsonResponse(code=10079, msg='not support update project')
         try:
             self.perform_update(serializer)
         except IntegrityError:

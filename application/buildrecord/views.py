@@ -58,15 +58,12 @@ class BuildRecordViewSets(mixins.RetrieveModelMixin, mixins.ListModelMixin, view
         logger.info(f'get record detail')
         instance = self.get_object()
         record = self.get_serializer(instance).data
-        related_plan = BuildPlan.objects.get(
-            id=instance.plan_id
-        )
-        plan_data = BuildPlanSerializers(related_plan).data
-        record['plan'] = plan_data
+        record['history'] = []
         history_queryset = BuildHistory.objects.filter(
             record_id=instance.id
         )
-        histories = BuildHistorySerializers(history_queryset, many=True).data
-        record['history'] = histories
+        if history_queryset.exists():
+            histories = BuildHistorySerializers(history_queryset, many=True).data
+            record['history'] = histories
         return JsonResponse(record)
 
