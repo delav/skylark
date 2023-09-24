@@ -38,6 +38,7 @@ class DcsEngine(object):
             self.path_list, self.source_map, self.variable_files, self.external_files
         )
 
+    # TODO
     def _multi_operator(self, structure_list):
         for i in range(len(structure_list)):
             paths, sources = [], {}

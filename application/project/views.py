@@ -26,7 +26,7 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
     def list(self, request, *args, **kwargs):
         logger.info('get project list info')
         user_project_ids = ProjectPermission.objects.filter(
-            user_id__exact=request.user.id
+            user_id=request.user.id
         ).values_list('project_id').all()
         common_project_queryset = Project.objects.filter(
             status=ModuleStatus.NORMAL,

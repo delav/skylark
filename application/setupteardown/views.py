@@ -8,8 +8,7 @@ from application.setupteardown.serializers import SetupTeardownSerializers
 # Create your views here.
 
 
-class SetupTeardownViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
-                            mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class SetupTeardownViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = SetupTeardown.objects.all()
     serializer_class = SetupTeardownSerializers
 
@@ -26,16 +25,3 @@ class SetupTeardownViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
         data = self.get_serializer(instance).data
         return JsonResponse(data=data)
 
-    def update(self, request, *args, **kwargs):
-        logger.info(f'update setup teardown: {request.data}')
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return JsonResponse(serializer.data)
-
-    def retrieve(self, request, *args, **kwargs):
-        logger.info(f'get setup teardown: {kwargs.get("pk")}')
-
-    def destroy(self, request, *args, **kwargs):
-        logger.info(f'delete setup teardown: {kwargs.get("pk")}')

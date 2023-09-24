@@ -10,7 +10,7 @@ class CaseEntity(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
     input_args = models.TextField(default=None, blank=True, null=True,  help_text='input args')
     output_args = models.TextField(default=None, blank=True, null=True, help_text='output args')
-    seq_number = models.IntegerField(help_text='entity sequence number')
+    order = models.IntegerField(help_text='entity sequence number')
     test_case = models.ForeignKey(TestCase, related_name='entities', on_delete=models.CASCADE,
                                   help_text='associated case')
     keyword_id = models.IntegerField(help_text='lib keyword or user keyword id')
@@ -20,5 +20,5 @@ class CaseEntity(models.Model):
         verbose_name = 'case entity'
         verbose_name_plural = verbose_name
         db_table = 'case_entity'
-        unique_together = ['test_case', 'seq_number']
+        unique_together = ['test_case', 'order']
 

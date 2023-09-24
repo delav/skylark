@@ -4,14 +4,14 @@ from django.conf import settings
 from infra.engine.dcsengine import DcsEngine
 from infra.utils.typetransform import id_str_to_set
 from application.constant import ModuleStatus
+from application.manager import get_project_by_id
 from application.buildplan.models import BuildPlan
 from application.project.models import Project
 from application.buildrecord.models import BuildRecord
 from application.projectversion.models import ProjectVersion
 from application.buildhistory.models import BuildHistory
 from application.common.parser.jsonparser import JsonParser
-from application.environment.handler import get_env_id_map
-from application.region.handler import get_region_id_map
+from application.manager import get_all_envs, get_all_regions
 from application.builder.handler import generate_test_task_id
 from skylark.celeryapp import app
 
@@ -27,14 +27,11 @@ def periodic_builder(plan_id):
         logger.warning(f'periodic builder not found plan: {plan_id}')
         return
     plan = plan_query.first()
-    project_query = Project.objects.filter(
-        id=plan.project_id,
-        status=ModuleStatus.NORMAL
-    )
-    if not project_query.exists():
+    project = get_project_by_id(plan.project_id)
+    if not project:
         logger.warning(f'periodic builder not found project: {plan.project_id}')
         return
-    project_name = project_query.first().name
+    project_name = project.get('name')
     version_query = ProjectVersion.objects.filter(
         project_id=plan.project_id,
         branch=plan.branch
@@ -80,8 +77,8 @@ def instant_builder(record_id, project_id, project_name,
 
 def _create_task(record_id, project_id, project_name,
                  env_id_list, region_id_list, run_data, common_sources, build_cases):
-    env_map = get_env_id_map()
-    region_map = get_region_id_map()
+    env_map = {item.id: item.name for item in get_all_envs()}
+    region_map = {item.id: item.name for item in get_all_regions()}
     for env_id in env_id_list:
         env_name = env_map.get(env_id)
         if not env_name:

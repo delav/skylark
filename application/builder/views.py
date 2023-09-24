@@ -10,6 +10,7 @@ from infra.engine.dcsengine import DcsEngine
 from infra.utils.typetransform import id_str_to_set, join_id_to_str
 from application.constant import ModuleStatus
 from application.common.access.projectaccess import has_project_permission
+from application.manager import get_project_by_id
 from application.project.models import Project
 from application.buildplan.models import BuildPlan
 from application.projectversion.models import ProjectVersion
@@ -40,13 +41,10 @@ class BuilderViewSets(viewsets.GenericViewSet):
             return JsonResponse(code=10001, msg='plan not found')
         plan = plan_query.first()
         project_id = plan.project_id
-        project_query = Project.objects.filter(
-            id=project_id,
-            status=ModuleStatus.NORMAL
-        )
-        if not project_query.exists():
+        project = get_project_by_id(project_id)
+        if not project:
             return JsonResponse(code=10001, msg='project not exist')
-        project_name = project_query.first().name
+        project_name = project.get('name')
         if not has_project_permission(project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         version = ProjectVersion.objects.get(

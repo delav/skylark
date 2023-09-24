@@ -23,7 +23,6 @@ class SuiteDir(models.Model):
         verbose_name = 'suite dir'
         verbose_name_plural = verbose_name
         db_table = 'suite_dir'
-        ordering = ['name']
         unique_together = [('project', 'parent_dir', 'name')]
 
     def clean(self):

@@ -34,9 +34,7 @@ task_routes = {
     }
  }
 # notify mq message is consumed only task finish, notifier not need
-# ack_late = True
-# data type of task accept
-accept_content = ['json']
+ack_late = False
 # serialize type
 task_serializer = 'json'
 # timezone
@@ -47,7 +45,7 @@ result_expires = 60*60
 # not receive ack will send to other worker
 disable_rate_limits = True
 # result not send to broker
-# ignore_result = True
+task_ignore_result = True
 # disable prefetch task, default 4
 # worker_prefetch_multiplier = 1
 # worker concurrency num

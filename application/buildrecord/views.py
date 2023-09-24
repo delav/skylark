@@ -4,12 +4,11 @@ from rest_framework import viewsets
 from infra.django.response import JsonResponse
 from infra.django.pagination.paginator import PagePagination
 from application.constant import ModuleStatus
+from application.manager import get_projects_by_uid
 from application.projectpermission.models import ProjectPermission
 from application.project.models import Project
 from application.buildrecord.models import BuildRecord
 from application.buildrecord.serializers import BuildRecordSerializers
-from application.buildplan.models import BuildPlan
-from application.buildplan.serializers import BuildPlanSerializers
 from application.buildhistory.models import BuildHistory
 from application.buildhistory.serializers import BuildHistorySerializers
 from application.common.access.projectaccess import has_project_permission
@@ -33,20 +32,8 @@ class BuildRecordViewSets(mixins.RetrieveModelMixin, mixins.ListModelMixin, view
             queryset = self.get_queryset().filter(
                 project_id=project_id).order_by('-create_at')
         else:
-            user_project_ids = ProjectPermission.objects.filter(
-                user_id__exact=request.user.id
-            ).values_list('project_id').all()
-            common_project_queryset = Project.objects.filter(
-                status=ModuleStatus.NORMAL,
-                personal=False,
-                id__in=user_project_ids
-            ).values_list('id')
-            personal_project_queryset = Project.objects.filter(
-                status=ModuleStatus.NORMAL,
-                personal=True,
-                create_by=request.user.email
-            ).values_list('id')
-            project_ids = common_project_queryset | personal_project_queryset
+            project_list = get_projects_by_uid(request.user.id)
+            project_ids = [item.get('id') for item in project_list]
             queryset = self.get_queryset().filter(
                 project_id__in=project_ids).order_by('-create_at')
         pg_queryset = self.paginate_queryset(queryset)

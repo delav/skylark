@@ -17,7 +17,7 @@ from application.testsuite.serializers import TestSuiteSerializers
 from application.virtualfile.models import VirtualFile
 from application.virtualfile.serializers import VirtualFileSerializers, UploadForm
 from application.common.ztree.generatenode import handler_suite_node
-from application.virtualfile.handler import PATH_SEPARATOR, get_file_content
+from application.virtualfile.handler import PATH_SEPARATOR, get_file_content, get_full_dir_path
 
 # Create your views here.
 
@@ -30,11 +30,24 @@ class VirtualFileViewSets(viewsets.GenericViewSet):
         serializer = VirtualFileSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
         file_data = serializer.validated_data
-        file_name = file_data.get('file_name')
+        suite_id = file_data.get('suite_id')
+        suite_query = TestSuite.objects.filter(
+            id=suite_id,
+            category=ModuleCategory.VARIABLE,
+            status=ModuleStatus.NORMAL
+        )
+        if not suite_query.exists():
+            return JsonResponse(code=10307, msg='not found')
+        suite_dir = suite_query.first().suite_dir
+        full_path_list = get_full_dir_path(suite_dir, [])
+        file_name = suite_query.first().name
         suffix = str(search(r'\w*(.\w*)', file_name).group(1))
+        file_data['file_name'] = file_name
         file_data['file_suffix'] = suffix
         file_data['update_time'] = int(get_timestamp(10))
         file_data['edit_file'] = True
+        file_data['file_path'] = PATH_SEPARATOR.join(full_path_list)
+        print(file_data)
         if suffix not in settings.VARIABLE_FILE_TYPE:
             return JsonResponse(code=10308, msg='file type not supported')
         instance, _ = VirtualFile.objects.update_or_create(
@@ -48,17 +61,30 @@ class VirtualFileViewSets(viewsets.GenericViewSet):
     def get_content(self, request, *args, **kwargs):
         logger.info(f'get file content by suite id: {request.query_params}')
         suite_id = request.query_params.get('suite')
+        suite_query = TestSuite.objects.filter(
+            id=suite_id
+        )
+        if not suite_query.exists():
+            return JsonResponse(code=10307, msg='not found')
+        suite = suite_query.first()
+        if suite.status == ModuleStatus.DELETED:
+            return JsonResponse(code=10307, msg='file not found')
         data = get_file_content(suite_id)
+        default = {
+            'env_id': None,
+            'region_id': None,
+            'file_path': '',
+            'file_name': suite.name,
+            'file_suffix': str(search(r'\w*(.\w*)', suite.name).group(1)),
+            'file_text': '',
+            'suite_id': suite.id,
+            'edit_file': True
+        }
+        data = data or default
         return JsonResponse(data=data)
 
 
 class ProjectFileViewSets(viewsets.GenericViewSet):
-
-    def _get_dir_path(self, dir_obj, result_path):
-        result_path.append(dir_obj.name)
-        if dir_obj.parent_dir:
-            return self._get_dir_path(dir_obj.parent_dir, result_path)
-        return result_path[::-1]
 
     @action(methods=['post'], detail=False)
     def upload(self, request, *args, **kwargs):
@@ -71,11 +97,12 @@ class ProjectFileViewSets(viewsets.GenericViewSet):
         dir_id = form.cleaned_data.get('dir_id')
         dir_queryset = SuiteDir.objects.filter(
             id=dir_id,
-            category=ModuleCategory.FILE
+            category=ModuleCategory.FILE,
+            status=ModuleStatus.NORMAL
         )
         if not dir_queryset.exists():
             return JsonResponse(code=10303, msg='dir not found')
-        dir_path = self._get_dir_path(dir_queryset.first(), [])
+        dir_path = get_full_dir_path(dir_queryset.first(), [])
         with transaction.atomic():
             for f in files:
                 if f.size > settings.FILE_SIZE_LIMIT:

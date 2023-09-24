@@ -38,6 +38,12 @@ class BuildStatus:
     FINNISH = 1
 
 
+class KeywordCategory:
+    ORDINARY = 0
+    RESERVED = 1
+    CUSTOMIZED = 9
+
+
 class KeywordType:
     LIB = 1
     USER = 2

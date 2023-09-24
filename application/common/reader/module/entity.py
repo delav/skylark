@@ -34,7 +34,7 @@ class EntityReader(object):
         entity_list = []
         entity_queryset = CaseEntity.objects.filter(
             test_case_id=case_id
-        ).order_by('seq_number')
+        ).order_by('order')
         for item in entity_queryset.iterator():
             ser_entity = CaseEntitySerializers(item).data
             entity_list.append(self.format_entity(ser_entity))

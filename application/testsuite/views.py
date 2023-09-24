@@ -36,8 +36,12 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
             return JsonResponse(code=10068, msg='dir not exist')
         if not has_project_permission(dir_obj.project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
-        child_dirs = dir_obj.children.filter(status=ModuleStatus.NORMAL)
-        child_suites = dir_obj.suites.filter(status=ModuleStatus.NORMAL)
+        child_dirs = dir_obj.children.filter(
+            status=ModuleStatus.NORMAL
+        ).order_by('name')
+        child_suites = dir_obj.suites.filter(
+            status=ModuleStatus.NORMAL
+        ).order_by('name')
         node_list = []
         for item in child_dirs.iterator():
             dir_data = SuiteDirSerializers(item).data

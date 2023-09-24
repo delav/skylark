@@ -1,6 +1,7 @@
 from pathlib import Path
 from django.conf import settings
 from application.constant import ModuleStatus, FileSaveMode
+from application.manager import get_project_by_id
 from application.virtualfile.models import VirtualFile
 from application.virtualfile.serializers import VirtualFileSerializers
 from infra.utils.readfile import FILE_READER_MAP
@@ -14,7 +15,7 @@ def get_file_content(suite_id, **kwargs):
         **kwargs
     )
     if not queryset.exists():
-        return {}
+        return None
     instance = queryset.first()
     data = VirtualFileSerializers(instance).data
     if instance.save_mode == FileSaveMode.DB:
@@ -77,3 +78,18 @@ def get_file_download_info(suite_id, **kwargs):
         'params': {'path': str(file)}
     }
     return data
+
+
+def get_full_dir_path(child_dir_obj, result):
+
+    def _get_dir_path(dir_obj, result_path):
+        result_path.append(dir_obj.name)
+        if dir_obj.parent_dir:
+            return _get_dir_path(dir_obj.parent_dir, result_path)
+        project = get_project_by_id(dir_obj.project_id)
+        if not project:
+            return []
+        result.append(project.get('name'))
+        return result_path[::-1]
+
+    return _get_dir_path(child_dir_obj, result)

@@ -2,7 +2,7 @@ from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
 from infra.django.response import JsonResponse
-from application.constant import KeywordGroupType
+from application.constant import KeywordGroupType, KeywordCategory
 from application.constant import KeywordType, ModuleStatus
 from application.userkeyword.models import UserKeyword
 from application.userkeyword.serializers import UserKeywordSerializers
@@ -42,6 +42,7 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
                 desc=item.test_case.document,
                 group_id=serializer_data['group_id'],
                 keyword_type=KeywordType.USER,
+                category=KeywordCategory.CUSTOMIZED,
                 input_params=item.test_case.inputs,
                 output_params=item.test_case.outputs,
                 image=serializer_data['image']

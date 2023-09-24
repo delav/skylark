@@ -22,5 +22,4 @@ class TestSuite(models.Model):
         verbose_name = 'test suite'
         verbose_name_plural = verbose_name
         db_table = 'test_suite'
-        ordering = ['name']
         unique_together = ['name', 'suite_dir']

@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from infra.django.pagination.paginator import PagePagination
 from infra.django.response import JsonResponse
 from application.constant import ModuleStatus
+from application.manager import get_projects_by_uid
 from application.builder.handler import generate_task_name, convert_task_name
 from application.projectpermission.models import ProjectPermission
 from application.project.models import Project
@@ -37,20 +38,8 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
             queryset = self.get_queryset().filter(
                 project_id=project_id).order_by('-create_at')
         else:
-            user_project_ids = ProjectPermission.objects.filter(
-                user_id__exact=request.user.id
-            ).values_list('project_id').all()
-            common_project_queryset = Project.objects.filter(
-                status=ModuleStatus.NORMAL,
-                personal=False,
-                id__in=user_project_ids
-            ).values_list('id')
-            personal_project_queryset = Project.objects.filter(
-                status=ModuleStatus.NORMAL,
-                personal=True,
-                create_by=request.user.email
-            ).values_list('id')
-            project_ids = common_project_queryset | personal_project_queryset
+            project_list = get_projects_by_uid(request.user.id)
+            project_ids = [item.get('id') for item in project_list]
             queryset = self.get_queryset().filter(
                 status=ModuleStatus.NORMAL,
                 project_id__in=project_ids).order_by('-create_at')

@@ -14,6 +14,7 @@ fields = {
     'output_desc': '',
     'input_type': 2,
     'output_type': 0,
+    'category': 0,
     'image': ''
 }
 

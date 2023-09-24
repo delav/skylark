@@ -17,6 +17,7 @@ class TestCase(models.Model):
     priority_id = models.IntegerField(default=None, null=True, blank=True, help_text='test case priority')
     test_suite = models.ForeignKey(TestSuite, related_name='cases', on_delete=models.CASCADE,
                                    help_text='associated test suite')
+    order = models.IntegerField(default=None, blank=True, null=True, help_text='execute order in suite')
     project_id = models.IntegerField(help_text='associated project')
     inputs = models.TextField(default=None, blank=True, null=True, help_text='input args for keyword')
     outputs = models.TextField(default=None, blank=True, null=True, help_text='output args for keyword')
@@ -27,5 +28,4 @@ class TestCase(models.Model):
         verbose_name = 'test case'
         verbose_name_plural = verbose_name
         db_table = 'test_case'
-        ordering = ['name']
         unique_together = ['name', 'test_suite']

@@ -37,7 +37,9 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
             return JsonResponse(code=40308, msg='suite not exist')
         if not has_project_permission(suite_obj.project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
-        test_cases = suite_obj.cases.filter(status=ModuleStatus.NORMAL)
+        test_cases = suite_obj.cases.filter(
+            status=ModuleStatus.NORMAL
+        ).order_by('name')
         case_list = []
         for item in test_cases.iterator():
             case_data = self.get_serializer(item).data

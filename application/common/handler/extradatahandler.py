@@ -37,7 +37,7 @@ def get_model_extra_data(module_id, module_type, include_entity=False):
         TAG_KEY: tag
     }
     if include_entity:
-        entity_queryset = CaseEntity.objects.filter(test_case_id=module_id).order_by('seq_number')
+        entity_queryset = CaseEntity.objects.filter(test_case_id=module_id).order_by('order')
         entities = CaseEntitySerializers(entity_queryset, many=True)
         extra_data_result.update({ENTITY_KEY: entities.data})
     return extra_data_result
@@ -84,7 +84,7 @@ def get_model_simple_extra_data(module_id, module_type, include_entity=False):
     if include_entity:
         entity_queryset = CaseEntity.objects.filter(
             test_case_id=module_id
-        ).order_by('seq_number').values(*entity_simple_fields)
+        ).order_by('order').values(*entity_simple_fields)
         extra_data_result[ENTITY_KEY] = list(entity_queryset)
     return extra_data_result
 

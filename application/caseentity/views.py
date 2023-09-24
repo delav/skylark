@@ -26,7 +26,7 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         if test_case.status == ModuleStatus.DELETED:
             return JsonResponse(code=10042, msg='test case not exist')
-        entity_queryset = CaseEntity.objects.filter(test_case_id=case_id).order_by('seq_number')
+        entity_queryset = CaseEntity.objects.filter(test_case_id=case_id).order_by('order')
         ser = self.get_serializer(entity_queryset, many=True)
         return JsonResponse(data=ser.data)
 
@@ -57,7 +57,7 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
         entity_object_list = []
         for i in range(len(entity_list)):
             entity = entity_list[i]
-            entity['seq_number'] = i
+            entity['order'] = i
             entity['test_case_id'] = case_id
             keyword_id = entity['keyword_id']
             keyword_type = entity['keyword_type']

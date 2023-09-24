@@ -4,9 +4,9 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from infra.django.response import JsonResponse
 from application.constant import *
+from application.manager import get_project_by_id
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers
-from application.project.models import Project
 from application.common.access.projectaccess import has_project_permission
 from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_dir_node
@@ -25,15 +25,13 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         project_id = request.query_params.get('project')
         if not has_project_permission(project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
-        project_queryset = Project.objects.filter(
-            id=project_id
-        )
-        if not project_queryset.exists():
+        project = get_project_by_id(project_id)
+        if not project:
             return JsonResponse(code=10078, msg='project not exists')
-        project = project_queryset.first()
-        if project.status == ModuleStatus.DELETED:
+        if project.get('status') == ModuleStatus.DELETED:
             return JsonResponse(code=10078, msg='project not exists')
-        dirs = project.dirs.filter(
+        dirs = SuiteDir.objects.filter(
+            project_id=project_id,
             parent_dir=None,
             status=ModuleStatus.NORMAL
         ).order_by('category')
@@ -54,11 +52,10 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         project_id = serializer.validated_data.get('project_id')
         if not has_project_permission(project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
-        project = Project.objects.filter(id=project_id)
-        if not project.exists():
+        project = get_project_by_id(project_id)
+        if not project:
             return JsonResponse(code=40078, msg='project not exist')
-        project = project.first()
-        if project.status == ModuleStatus.DELETED:
+        if project.get('status') == ModuleStatus.DELETED:
             return JsonResponse(code=40078, msg='project not exist')
         parent_dir = SuiteDir.objects.filter(id=serializer.validated_data.get('parent_dir_id'))
         if not parent_dir.exists():

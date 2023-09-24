@@ -227,7 +227,7 @@ MEDIA_URL = '/media/'
 PROJECT_FILES = BASE_DIR / 'static/files'
 FILE_SIZE_LIMIT = 10 * 1024 * 1024
 SAVE_TO_DB_SIZE_LIMIT = 1 * 1024 * 1024
-VARIABLE_FILE_TYPE = ('.py', '.json', '.yml', '.yaml')
+VARIABLE_FILE_TYPE = ('.py', '.json', '.yaml')
 SAVE_TO_DB_FILE_TYPE = ('.txt',)
 
 # distributed execute

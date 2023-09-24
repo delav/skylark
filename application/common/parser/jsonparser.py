@@ -20,8 +20,6 @@ class JsonParser(CommonParser):
             common = self.get_common_from_parse()
         if from_db:
             build_data = parse_version_data(run_data, PATH_SEP)
-            import json
-            print(json.dumps(build_data))
         else:
             build_data = parse_front_data(run_data, PATH_SEP)
         return self._parse(build_data, common)

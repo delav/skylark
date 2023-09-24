@@ -9,7 +9,7 @@ class TestCaseSerializers(serializers.ModelSerializer):
         model = TestCase
         fields = (
             'id', 'name', 'category', 'document', 'priority_id', 'create_at', 'update_at',
-            'create_by', 'update_by', 'test_suite_id', 'project_id', 'inputs', 'outputs', 'timeout', 'status'
+            'create_by', 'update_by', 'test_suite_id', 'order', 'project_id', 'inputs', 'outputs', 'timeout', 'status'
         )
         read_only_fields = ('create_by', 'update_by', 'category', 'status')
 

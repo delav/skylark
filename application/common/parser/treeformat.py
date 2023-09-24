@@ -1,4 +1,5 @@
 import uuid
+from django.db.models import F
 from application.constant import *
 from application.project.models import Project
 from application.suitedir.models import SuiteDir
@@ -63,7 +64,8 @@ def parse_front_data(tree_data, split='.'):
                 parse_tree(item['children'], node_name)
             if item['desc'] == NODE_DESC['suite']:
                 result['suites'][item['mid']] = _data
-                result['cases'][item['mid']] = [mc['meta'] for mc in item['children']]
+                case_list = [mc['meta'] for mc in item['children']]
+                result['cases'][item['mid']] = sorted(case_list, key=lambda x: (x['order'] is None, x['order']))
         return result
     return parse_tree(tree_data, '')
 
@@ -136,6 +138,8 @@ def _get_suite_tree(parent_node_id, suite_queryset, tree_nodes):
             test_suite_id=suite_data['id'],
             category=ModuleCategory.TESTCASE,
             status=ModuleStatus.NORMAL
+        ).order_by(
+            F('order').asc(nulls_last=True)
         ).values('id', 'name', 'category', 'test_suite_id', 'inputs', 'outputs', 'timeout')
         # ztree node
         suite_node_id = str(uuid.uuid1())
