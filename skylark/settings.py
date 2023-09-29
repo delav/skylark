@@ -136,7 +136,7 @@ DATABASES = {
         'NAME': 'skylark',
         'HOST': '127.0.0.1',
         'USER': 'root',
-        'PASSWORD': '729814'
+        'PASSWORD': '123456'
     }
 }
 
@@ -163,9 +163,6 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'infra.django.permission.LoginAuth',
-    ),
     'DATETIME_FORMAT': '%Y-%m-%d %H:%M:%S',
     'EXCEPTION_HANDLER': 'infra.django.exception.exception_handler',
 }
@@ -178,6 +175,13 @@ SIMPLE_JWT = {
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = (
+    '*',
+)
+
+# server url
+SERVER_DOMAIN = '127.0.0.1:8000'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -213,7 +217,7 @@ USE_TZ = False
 
 AES_KEY = '20220427@)@@)$@&'
 
-INTERNAL_AUTH_KEY = "19960101"
+INTERNAL_KEY = "123!@#"
 
 
 # Static files (CSS, JavaScript, Images)
@@ -227,8 +231,8 @@ MEDIA_URL = '/media/'
 PROJECT_FILES = BASE_DIR / 'static/files'
 FILE_SIZE_LIMIT = 10 * 1024 * 1024
 SAVE_TO_DB_SIZE_LIMIT = 1 * 1024 * 1024
-VARIABLE_FILE_TYPE = ('.py', '.json', '.yaml')
-SAVE_TO_DB_FILE_TYPE = ('.txt',)
+VARIABLE_FILE_TYPE = ('.py', '.yaml')
+SAVE_TO_DB_FILE_TYPE = ()
 
 # distributed execute
 DISTRIBUTED_BUILD = True

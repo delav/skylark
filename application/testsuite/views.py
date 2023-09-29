@@ -66,12 +66,13 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         project_id = serializer.validated_data.get('project_id')
         if not has_project_permission(project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
-        suite_dir = SuiteDir.objects.filter(id=serializer.validated_data.get('suite_dir_id'))
-        if not suite_dir.exists():
+        suite_query = SuiteDir.objects.filter(
+            id=serializer.validated_data.get('suite_dir_id'),
+            status=ModuleStatus.NORMAL
+        )
+        if not suite_query.exists():
             return JsonResponse(code=40308, msg='dir not exist')
-        suite_dir = suite_dir.first()
-        if suite_dir.status == ModuleStatus.DELETED:
-            return JsonResponse(code=40308, msg='dir not exist')
+        suite_dir = suite_query.first()
         if project_id != suite_dir.project_id:
             return JsonResponse(code=40309, msg='create data error')
         try:
@@ -102,7 +103,10 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
             with transaction.atomic():
                 self.perform_update(serializer)
                 if instance.category in (ModuleCategory.VARIABLE, ModuleCategory.FILE):
-                    update_file(instance.id, name=instance.name)
+                    update_file(
+                        instance.id,
+                        file_name=serializer.validated_data.get('name')
+                    )
         except IntegrityError:
             return JsonResponse(code=10063, msg='suite name already exist')
         return JsonResponse(data=serializer.data)

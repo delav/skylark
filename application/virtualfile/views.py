@@ -4,11 +4,12 @@ from re import search
 from loguru import logger
 from django.db import transaction
 from django.utils.http import urlquote
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from django.conf import settings
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from infra.django.response import JsonResponse
+from infra.crypto.crypter import base64_encrypt
 from infra.utils.timehanldler import get_timestamp
 from application.constant import ModuleCategory, ModuleStatus, FileSaveMode
 from application.suitedir.models import SuiteDir
@@ -17,7 +18,9 @@ from application.testsuite.serializers import TestSuiteSerializers
 from application.virtualfile.models import VirtualFile
 from application.virtualfile.serializers import VirtualFileSerializers, UploadForm
 from application.common.ztree.generatenode import handler_suite_node
-from application.virtualfile.handler import PATH_SEPARATOR, get_file_content, get_full_dir_path
+from application.common.access.projectaccess import has_project_permission
+from application.virtualfile.handler import PATH_SEPARATOR
+from application.virtualfile.handler import get_file_content, get_full_dir_path, get_download_file_stream
 
 # Create your views here.
 
@@ -38,16 +41,17 @@ class VirtualFileViewSets(viewsets.GenericViewSet):
         )
         if not suite_query.exists():
             return JsonResponse(code=10307, msg='not found')
-        suite_dir = suite_query.first().suite_dir
-        full_path_list = get_full_dir_path(suite_dir, [])
-        file_name = suite_query.first().name
+        suite = suite_query.first()
+        if not has_project_permission(suite.project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
+        full_path_list = get_full_dir_path(suite.suite_dir, [])
+        file_name = suite.name
         suffix = str(search(r'\w*(.\w*)', file_name).group(1))
         file_data['file_name'] = file_name
         file_data['file_suffix'] = suffix
         file_data['update_time'] = int(get_timestamp(10))
         file_data['edit_file'] = True
         file_data['file_path'] = PATH_SEPARATOR.join(full_path_list)
-        print(file_data)
         if suffix not in settings.VARIABLE_FILE_TYPE:
             return JsonResponse(code=10308, msg='file type not supported')
         instance, _ = VirtualFile.objects.update_or_create(
@@ -62,13 +66,14 @@ class VirtualFileViewSets(viewsets.GenericViewSet):
         logger.info(f'get file content by suite id: {request.query_params}')
         suite_id = request.query_params.get('suite')
         suite_query = TestSuite.objects.filter(
-            id=suite_id
+            id=suite_id,
+            status=ModuleStatus.NORMAL
         )
         if not suite_query.exists():
             return JsonResponse(code=10307, msg='not found')
         suite = suite_query.first()
-        if suite.status == ModuleStatus.DELETED:
-            return JsonResponse(code=10307, msg='file not found')
+        if not has_project_permission(suite.project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         data = get_file_content(suite_id)
         default = {
             'env_id': None,
@@ -102,25 +107,24 @@ class ProjectFileViewSets(viewsets.GenericViewSet):
         )
         if not dir_queryset.exists():
             return JsonResponse(code=10303, msg='dir not found')
-        dir_path = get_full_dir_path(dir_queryset.first(), [])
+        dir_obj = dir_queryset.first()
+        if not has_project_permission(dir_obj.project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
+        dir_path = get_full_dir_path(dir_obj, [])
         with transaction.atomic():
             for f in files:
                 if f.size > settings.FILE_SIZE_LIMIT:
                     continue
                 suffix = str(search(r'\w*(.\w*)', f.name).group(1))
                 related_suite_data = {
-                    'name': f.name,
+                    'project_id': dir_obj.project_id,
                     'category': ModuleCategory.FILE,
-                    'suite_dir_id': dir_id
+                    'create_by': request.user.email
                 }
-                serializer = TestSuiteSerializers(data=related_suite_data)
-                serializer.is_valid(raise_exception=True)
-                validate_data = serializer.validated_data
-                validate_data['create_by'] = request.user.email
                 suite, created = TestSuite.objects.update_or_create(
-                    name=validate_data.get('name'),
-                    suite_dir_id=validate_data.get('suite_dir_id'),
-                    defaults=validate_data
+                    name=f.name,
+                    suite_dir_id=dir_id,
+                    defaults=related_suite_data
                 )
                 file_path = Path(settings.PROJECT_FILES, *dir_path)
                 if f.size > settings.SAVE_TO_DB_SIZE_LIMIT or suffix not in settings.SAVE_TO_DB_FILE_TYPE:
@@ -156,9 +160,21 @@ class ProjectFileViewSets(viewsets.GenericViewSet):
     def download(self, request, *args, **kwargs):
         logger.info(f'download file')
         suite_id = request.POST.get('suite')
-        instance = VirtualFile.objects.get(suite_id=suite_id)
-        if instance.status == ModuleStatus.DELETED:
-            return JsonResponse(code=100308, msg='file not exist')
+        suite_query = TestSuite.objects.filter(
+            id=suite_id,
+            status=ModuleStatus.NORMAL
+        )
+        if not suite_query.exists():
+            return JsonResponse(code=10307, msg='file not found')
+        if not has_project_permission(suite_query.first().project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
+        file_query = VirtualFile.objects.filter(
+            suite_id=suite_id,
+            status=ModuleStatus.NORMAL
+        )
+        if not file_query.exists():
+            return JsonResponse(code=10307, msg='file not found')
+        instance = file_query.first()
         child_path_list = instance.file_path.split(PATH_SEPARATOR)
         file_path = Path(settings.PROJECT_FILES, *child_path_list)
         file_name = instance.file_name
@@ -191,3 +207,25 @@ class ProjectFileViewSets(viewsets.GenericViewSet):
         if not file.exists():
             return None
         return open(file, 'rb', encoding='utf-8')
+
+
+class InternalFileViewSets(viewsets.GenericViewSet):
+
+    @action(methods=['post'], detail=False)
+    def download_file(self, request, *args, **kwargs):
+        auth = request.headers.get('auth')
+        if auth != base64_encrypt(settings.INTERNAL_KEY):
+            return HttpResponse('FORBIDDEN', status=403)
+        path_str = request.data.get('path')
+        file_name = request.data.get('name')
+        if not path_str or path_str.strip() == '':
+            return HttpResponse('404_NOT_FOUND', status=404)
+        file = get_download_file_stream(path_str, file_name)
+        if not file:
+            return HttpResponse('404_NOT_FOUND', status=404)
+        response = FileResponse(file)
+        response['Content-Type'] = "application/octet-stream"
+        response['Content-Disposition'] = f'attachment;filename={urlquote(file_name)}'
+        response['Access-Control-Expose-Headers'] = "Content-Disposition"
+        return response
+

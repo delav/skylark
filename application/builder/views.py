@@ -162,7 +162,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
                 args=(project_name, env_name, region_name, task_id, str(batch_no), suites, sources, resources, files)
             )
         child_dir = date.today().strftime('%Y/%m/%d')
-        report_path = str(settings.REPORT_PATH) + f'/{child_dir}/' + task_id
+        report_path = settings.REPORT_PATH.as_posix() + f'/{child_dir}/' + task_id
         build_result = {
             'build_id': task_id,
             'total_case': engine.get_case_count(),

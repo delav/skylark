@@ -13,4 +13,4 @@ def make_path(base_path, child_path):
     new_dir = cur_dir / str(year) / str(month) / str(day) / child_path
     if not new_dir.exists():
         new_dir.mkdir(parents=True)
-    return str(new_dir)
+    return new_dir.as_posix()

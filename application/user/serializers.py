@@ -1,10 +1,11 @@
-from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.conf import settings
 from django.db.models import Q
 from django.contrib.auth.hashers import make_password, check_password
 from infra.crypto import ecb_decrypt
 from application.user.models import User
 from infra.django.exception import ValidationException
+from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class UserAdminSerializer(serializers.ModelSerializer):
@@ -33,7 +34,7 @@ class UserSerializer(TokenObtainPairSerializer, serializers.ModelSerializer):
     def validate(self, attrs):
         try:
             username = attrs['username']
-            raw_password = ecb_decrypt(attrs['password'])
+            raw_password = ecb_decrypt(settings.AES_KEY, attrs['password'])
             user = User.objects.get(Q(username=username) | Q(email=username))
             assert check_password(raw_password, user.password)
         except (Exception,):
@@ -96,7 +97,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         if attrs.get('password') != attrs.get('confirm_password'):
             raise ValidationException(detail='Confirm password error', code=10034)
         try:
-            raw_password = ecb_decrypt(attrs['password'])
+            raw_password = ecb_decrypt(settings.AES_KEY, attrs['password'])
             attrs['password'] = make_password(raw_password)
         except (Exception,):
             raise ValidationException(detail='Please check your password', code=10035)

@@ -21,11 +21,15 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
     def list(self, request, *args, **kwargs):
         logger.info(f'get test case entities by case id: {request.query_params}')
         case_id = request.query_params.get('case')
-        test_case = TestCase.objects.get(id=case_id)
+        case_query = TestCase.objects.filter(
+            id=case_id,
+            status=ModuleStatus.NORMAL
+        )
+        if not case_query.exists():
+            return JsonResponse(code=10042, msg='test case not exist')
+        test_case = case_query.first()
         if not has_project_permission(test_case.project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
-        if test_case.status == ModuleStatus.DELETED:
-            return JsonResponse(code=10042, msg='test case not exist')
         entity_queryset = CaseEntity.objects.filter(test_case_id=case_id).order_by('order')
         ser = self.get_serializer(entity_queryset, many=True)
         return JsonResponse(data=ser.data)

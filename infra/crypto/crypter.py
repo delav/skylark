@@ -1,12 +1,8 @@
 import base64
 from Crypto.Cipher import AES
-from django.conf import settings
-
-# 16/24/32位
-aes_key = settings.AES_KEY
 
 
-def ecb_encrypt(plain_text: str):
+def ecb_encrypt(aes_key, plain_text: str):
     # 填充
     plain_text = bytes(plain_text.encode('utf8'))
     bytes_num_to_pad = AES.block_size - (len(plain_text) % AES.block_size)
@@ -23,7 +19,7 @@ def ecb_encrypt(plain_text: str):
     return result
 
 
-def ecb_decrypt(encrypt_text: str):
+def ecb_decrypt(aes_key, encrypt_text: str):
     key_bytes = bytes(aes_key, encoding='utf8')
     cipher = AES.new(key_bytes, AES.MODE_ECB)
     # base64解码
@@ -39,5 +35,15 @@ def ecb_decrypt(encrypt_text: str):
     return result
 
 
-if __name__ == '__main__':
-    print(ecb_encrypt('123456'))
+def base64_encrypt(input_str):
+    input_bytes = input_str.encode('utf-8')
+    base64_bytes = base64.b64encode(input_bytes)
+    base64_str = base64_bytes.decode('utf-8')
+    return base64_str
+
+
+def base64_decrypt(base64_str):
+    base64_bytes = base64_str.encode('utf-8')
+    input_bytes = base64.b64decode(base64_bytes)
+    input_str = input_bytes.decode('utf-8')
+    return input_str

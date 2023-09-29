@@ -27,14 +27,13 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
     def list(self, request, *args, **kwargs):
         logger.info(f'get all test case by test suite id: {request.query_params}')
         suite_id = request.query_params.get('suite')
-        suite_queryset = TestSuite.objects.filter(
+        suite_query = TestSuite.objects.filter(
             id=suite_id,
+            status=ModuleStatus.NORMAL
         )
-        if not suite_queryset.exists():
+        if not suite_query.exists():
             return JsonResponse(code=40308, msg='suite not exist')
-        suite_obj = suite_queryset.first()
-        if suite_obj.status == ModuleStatus.DELETED:
-            return JsonResponse(code=40308, msg='suite not exist')
+        suite_obj = suite_query.first()
         if not has_project_permission(suite_obj.project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         test_cases = suite_obj.cases.filter(

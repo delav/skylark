@@ -7,6 +7,7 @@ from application.virtualfile.serializers import VirtualFileSerializers
 from infra.utils.readfile import FILE_READER_MAP
 
 PATH_SEPARATOR = '/'
+INTERNAL_DOWNLOAD_API = '/api/internal/download_file'
 
 
 def get_file_content(suite_id, **kwargs):
@@ -44,17 +45,17 @@ def update_file(suite_id, **kwargs):
         return
     file_obj = queryset.first()
     queryset.update(**kwargs)
-    if kwargs.get('name') and file_obj.save_mode == FileSaveMode.FILE:
-        file_name = kwargs.get('name')
+    if kwargs.get('file_name') and file_obj.save_mode == FileSaveMode.FILE:
+        file_name = kwargs.get('file_name')
         child_path_list = file_obj.file_path.split(PATH_SEPARATOR)
-        file_path = Path(settings.PROJECT_FILES, *child_path_list)
-        file = Path(file_path, file_obj.file_name)
+        file_path = [settings.PROJECT_FILES, *child_path_list]
+        file = Path(*file_path, file_obj.file_name)
         if file.exists():
             file.rename(file.with_name(file_name))
     if kwargs.get('status') == ModuleStatus.DELETED and file_obj.save_mode == FileSaveMode.FILE:
         child_path_list = file_obj.file_path.split(PATH_SEPARATOR)
-        file_path = Path(settings.PROJECT_FILES, *child_path_list)
-        file = Path(file_path, file_obj.file_name)
+        file_path = [settings.PROJECT_FILES, *child_path_list]
+        file = Path(*file_path, file_obj.file_name)
         if file.exists():
             file.unlink()
 
@@ -68,16 +69,21 @@ def get_file_download_info(suite_id, **kwargs):
         return {}
     instance = queryset.first()
     data = VirtualFileSerializers(instance).data
-    child_path_list = instance.file_path.split(PATH_SEPARATOR)
-    file_path = Path(settings.PROJECT_FILES, *child_path_list)
-    file_name = instance.file_name
-    file = Path(file_path, file_name)
+    file_path = instance.file_path + PATH_SEPARATOR + instance.file_name
     data['file_info'] = {
-        'host': '127.0.0.1:8000',
-        'api': '/api/internal/download_file',
-        'params': {'path': str(file)}
+        'url': settings.SERVER_DOMAIN + INTERNAL_DOWNLOAD_API,
+        'params': {'path': file_path}
     }
     return data
+
+
+def get_download_file_stream(path_str, file_name):
+    path_list = path_str.split(PATH_SEPARATOR)
+    file_path = [settings.PROJECT_FILES, *path_list]
+    file = Path(*file_path, file_name)
+    if not file.exists():
+        return None
+    return open(file, 'rb', encoding='utf-8')
 
 
 def get_full_dir_path(child_dir_obj, result):

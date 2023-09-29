@@ -28,8 +28,6 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         project = get_project_by_id(project_id)
         if not project:
             return JsonResponse(code=10078, msg='project not exists')
-        if project.get('status') == ModuleStatus.DELETED:
-            return JsonResponse(code=10078, msg='project not exists')
         dirs = SuiteDir.objects.filter(
             project_id=project_id,
             parent_dir=None,
@@ -55,8 +53,6 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         project = get_project_by_id(project_id)
         if not project:
             return JsonResponse(code=40078, msg='project not exist')
-        if project.get('status') == ModuleStatus.DELETED:
-            return JsonResponse(code=40078, msg='project not exist')
         parent_dir = SuiteDir.objects.filter(id=serializer.validated_data.get('parent_dir_id'))
         if not parent_dir.exists():
             return JsonResponse(code=40079, msg='parent dir not exist')
@@ -66,7 +62,6 @@ class SuiteDirViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
                 **serializer.validated_data,
                 category=parent_dir.category,
             )
-            self.perform_create(serializer)
         except IntegrityError:
             return JsonResponse(code=10071, msg='dir name already exist')
         dir_data = self.get_serializer(instance).data

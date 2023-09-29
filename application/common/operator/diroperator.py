@@ -143,7 +143,9 @@ class DirDeleteOperator(object):
         dir_obj.name = dir_obj.name + f'-{get_timestamp(6)}'
         dir_obj.update_by = self.update_by
         dir_obj.save()
-        child_dirs = dir_obj.children
+        child_dirs = SuiteDir.objects.filter(
+            parent_dir_id=dir_obj.id
+        )
         if not child_dirs:
             return
         for child_dir in child_dirs:
