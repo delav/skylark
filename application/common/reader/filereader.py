@@ -55,8 +55,8 @@ class ProjectFileReader(object):
             return {}
         file_info = self.file_data.get('file_info', {})
         file_info['mtime'] = self.file_data['update_time']
-        return self.file_data.get('file_info', {})
+        return file_info
 
     def name(self):
-        return self.file_data.get('file_name')
+        return self.file_data.get('file_name', '')
 

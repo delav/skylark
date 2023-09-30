@@ -47,3 +47,7 @@ def base64_decrypt(base64_str):
     input_bytes = base64.b64decode(base64_bytes)
     input_str = input_bytes.decode('utf-8')
     return input_str
+
+
+if __name__ == '__main__':
+    print(base64_encrypt('123!@#'))

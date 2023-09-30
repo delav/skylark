@@ -69,10 +69,13 @@ def get_file_download_info(suite_id, **kwargs):
         return {}
     instance = queryset.first()
     data = VirtualFileSerializers(instance).data
-    file_path = instance.file_path + PATH_SEPARATOR + instance.file_name
     data['file_info'] = {
         'url': settings.SERVER_DOMAIN + INTERNAL_DOWNLOAD_API,
-        'params': {'path': file_path}
+        'params': {
+            'path': instance.file_path,
+            'name': instance.file_name
+        },
+        'key': settings.INTERNAL_KEY
     }
     return data
 
@@ -83,7 +86,7 @@ def get_download_file_stream(path_str, file_name):
     file = Path(*file_path, file_name)
     if not file.exists():
         return None
-    return open(file, 'rb', encoding='utf-8')
+    return open(file, 'rb')
 
 
 def get_full_dir_path(child_dir_obj, result):

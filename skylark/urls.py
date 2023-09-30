@@ -40,7 +40,7 @@ from application.buildhistory.views import BuildHistoryViewSets
 from application.projectversion.views import ProjectVersionViewSets
 from application.tag.views import TagViewSets
 from application.casepriority.views import CasePriorityViewSets
-from application.virtualfile.views import VirtualFileViewSets, ProjectFileViewSets
+from application.virtualfile.views import VirtualFileViewSets, ProjectFileViewSets, InternalFileViewSets
 from application.notice.views import NoticeViewSets
 
 router = routers.SimpleRouter(trailing_slash=False)
@@ -77,4 +77,5 @@ urlpatterns = [
     path(r'api/user/login', NoAuthUserViewSets.as_view({'post': 'login'})),
     path(r'api/user/register', NoAuthUserViewSets.as_view({'post': 'register'})),
     path(r'api/user/reset', NoAuthUserViewSets.as_view({'post': 'reset'})),
+    path(r'api/internal/download_file', InternalFileViewSets.as_view({'post': 'download_file'}))
 ]

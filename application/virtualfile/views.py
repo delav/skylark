@@ -206,13 +206,14 @@ class ProjectFileViewSets(viewsets.GenericViewSet):
         file = Path(file_path, file_name)
         if not file.exists():
             return None
-        return open(file, 'rb', encoding='utf-8')
+        return open(file, 'rb')
 
 
 class InternalFileViewSets(viewsets.GenericViewSet):
 
     @action(methods=['post'], detail=False)
     def download_file(self, request, *args, **kwargs):
+        logger.info(f'接受slaver下载请求: {request.data}')
         auth = request.headers.get('auth')
         if auth != base64_encrypt(settings.INTERNAL_KEY):
             return HttpResponse('FORBIDDEN', status=403)
