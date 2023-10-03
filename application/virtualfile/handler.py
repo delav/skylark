@@ -23,8 +23,7 @@ def get_file_content(suite_id, **kwargs):
         return data
     elif instance.save_mode == FileSaveMode.FILE:
         data['file_text'] = ''
-        child_path_list = instance.file_path.split(PATH_SEPARATOR)
-        file_path = Path(settings.PROJECT_FILES, *child_path_list)
+        file_path = Path(settings.PROJECT_FILES, instance.file_path)
         file_name = instance.file_name
         file = Path(file_path, file_name)
         if not file.exists():
@@ -47,14 +46,12 @@ def update_file(suite_id, **kwargs):
     queryset.update(**kwargs)
     if kwargs.get('file_name') and file_obj.save_mode == FileSaveMode.FILE:
         file_name = kwargs.get('file_name')
-        child_path_list = file_obj.file_path.split(PATH_SEPARATOR)
-        file_path = [settings.PROJECT_FILES, *child_path_list]
+        file_path = [settings.PROJECT_FILES, file_obj.file_path]
         file = Path(*file_path, file_obj.file_name)
         if file.exists():
             file.rename(file.with_name(file_name))
     if kwargs.get('status') == ModuleStatus.DELETED and file_obj.save_mode == FileSaveMode.FILE:
-        child_path_list = file_obj.file_path.split(PATH_SEPARATOR)
-        file_path = [settings.PROJECT_FILES, *child_path_list]
+        file_path = [settings.PROJECT_FILES, file_obj.file_path]
         file = Path(*file_path, file_obj.file_name)
         if file.exists():
             file.unlink()
@@ -81,8 +78,7 @@ def get_file_download_info(suite_id, **kwargs):
 
 
 def get_download_file_stream(path_str, file_name):
-    path_list = path_str.split(PATH_SEPARATOR)
-    file_path = [settings.PROJECT_FILES, *path_list]
+    file_path = [settings.PROJECT_FILES, path_str]
     file = Path(*file_path, file_name)
     if not file.exists():
         return None

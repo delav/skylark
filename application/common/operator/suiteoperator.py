@@ -10,7 +10,7 @@ from application.setupteardown.models import SetupTeardown
 from application.variable.models import Variable
 from application.tag.models import Tag
 from application.virtualfile.models import VirtualFile
-from application.virtualfile.handler import PATH_SEPARATOR
+from application.virtualfile.handler import PATH_SEPARATOR, get_full_dir_path
 from application.common.operator.caseoperator import CaseCopyOperator
 
 
@@ -42,6 +42,7 @@ class SuiteCopyOperator(object):
         self.generate_new_name(suite_obj.name)
         new_suite = TestSuite.objects.create(
             name=self.suite_name,
+            project_id=self.project_id,
             document=suite_obj.document,
             category=suite_obj.category,
             create_by=self.create_by,
@@ -50,7 +51,7 @@ class SuiteCopyOperator(object):
             status=suite_obj.status
         )
         if suite_obj.category in (ModuleCategory.VARIABLE, ModuleCategory.FILE):
-            self._copy_virtual_file(suite_obj, new_suite)
+            self._copy_virtual_file(suite_obj, new_suite, suite_dir)
             return new_suite
         if suite_obj.category == ModuleCategory.TESTCASE:
             self._copy_fixture(suite_obj.id, new_suite.id)
@@ -111,25 +112,19 @@ class SuiteCopyOperator(object):
             new_tags.append(tag)
         Tag.objects.bulk_create(new_tags)
 
-    def _copy_virtual_file(self, old_suite, new_suite):
+    def _copy_virtual_file(self, old_suite, new_suite, new_suite_dir):
         file_obj = VirtualFile.objects.get(suite_id=old_suite.id)
         if file_obj.status == ModuleStatus.DELETED:
             return
-        project = Project.objects.get(id=self.project_id)
-        new_project_name = project.name
-        old_file_path = file_obj.file_path
-        old_file_path_list = old_file_path.split(PATH_SEPARATOR)
-        new_file_path_list = old_file_path_list[:]
-        new_file_path_list[0] = new_project_name
-        new_file_path = PATH_SEPARATOR.join(new_file_path_list)
+        new_file_path = PATH_SEPARATOR.join(get_full_dir_path(new_suite_dir, []))
         file_obj.id = None
         file_obj.suite_id = new_suite.id
         file_obj.file_path = new_file_path
         file_obj.save()
         if file_obj.save_mode == FileSaveMode.DB:
             return
-        old_file_full_path = Path(settings.PROJECT_FILES, *old_file_path_list)
-        new_file_full_path = Path(settings.PROJECT_FILES, *new_file_path_list)
+        old_file_full_path = Path(settings.PROJECT_FILES, file_obj.file_path)
+        new_file_full_path = Path(settings.PROJECT_FILES, new_file_path)
         old_file = old_file_full_path / file_obj.name
         if not old_file.exists():
             return

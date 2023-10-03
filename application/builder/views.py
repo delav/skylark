@@ -1,17 +1,17 @@
 from datetime import date, datetime
 from loguru import logger
+from pathlib import Path
 from django.conf import settings
+from django.http import FileResponse
 from django.core.cache import cache
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from infra.django.response import JsonResponse
 from infra.client.redisclient import RedisClient
 from infra.engine.dcsengine import DcsEngine
-from infra.utils.typetransform import id_str_to_set, join_id_to_str
-from application.constant import ModuleStatus
+from infra.utils.typetransform import join_id_to_str
 from application.common.access.projectaccess import has_project_permission
 from application.manager import get_project_by_id
-from application.project.models import Project
 from application.buildplan.models import BuildPlan
 from application.projectversion.models import ProjectVersion
 from application.buildrecord.models import BuildRecord
@@ -132,7 +132,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
         logger.info(f'create debug run: {request.data}')
         serializer = DebugBuildSerializers(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # debug mode don't save build data
+        # debug mode don't save any data to db,  and build data from params
         env_id = serializer.validated_data.get('env_id')
         env_name = serializer.validated_data.get('env_name')
         region_id = serializer.validated_data.get('region_id')
@@ -162,12 +162,14 @@ class BuilderViewSets(viewsets.GenericViewSet):
                 args=(project_name, env_name, region_name, task_id, str(batch_no), suites, sources, resources, files)
             )
         child_dir = date.today().strftime('%Y/%m/%d')
-        report_path = settings.REPORT_PATH.as_posix() + f'/{child_dir}/' + task_id
+        report_path = settings.REPORT_PATH.as_posix() + f'/{project_name}/{child_dir}/' + task_id
         build_result = {
             'build_id': task_id,
             'total_case': engine.get_case_count(),
-            'report_path': report_path
         }
+        log_redis_key = settings.DEBUG_RESULT_KEY_PREFIX + task_id
+        conn.hmset(log_redis_key, {'report_path': report_path})
+        conn.expire(log_redis_key, 3600)
         return JsonResponse(data=build_result)
 
     @action(methods=['post'], detail=False)
@@ -192,5 +194,21 @@ class BuilderViewSets(viewsets.GenericViewSet):
         # cases_result = cache.get_many(redis_keys)
         return JsonResponse(data=cases_result or [])
 
+    @action(methods=['get'], detail=False)
+    def log(self, request, *args, **kwargs):
+        build_id = request.query_params.get('id')
+        conn = RedisClient(settings.ROBOT_REDIS_URL).connector
+        log_redis_key = settings.DEBUG_RESULT_KEY_PREFIX + build_id
+        log_info = conn.hgetall(log_redis_key)
+        log_file_name = 'log.html'
+        file = Path(log_info.get('report_path', ''), log_file_name)
+        if not file.is_file():
+            return JsonResponse(code=40302, msg='report not found')
+        stream = open(file, 'rb')
+        response = FileResponse(stream)
+        response['Content-Type'] = "application/octet-stream"
+        response['Content-Disposition'] = f'attachment;filename={log_file_name}'
+        response['Access-Control-Expose-Headers'] = "Content-Disposition"
+        return response
 
 

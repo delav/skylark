@@ -26,9 +26,7 @@ class BuildHistoryViewSets(viewsets.GenericViewSet):
         else:
             file_name = 'report.html'
         history = BuildHistory.objects.get(id=history_id)
-        report_path = history.report_path or ''
-        file_path_list = report_path.split('/')
-        path = Path(*file_path_list, file_name)
+        path = Path(history.report_path, file_name)
         if not path.is_file():
             return JsonResponse(code=10501, msg='file not found')
         # with open(file_path, 'rb') as f:

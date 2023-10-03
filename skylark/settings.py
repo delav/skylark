@@ -163,6 +163,10 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'infra.django.permission.LoginAuth',
+
+    ),
     'DATETIME_FORMAT': '%Y-%m-%d %H:%M:%S',
     'EXCEPTION_HANDLER': 'infra.django.exception.exception_handler',
 }
@@ -256,6 +260,8 @@ REDIS_EXPIRE_TIME = 60*60*24*2
 ROBOT_REDIS_URL = f'redis://{REDIS.get("HOST")}:{REDIS.get("PORT")}/1'
 CASE_RESULT_KEY_PREFIX = 'robot:case:'
 TASK_RESULT_KEY_PREFIX = 'robot:task:'
+DEBUG_RESULT_KEY_PREFIX = 'robot:debug:'
+
 
 # Celery task
 CELERY_TASKS_PATH = (

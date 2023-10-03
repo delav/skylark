@@ -175,8 +175,7 @@ class ProjectFileViewSets(viewsets.GenericViewSet):
         if not file_query.exists():
             return JsonResponse(code=10307, msg='file not found')
         instance = file_query.first()
-        child_path_list = instance.file_path.split(PATH_SEPARATOR)
-        file_path = Path(settings.PROJECT_FILES, *child_path_list)
+        file_path = Path(settings.PROJECT_FILES, instance.file_path)
         file_name = instance.file_name
         file = None
         if instance.save_mode == FileSaveMode.FILE:

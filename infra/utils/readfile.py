@@ -1,6 +1,6 @@
 def txt_reader(file):
     with open(file, 'r', encoding='utf-8') as f:
-        return str(f.readlines())
+        return ''.join(f.readlines())
 
 
 def csv_reader(file):

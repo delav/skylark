@@ -57,12 +57,13 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         if not has_project_permission(project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         try:
-            test_suite = TestSuite.objects.filter(id=serializer.validated_data.get('test_suite_id'))
+            test_suite = TestSuite.objects.filter(
+                id=serializer.validated_data.get('test_suite_id'),
+                status=ModuleStatus.NORMAL
+            )
             if not test_suite.exists():
                 return JsonResponse(code=40308, msg='suite not exist')
             test_suite = test_suite.first()
-            if test_suite.status == ModuleStatus.DELETED:
-                return JsonResponse(code=40308, msg='suite not exist')
             if project_id != test_suite.project_id:
                 return JsonResponse(code=40309, msg='create data error')
             with transaction.atomic():
