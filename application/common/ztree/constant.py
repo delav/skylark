@@ -28,6 +28,7 @@ simple_node = {
     'pid': ROOT_ID,
     'name': '',
     'desc': None,
+    'extra': {}
 }
 
 

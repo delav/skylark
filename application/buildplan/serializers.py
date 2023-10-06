@@ -5,13 +5,17 @@ from infra.utils.typetransform import id_str_to_set, join_id_to_str
 
 
 class BuildPlanSerializers(serializers.ModelSerializer):
-    extra_data = serializers.JSONField(required=False, help_text='plan extra data')
     env_list = serializers.ListField(help_text='env id list')
     region_list = serializers.ListField(required=False, help_text='region id list')
+    case_list = serializers.ListField(help_text='plan case id list')
 
     class Meta:
         model = BuildPlan
-        exclude = ('periodic_task_id', )
+        fields = (
+            'id', 'title', 'total_case', 'create_at', 'update_at', 'create_by', 'update_by',
+            'periodic_expr', 'periodic_switch', 'env_list', 'region_list', 'case_list', 'project_id',
+            'branch', 'expect_pass', 'notice_open'
+        )
         read_only_fields = ('create_by', 'update_by', 'status')
 
     def validate(self, attrs):
@@ -26,6 +30,7 @@ class BuildPlanSerializers(serializers.ModelSerializer):
             instance.region_list = []
         else:
             instance.region_list = id_str_to_set(instance.regions, to_int=True)
+        instance.case_list = id_str_to_set(instance.build_cases, to_int=True)
         return super().to_representation(instance)
 
     def to_internal_value(self, data):
@@ -33,6 +38,7 @@ class BuildPlanSerializers(serializers.ModelSerializer):
         ret['envs'] = join_id_to_str(ret.pop('env_list'))
         if ret.get('region_list'):
             ret['regions'] = join_id_to_str(ret.pop('region_list'))
+        ret['build_cases'] = join_id_to_str(ret.pop('case_list'))
         request = self.context.get('request')
         if not request:
             return ret

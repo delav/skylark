@@ -36,6 +36,7 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
             if not has_project_permission(project_id, request.user):
                 return JsonResponse(code=40300, msg='403_FORBIDDEN')
             queryset = self.get_queryset().filter(
+                status=ModuleStatus.NORMAL,
                 project_id=project_id).order_by('-create_at')
         else:
             project_list = get_projects_by_uid(request.user.id)
@@ -73,8 +74,8 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
                 task_name,
                 settings.PERIODIC_TASK,
                 str(plan_id),
-                settings.PERIODIC_QUEUE,
-                settings.PERIODIC_ROUTING_KEY
+                settings.BUILDER_QUEUE,
+                settings.BUILDER_ROUTING_KEY
             )
             plan.periodic_task_id = periodic_task_id
             plan.save()

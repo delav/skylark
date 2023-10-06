@@ -34,8 +34,10 @@ class ModuleStatus:
 
 # build status
 class BuildStatus:
+    PENDING = -1
     RUNNING = 0
-    FINNISH = 1
+    SUCCESS = 1
+    FAILED = 2
 
 
 class KeywordCategory:

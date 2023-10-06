@@ -4,12 +4,24 @@ from rest_framework import viewsets
 from infra.django.response import JsonResponse
 from application.region.models import Region
 from application.region.serializers import RegionSerializers
+from application.manager import get_all_regions
 
 # Create your views here.
 
 
 class RegionViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.ListModelMixin,
                      mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = Region.objects.all()
+    serializer_class = RegionSerializers
+
+    def list(self, request, *args, **kwargs):
+        logger.info(f'get all regions')
+        region_list = get_all_regions()
+        return JsonResponse(data=region_list)
+
+
+class AdminRegionViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.ListModelMixin,
+                          mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Region.objects.all()
     serializer_class = RegionSerializers
 
@@ -33,8 +45,8 @@ class RegionViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.
         self.perform_update(serializer)
         return JsonResponse(serializer.data)
 
-    def retrieve(self, request, *args, **kwargs):
-        pass
-
     def destroy(self, request, *args, **kwargs):
-        pass
+        logger.info(f'delete region: {kwargs.get("pk")}')
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return JsonResponse(data=instance.id)

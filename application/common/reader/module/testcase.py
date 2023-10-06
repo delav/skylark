@@ -1,3 +1,4 @@
+from django.db.models import F
 from application.constant import ModuleStatus
 from application.testcase.models import TestCase
 from application.testcase.serializers import TestCaseSerializers
@@ -46,6 +47,8 @@ class CaseReader(object):
         case_queryset = TestCase.objects.filter(
             test_suite_id=suite_id,
             status=ModuleStatus.NORMAL
+        ).order_by(
+            F('order').asc(nulls_last=True)
         )
         return self._get_case_from_db(case_queryset)
 
@@ -53,6 +56,8 @@ class CaseReader(object):
         case_queryset = TestCase.objects.filter(
             id__in=case_ids,
             status=ModuleStatus.NORMAL
+        ).order_by(
+            F('order').asc(nulls_last=True)
         )
         return self._get_case_from_db(case_queryset)
 

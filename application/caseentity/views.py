@@ -30,7 +30,9 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
         test_case = case_query.first()
         if not has_project_permission(test_case.project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
-        entity_queryset = CaseEntity.objects.filter(test_case_id=case_id).order_by('order')
+        entity_queryset = CaseEntity.objects.filter(
+            test_case_id=case_id
+        ).order_by('order')
         ser = self.get_serializer(entity_queryset, many=True)
         return JsonResponse(data=ser.data)
 

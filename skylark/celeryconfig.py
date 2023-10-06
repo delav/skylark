@@ -17,17 +17,17 @@ task_queues = (
     Queue(settings.BUILDER_QUEUE, routing_key=settings.BUILDER_ROUTING_KEY),
  )
 task_routes = {
-    settings.NOTIFIER_TASK: {
-        'queue': settings.NOTIFIER_QUEUE, 'routing_key': settings.NOTIFIER_ROUTING_KEY
-    },
     settings.VERSION_TASK: {
-        'queue': settings.DEFAULT_QUEUE, 'routing_key': settings.DEFAULT_QUEUE
+        'queue': settings.DEFAULT_QUEUE, 'routing_key': settings.DEFAULT_ROUTING_KEY
     },
     settings.INSTANT_TASK: {
         'queue': settings.BUILDER_QUEUE, 'routing_key': settings.BUILDER_ROUTING_KEY
     },
     settings.PERIODIC_TASK: {
         'queue': settings.BUILDER_QUEUE, 'routing_key': settings.BUILDER_ROUTING_KEY
+    },
+    settings.NOTIFIER_TASK: {
+        'queue': settings.NOTIFIER_QUEUE, 'routing_key': settings.NOTIFIER_ROUTING_KEY
     },
     settings.REPORT_TASK: {
         'queue': settings.DEFAULT_QUEUE, 'routing_key': settings.DEFAULT_ROUTING_KEY

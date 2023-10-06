@@ -22,38 +22,64 @@ def robot_runner(project, env, region, task_id,
 
 
 @app.task
-def robot_notifier(task_id, project, env, region):
+def robot_notifier(task_id, project, env, region, notify_type):
     """
     received slaver notice task for execute test progressing
+    notify_type: start/end
     """
+    # debug mode operate, don't need to save anything
+    if not is_test_mode(task_id):
+        if notify_type == 'end':
+            debug_notify(task_id, project, env, region)
+        return
+    # test mode operate, will save result info to db
+    if notify_type == 'start':
+        task_start_notify(task_id)
+    if notify_type == 'end':
+        task_end_notify(task_id, project, env, region)
+
+
+def debug_notify(task_id, project, env, region):
     conn = RedisClient(settings.ROBOT_REDIS_URL).connector
     task_redis_key = settings.TASK_RESULT_KEY_PREFIX + task_id
     current_result = conn.hgetall(task_redis_key)
-    # current_result = cache.hgetall(task_redis_key)
-    output_list = []
-    # debug mode operate, don't need to save anything
-    if not is_test_mode(task_id):
-        batch = current_result.pop('batch')
-        # test task not finish complete(maybe have multiple batches)
-        if len(current_result) != int(batch):
-            return
-        project_report_dir = settings.REPORT_PATH / project
-        output_path = make_path(project_report_dir, task_id)
-        # fetch output content by batch no
-        for batch_no in range(1, int(batch)+1):
-            batch_output_redis_key = task_redis_key + f':output_{batch_no}'
-            output_ctx = conn.get(batch_output_redis_key)
-            output_list.append(output_ctx.encode())
-        title = f'{env}-{region}-{project}' if region else f'{env}-{project}'
-        rebot(
-            *output_list,
-            logtitle=title + ' Log',
-            reporttitle=title + ' Report',
-            outputdir=output_path,
-            prerebotmodifier=RobotModifier(LIB_NAME_MAP)
-        )
+    batch = current_result.pop('batch')
+    # test task not finish complete(maybe have multiple batches)
+    if len(current_result) != int(batch):
         return
-    # test mode operate, will save result info to db
+    project_report_dir = settings.REPORT_PATH / project
+    output_path = make_path(project_report_dir, task_id)
+    # fetch output content by batch no
+    output_list = []
+    for batch_no in range(1, int(batch) + 1):
+        batch_output_redis_key = task_redis_key + f':output_{batch_no}'
+        output_ctx = conn.get(batch_output_redis_key)
+        output_list.append(output_ctx.encode())
+    title = f'{env}-{region}-{project}' if region else f'{env}-{project}'
+    rebot(
+        *output_list,
+        logtitle=title + ' Log',
+        reporttitle=title + ' Report',
+        outputdir=output_path,
+        prerebotmodifier=RobotModifier(LIB_NAME_MAP)
+    )
+
+
+def task_start_notify(task_id):
+    history_id = convert_test_task_id(task_id)
+    queryset = BuildHistory.objects.filter(id=history_id)
+    instance = queryset.first()
+    if instance.status != BuildStatus.PENDING:
+        return
+    queryset.update(
+        status=BuildStatus.RUNNING
+    )
+
+
+def task_end_notify(task_id, project, env, region):
+    conn = RedisClient(settings.ROBOT_REDIS_URL).connector
+    task_redis_key = settings.TASK_RESULT_KEY_PREFIX + task_id
+    current_result = conn.hgetall(task_redis_key)
     history_id = convert_test_task_id(task_id)
     queryset = BuildHistory.objects.filter(id=history_id)
     instance = queryset.first()
@@ -78,6 +104,7 @@ def robot_notifier(task_id, project, env, region):
         del build_result['end_time']
         queryset.update(**build_result)
         return
+    # task finish
     for batch_no in range(1, int(batch) + 1):
         batch_output_redis_key = task_redis_key + f':output_{batch_no}'
         output_ctx = conn.get(batch_output_redis_key)
@@ -92,7 +119,7 @@ def robot_notifier(task_id, project, env, region):
         outputdir=output_path,
         prerebotmodifier=RobotModifier(LIB_NAME_MAP)
     )
-    build_result['status'] = BuildStatus.FINNISH
+    build_result['status'] = BuildStatus.SUCCESS
     build_result['report_path'] = output_path
     build_result['end_time'] = datetime.fromtimestamp(build_result['end_time'])
     # build_result['report_content'] = str(output_list)
@@ -109,11 +136,12 @@ def robot_notifier(task_id, project, env, region):
         item['history_id'] = history_id
         case_detail_list.append(HistoryDetail(**item))
     HistoryDetail.objects.bulk_create(case_detail_list)
-    history_queryset = BuildHistory.objects.filter(
+    # query all related task(history)
+    task_status = BuildHistory.objects.filter(
         record_id=instance.record_id
-    )
-    # status=-1, is running, wait all finish
-    if any(item.status == -1 for item in history_queryset):
+    ).values('status')
+    # wait all task finish
+    if any(item['status'] not in (BuildStatus.FAILED, BuildStatus.SUCCESS) for item in task_status):
         return
     record = BuildRecord.objects.get(id=instance.record_id)
     record.status = 1
@@ -125,6 +153,3 @@ def robot_notifier(task_id, project, env, region):
         routing_key=settings.DEFAULT_ROUTING_KEY,
         args=(history_id,)
     )
-
-
-

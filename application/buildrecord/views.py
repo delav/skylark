@@ -3,10 +3,7 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from infra.django.response import JsonResponse
 from infra.django.pagination.paginator import PagePagination
-from application.constant import ModuleStatus
 from application.manager import get_projects_by_uid
-from application.projectpermission.models import ProjectPermission
-from application.project.models import Project
 from application.buildrecord.models import BuildRecord
 from application.buildrecord.serializers import BuildRecordSerializers
 from application.buildhistory.models import BuildHistory
@@ -25,7 +22,7 @@ class BuildRecordViewSets(mixins.RetrieveModelMixin, mixins.ListModelMixin, view
         logger.info(f'get record by param: {request.query_params}')
         project_id = request.query_params.get('project_id')
         if project_id:
-            if not project_id.isdigit():
+            if not project_id.isdigit() or project_id == '0':
                 return JsonResponse(code=40309, msg='Param error')
             if not has_project_permission(project_id, request.user):
                 return JsonResponse(code=40300, msg='403_FORBIDDEN')

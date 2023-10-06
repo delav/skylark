@@ -132,5 +132,4 @@ class DBSuiteReader(object):
         return variable_list
 
     def _get_testcase_list(self):
-        cases = CaseReader().get_by_suite_id(self.suite_id)
-        return cases
+        return CaseReader().get_by_suite_id(self.suite_id)

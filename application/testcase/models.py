@@ -28,4 +28,4 @@ class TestCase(models.Model):
         verbose_name = 'test case'
         verbose_name_plural = verbose_name
         db_table = 'test_case'
-        unique_together = ['name', 'test_suite']
+        unique_together = ('name', 'test_suite')

@@ -1,5 +1,6 @@
 import uuid
 from django.db.models import F
+from infra.constant.constants import TAG_KEY
 from application.constant import *
 from application.project.models import Project
 from application.suitedir.models import SuiteDir
@@ -109,7 +110,6 @@ def generate_version_data(project_id, root_id=0):
 
         suites = TestSuite.objects.filter(
             suite_dir_id=item['id'],
-            category=ModuleCategory.TESTCASE,
             status=ModuleStatus.NORMAL
         ).values('id', 'name', 'category', 'suite_dir_id', 'timeout')
         if 'children' not in dir_data:
@@ -136,11 +136,10 @@ def _get_suite_tree(parent_node_id, suite_queryset, tree_nodes):
         suite_data['type'] = NODE_DESC['suite']
         case_queryset = TestCase.objects.filter(
             test_suite_id=suite_data['id'],
-            category=ModuleCategory.TESTCASE,
             status=ModuleStatus.NORMAL
         ).order_by(
             F('order').asc(nulls_last=True)
-        ).values('id', 'name', 'category', 'test_suite_id', 'inputs', 'outputs', 'timeout')
+        ).values('id', 'name', 'category', 'test_suite_id', 'inputs', 'outputs', 'timeout', 'priority_id')
         # ztree node
         suite_node_id = str(uuid.uuid1())
         simple_suite_node = fill_simple_node(
@@ -161,13 +160,20 @@ def _get_suite_tree(parent_node_id, suite_queryset, tree_nodes):
                 include_entity=True
             )
             case_data['type'] = NODE_DESC['case']
+            tag_list = case_data['extra_data'].pop(TAG_KEY)
             # ztree node
+            node_extra_data = {
+                'tag': [item.get('name') for item in tag_list],
+                'pri': case_data.pop('priority_id')
+            }
             simple_case_node = fill_simple_node(
                 mid=case_data['id'],
                 id=str(uuid.uuid1()),
                 pid=suite_node_id,
                 name=case_data['name'],
-                desc=NODE_DESC['case']
+                desc=NODE_DESC['case'],
+                extra=node_extra_data
+
             )
             tree_nodes.append(simple_case_node)
 

@@ -12,7 +12,7 @@ def get_all_envs():
     env_query = Environment.objects.filter(
         status=ModuleStatus.NORMAL
     )
-    return EnvironmentSerializers(env_query, many=True)
+    return EnvironmentSerializers(env_query, many=True).data
 
 
 def get_all_regions():

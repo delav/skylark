@@ -102,14 +102,13 @@ class BuilderViewSets(viewsets.GenericViewSet):
         )
         run_data = version.run_data
         common_sources = version.sources
-        build_cases = set(serializer.validated_data.get('case_list'))
-        user = request.user
-        buidl_desc = f'QUICK_BUILD-@{user.username}-{datetime.now().timestamp()}'
+        build_cases = join_id_to_str(serializer.validated_data.get('case_list'))
+        buidl_desc = f'QuickBuild-@{project_name}'
         env_ids_str = join_id_to_str(env_list)
         region_ids_str = join_id_to_str(region_list)
         record = BuildRecord.objects.create(
             desc=buidl_desc,
-            create_by=user.email,
+            create_by=request.user.email,
             project_id=project_id,
             branch=branch,
             envs=env_ids_str,
@@ -141,7 +140,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
         project_name = serializer.validated_data.get('project_name')
         run_data = serializer.validated_data.get('run_data')
         common_struct, structure_list = JsonParser(project_id, project_name, env_id, region_id).parse(run_data)
-        engine = DcsEngine(distributed=settings.DISTRIBUTED_BUILD, limit=settings.WORKER_MAX_CASE_LIMIT)
+        engine = DcsEngine(distributed=False, limit=settings.WORKER_MAX_CASE_LIMIT)
         engine.init_common_data(common_struct)
         engine.visit(structure_list)
         batch_data = engine.get_batch_data()

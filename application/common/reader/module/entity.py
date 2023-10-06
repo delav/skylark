@@ -2,7 +2,6 @@ from infra.constant.constants import ENTITY_NAME_KEY, ENTITY_PARAMS_KEY, ENTITY_
 from application.constant import KeywordType
 from application.common.reader.module.keyword import LibKeywordManager, UserKeywordManager
 from application.caseentity.models import CaseEntity
-from application.caseentity.serializers import CaseEntitySerializers
 
 
 class EntityReader(object):
@@ -36,7 +35,12 @@ class EntityReader(object):
             test_case_id=case_id
         ).order_by('order')
         for item in entity_queryset.iterator():
-            ser_entity = CaseEntitySerializers(item).data
+            ser_entity = {
+                'keyword_id': item.keyword_id,
+                'keyword_type': item.keyword_type,
+                'input_args': item.input_args,
+                'output_args': item.output_args
+            }
             entity_list.append(self.format_entity(ser_entity))
         return entity_list
 

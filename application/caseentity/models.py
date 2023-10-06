@@ -20,5 +20,5 @@ class CaseEntity(models.Model):
         verbose_name = 'case entity'
         verbose_name_plural = verbose_name
         db_table = 'case_entity'
-        unique_together = ['test_case', 'order']
+        unique_together = ('test_case', 'order')
 

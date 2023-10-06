@@ -4,12 +4,23 @@ from rest_framework import viewsets
 from infra.django.response import JsonResponse
 from application.environment.models import Environment
 from application.environment.serializers import EnvironmentSerializers
+from application.manager import get_all_envs
 
 # Create your views here.
 
 
-class EnvironmentViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.ListModelMixin,
-                          mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class EnvironmentViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
+    queryset = Environment.objects.all()
+    serializer_class = EnvironmentSerializers
+
+    def list(self, request, *args, **kwargs):
+        logger.info(f'get all environments')
+        environment_list = get_all_envs()
+        return JsonResponse(data=environment_list)
+
+
+class AdminEnvironmentViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
+                               mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Environment.objects.all()
     serializer_class = EnvironmentSerializers
 
@@ -34,8 +45,8 @@ class EnvironmentViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mi
         self.perform_update(serializer)
         return JsonResponse(serializer.data)
 
-    def retrieve(self, request, *args, **kwargs):
-        pass
-
     def destroy(self, request, *args, **kwargs):
-        pass
+        logger.info(f'delete environment: {kwargs.get("pk")}')
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return JsonResponse(data=instance.id)

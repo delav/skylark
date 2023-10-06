@@ -6,12 +6,11 @@ from application.variable.serializers import VariableSerializers
 from application.tag.models import Tag
 from application.tag.serializers import TagSerializers
 from application.caseentity.models import CaseEntity
-from application.caseentity.serializers import CaseEntitySerializers
 from infra.constant.constants import VARIABLE_KEY, FIXTURE_KEY, TAG_KEY, ENTITY_KEY
 
 
-def get_model_extra_data(module_id, module_type, include_entity=False):
-    variable_list, fixture, tag = [], {}, []
+def get_model_extra_data(module_id, module_type):
+    variable_list, fixture_dict, tag_list = [], {}, []
     if module_type != ModuleType.CASE:
         variable_queryset = Variable.objects.filter(
             module_id=module_id,
@@ -24,27 +23,23 @@ def get_model_extra_data(module_id, module_type, include_entity=False):
             module_type=module_type
         )
         if setup_teardown.exists():
-            fixture = SetupTeardownSerializers(setup_teardown.first()).data
+            fixture_dict = SetupTeardownSerializers(setup_teardown.first()).data
     tag_queryset = Tag.objects.filter(
         module_id=module_id,
         module_type=module_type
     )
     if tag_queryset.exists():
-        tag = TagSerializers(tag_queryset, many=True).data
+        tag_list = TagSerializers(tag_queryset, many=True).data
     extra_data_result = {
         VARIABLE_KEY: variable_list,
-        FIXTURE_KEY: fixture,
-        TAG_KEY: tag
+        FIXTURE_KEY: fixture_dict,
+        TAG_KEY: tag_list
     }
-    if include_entity:
-        entity_queryset = CaseEntity.objects.filter(test_case_id=module_id).order_by('order')
-        entities = CaseEntitySerializers(entity_queryset, many=True)
-        extra_data_result.update({ENTITY_KEY: entities.data})
     return extra_data_result
 
 
 def get_model_simple_extra_data(module_id, module_type, include_entity=False):
-    variable_list, fixture, tag = [], {}, []
+    variable_list, fixture_dict, tag_list = [], {}, []
     variable_simple_fields = (
         'name', 'value'
     )
@@ -73,13 +68,13 @@ def get_model_simple_extra_data(module_id, module_type, include_entity=False):
         module_type=module_type
     ).values(*tag_simple_fields)
     if setup_teardown.exists():
-        fixture = setup_teardown.first()
+        fixture_dict = setup_teardown.first()
     if tag_queryset.exists():
-        tag = list(tag_queryset)
+        tag_list = list(tag_queryset)
     extra_data_result = {
         VARIABLE_KEY: variable_list,
-        FIXTURE_KEY: fixture,
-        TAG_KEY: tag
+        FIXTURE_KEY: fixture_dict,
+        TAG_KEY: tag_list
     }
     if include_entity:
         entity_queryset = CaseEntity.objects.filter(
