@@ -8,14 +8,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
-class UserAdminSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = ('id', 'email', 'username', 'is_superuser', 'is_staff', 'is_active', 'date_joined', 'group_id')
-
-
-class UserSerializer(TokenObtainPairSerializer, serializers.ModelSerializer):
+class LoginSerializer(TokenObtainPairSerializer, serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True, help_text='password')
     email = serializers.EmailField(read_only=True, help_text='user email')
@@ -103,3 +96,17 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise ValidationException(detail='Please check your password', code=10035)
         del attrs['confirm_password']
         return attrs
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username', 'date_joined')
+
+
+class UserAdminSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username', 'is_superuser', 'is_staff', 'is_active', 'date_joined', 'group_id')

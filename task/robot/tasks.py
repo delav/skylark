@@ -60,6 +60,7 @@ def debug_notify(task_id, project, env, region):
         *output_list,
         logtitle=title + ' Log',
         reporttitle=title + ' Report',
+        loglevel='DEBUG',
         outputdir=output_path,
         prerebotmodifier=RobotModifier(LIB_NAME_MAP)
     )

@@ -1,6 +1,7 @@
 from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
+from django.contrib.auth.models import Group
 from infra.django.response import JsonResponse
 from application.keywordgroup.models import KeywordGroup
 from application.keywordgroup.serializers import KeywordGroupSerializers
@@ -8,14 +9,17 @@ from application.keywordgroup.serializers import KeywordGroupSerializers
 # Create your views here.
 
 
-class KeywordGroupViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.ListModelMixin,
+class KeywordGroupViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
                            mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = KeywordGroup.objects.all()
     serializer_class = KeywordGroupSerializers
 
     def list(self, request, *args, **kwargs):
-        logger.info(f'get all keyword group')
-        queryset = self.get_queryset()
+        logger.info('get request user keyword group')
+        user_group = Group.objects.get(user=request.user)
+        queryset = KeywordGroup.objects.filter(
+            user_group_id=user_group.id
+        )
         serializer = self.get_serializer(queryset, many=True)
         return JsonResponse(data=serializer.data)
 
@@ -34,8 +38,8 @@ class KeywordGroupViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, m
         self.perform_update(serializer)
         return JsonResponse(serializer.data)
 
-    def retrieve(self, request, *args, **kwargs):
-        pass
-
     def destroy(self, request, *args, **kwargs):
-        pass
+        logger.info(f'delete keyword group: {kwargs.get("pk")}')
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return JsonResponse(data=instance.id)

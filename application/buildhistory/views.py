@@ -28,10 +28,10 @@ class BuildHistoryViewSets(viewsets.GenericViewSet):
         history = BuildHistory.objects.get(id=history_id)
         path = Path(history.report_path, file_name)
         if not path.is_file():
-            return JsonResponse(code=10501, msg='file not found')
+            return JsonResponse(code=10501, msg='report expired')
         # with open(file_path, 'rb') as f:
         #     file = f.read()
-        file = open(path, 'rb', encoding='utf-8')
+        file = open(path, 'rb')
         response = FileResponse(file)
         response['Content-Type'] = "application/octet-stream"
         response['Content-Disposition'] = f'attachment;filename={urlquote(file_name)}'

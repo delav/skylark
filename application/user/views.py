@@ -6,10 +6,11 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 from infra.django.response import JsonResponse
-from application.user.models import User
-from application.user.serializers import UserSerializer, RegisterSerializer, UserAdminSerializer
-from application.usergroup.models import UserGroup
 from infra.django.pagination.paginator import PagePagination
+from application.manager import get_all_user
+from application.user.models import User
+from application.user.serializers import LoginSerializer, RegisterSerializer, UserSerializer, UserAdminSerializer
+from application.usergroup.models import UserGroup
 
 # Create your views here.
 
@@ -18,7 +19,7 @@ class NoAuthUserViewSets(viewsets.GenericViewSet):
 
     @action(methods=['post'], detail=False)
     def login(self, request, *args, **kwargs):
-        serializer = UserSerializer(data=request.data)
+        serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data.pop('user')
         user.last_login = datetime.now()
@@ -44,9 +45,15 @@ class NoAuthUserViewSets(viewsets.GenericViewSet):
         return JsonResponse()
 
 
-class NormalUserViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
+class NormalUserViewSets(mixins.ListModelMixin, mixins.RetrieveModelMixin,
+                         mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def list(self, request, *args, **kwargs):
+        logger.info('get all user')
+        user_list = get_all_user()
+        return JsonResponse(user_list)
 
     def retrieve(self, request, *args, **kwargs):
         logger.info('get current user info')

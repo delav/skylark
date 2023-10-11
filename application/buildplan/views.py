@@ -124,12 +124,11 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
         logger.info(f'get instantly build plan')
         limit = request.query_params.get('limit')
         periodic_list = get_periodic_list(enabled=True)
-        sort_periodics = sorted(periodic_list, key=lambda o: o['to_next'], reverse=False)
         plan_id_list = []
         periodic_dict = {}
-        min_length = min(len(sort_periodics), int(limit))
+        min_length = min(len(periodic_list), int(limit))
         for i in range(min_length):
-            periodic = sort_periodics[i]
+            periodic = periodic_list[i]
             plan_id = convert_task_name(periodic.get('name'))
             plan_id_list.append(plan_id)
             periodic_dict[plan_id] = periodic
@@ -142,7 +141,8 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
             data = self.get_serializer(item).data
             data['periodic'] = periodic_dict[item.id]
             result.append(data)
-        return JsonResponse(data=result)
+        sort_result = sorted(result, key=lambda o: o['periodic']['to_next'], reverse=False)
+        return JsonResponse(data=sort_result)
 
 
 

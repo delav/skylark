@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'django_celery_beat',
+    'application.systemext.apps.SystemExtConfig',
     'application.user.apps.UserConfig',
     'application.usergroup.apps.UserGroupConfig',
     'application.department.apps.DepartmentConfig',

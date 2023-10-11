@@ -22,7 +22,7 @@ class BuildRecordViewSets(mixins.RetrieveModelMixin, mixins.ListModelMixin, view
         logger.info(f'get record by param: {request.query_params}')
         project_id = request.query_params.get('project_id')
         if project_id:
-            if not project_id.isdigit() or project_id == '0':
+            if not project_id.isdigit():
                 return JsonResponse(code=40309, msg='Param error')
             if not has_project_permission(project_id, request.user):
                 return JsonResponse(code=40300, msg='403_FORBIDDEN')
@@ -33,6 +33,9 @@ class BuildRecordViewSets(mixins.RetrieveModelMixin, mixins.ListModelMixin, view
             project_ids = [item.get('id') for item in project_list]
             queryset = self.get_queryset().filter(
                 project_id__in=project_ids).order_by('-create_at')
+        create_by = request.query_params.get('create_by')
+        if create_by:
+            queryset = queryset.filter(create_by=create_by)
         pg_queryset = self.paginate_queryset(queryset)
         record_list = self.get_serializer(pg_queryset, many=True).data
         result = {'data': record_list, 'total': queryset.count()}

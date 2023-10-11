@@ -10,21 +10,38 @@ from application.keywordgroup.serializers import KeywordGroupSerializers
 from application.libkeyword.models import LibKeyword
 from application.libkeyword.serializers import LibKeywordSerializers
 from application.common.keyword.formatter import format_keyword_data
+from application.manager import get_project_by_id
 
 # Create your views here.
 
 
-class LibKeywordViewSets(viewsets.GenericViewSet):
+class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
+                         mixins.DestroyModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+    queryset = LibKeyword.objects.all()
+    serializer_class = LibKeywordSerializers
 
-    @action(methods=['post'], detail=False)
-    def get_keyword_list(self, request, *args, **kwargs):
-        logger.info('get lib keywords by project')
-        project_id = request.data.get('project_id')
+    def list(self, request, *args, **kwargs):
+        logger.info(f'get lib keywords by project: {request.query_params}')
+        project_id = request.query_params.get('project')
+        project = get_project_by_id(project_id)
+        if not project:
+            return JsonResponse(data=[])
+        user_group_id = project.get('group_id')
+        # lib's keyword group
         group_queryset = KeywordGroup.objects.filter(
             group_type=KeywordGroupType.LIB
-        ) | KeywordGroup.objects.filter(
+        )
+        # team's keyword group
+        user_group_queryset = KeywordGroup.objects.filter(
+            project_id=None,
+            user_group_id=user_group_id,
+        )
+        group_queryset |= user_group_queryset
+        # project's keyword group
+        project_group_queryset = KeywordGroup.objects.filter(
             project_id=project_id
         )
+        group_queryset |= project_group_queryset
         group_map = {}
         group_id_list = []
         for group in group_queryset.iterator():
@@ -46,6 +63,15 @@ class LibKeywordViewSets(viewsets.GenericViewSet):
                 continue
             group_map[item.group_id]['keywords'].append(keyword_data)
         return JsonResponse(data=group_map.values())
+
+    @action(methods=['get'], detail=False)
+    def get_list_by_group(self, request, *args, **kwargs):
+        group_id = request.query_params.get('group')
+        queryset = LibKeyword.objects.filter(
+            group_id=group_id
+        )
+        serializer = self.get_serializer(queryset, many=True)
+        return JsonResponse(data=serializer.data)
 
 
 class AdminKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,

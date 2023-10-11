@@ -6,6 +6,8 @@ from application.region.serializers import RegionSerializers
 from application.project.models import Project
 from application.project.serializers import ProjectSerializers
 from application.projectpermission.models import ProjectPermission
+from application.user.models import User
+from application.user.serializers import UserSerializer
 
 
 def get_all_envs():
@@ -55,6 +57,11 @@ def get_permission_project_by_uid(user_id):
         user_id=user_id,
     )
     return [item.project_id for item in permission_project]
+
+
+def get_all_user():
+    user_query = User.objects.all()
+    return UserSerializer(user_query, many=True).data
 
 
 def get_user_info_by_uid(user_id):
