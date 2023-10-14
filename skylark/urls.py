@@ -42,6 +42,7 @@ from application.tag.views import TagViewSets
 from application.casepriority.views import CasePriorityViewSets
 from application.virtualfile.views import VirtualFileViewSets, ProjectFileViewSets, InternalFileViewSets
 from application.notice.views import NoticeViewSets
+from application.projectpermission.views import ProjectPermissionViewSets
 
 router = routers.SimpleRouter(trailing_slash=False)
 router.register('user/info', NormalUserViewSets, basename='user_info')
@@ -68,6 +69,7 @@ router.register('builder', BuilderViewSets, basename='builder')
 router.register('file/virtual_file', VirtualFileViewSets, basename='virtual_file')
 router.register('file/project_file', ProjectFileViewSets, basename='project_file')
 router.register('notice', NoticeViewSets, basename='notice')
+router.register('permission_project', ProjectPermissionViewSets, basename='permission_project')
 
 
 urlpatterns = [

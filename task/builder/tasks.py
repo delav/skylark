@@ -10,7 +10,7 @@ from application.buildrecord.models import BuildRecord
 from application.projectversion.models import ProjectVersion
 from application.buildhistory.models import BuildHistory
 from application.common.parser.jsonparser import JsonParser
-from application.manager import get_all_envs, get_all_regions
+from application.manager import get_env_list, get_region_list
 from application.builder.handler import generate_test_task_id
 from skylark.celeryapp import app
 
@@ -76,8 +76,8 @@ def instant_builder(record_id, project_id, project_name,
 
 def _create_task(record_id, project_id, project_name,
                  env_id_list, region_id_list, run_data, common_sources, build_cases):
-    env_map = {item.get('id'): item.get('name') for item in get_all_envs()}
-    region_map = {item.get('id'): item.get('name') for item in get_all_regions()}
+    env_map = {item.get('id'): item.get('name') for item in get_env_list()}
+    region_map = {item.get('id'): item.get('name') for item in get_region_list()}
     for env_id in env_id_list:
         env_name = env_map.get(env_id)
         if not env_name:

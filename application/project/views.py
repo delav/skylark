@@ -7,8 +7,8 @@ from rest_framework.decorators import action
 from infra.django.pagination.paginator import PagePagination
 from infra.django.response import JsonResponse
 from application.constant import ModuleStatus
+from application.manager import get_department_list, get_user_group_list
 from application.usergroup.models import UserGroup
-from application.department.models import Department
 from application.project.models import Project
 from application.projectpermission.models import ProjectPermission
 from application.project.serializers import ProjectSerializers
@@ -94,7 +94,11 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
             return JsonResponse(code=10088, msg='project not exist')
         if not has_project_permission(instance.id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
-        serializer = self.get_serializer(instance, data=request.data)
+        update_data = request.data
+        # only allowed update personal project to group project
+        if 'personal' in update_data:
+            update_data['personal'] = False
+        serializer = self.get_serializer(instance, data=update_data)
         serializer.is_valid(raise_exception=True)
         new_personal = serializer.validated_data.get('personal')
         with transaction.atomic():
@@ -116,20 +120,16 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
     @action(methods=['get'], detail=False)
     def tree(self, request, *args, **kwargs):
         logger.info(f'get project tree')
-        department_queryset = Department.objects.all()
         department_map = {}
-        for item in department_queryset:
-            item_dict = {
-                'id': item.id, 'name': item.name, 'leaf': False
-            }
-            department_map[item.id] = item_dict
-        group_queryset = UserGroup.objects.select_related('group').all()
+        for item in get_department_list():
+            # add leaf field for el-tree
+            item['leaf'] = False
+            department_map[item['id']] = item
         group_map = {}
-        for item in group_queryset:
-            item_dict = {
-                'id': item.group.id, 'name': item.group.name, 'department_id': item.department_id, 'leaf': False
-            }
-            group_map[item.group.id] = item_dict
+        for item in get_user_group_list():
+            # add leaf field for el-tree
+            item['leaf'] = False
+            group_map[item['id']] = item
         common_project_queryset = Project.objects.filter(
             status=ModuleStatus.NORMAL,
             personal=False

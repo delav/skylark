@@ -22,7 +22,7 @@ class BuildPlan(models.Model):
     branch = models.CharField(max_length=255, help_text='project branch')
     expect_pass = models.FloatField(default=100, help_text='expected pass rate')
     notice_open = models.BooleanField(default=False, help_text='notice switch for plan')
-    status = models.IntegerField(default=0, help_text='plan status')
+    status = models.IntegerField(default=0, help_text='module status')
 
     class Meta:
         verbose_name = 'build plan'

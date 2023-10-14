@@ -35,25 +35,9 @@ SECRET_KEY = 'django-insecure-h--jee4sh9uvpfsd5(3shn44e&fhcog9@lro82%2@7dcq_eaqy
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# cors setting
-# ALLOWED_HOSTS = ['*']
-
-CORS_ORIGIN_WHITELIST = (
-    'http://127.0.0.1:8091',
-)
-
-CORS_ALLOW_METHODS = (
-    'GET',
-    'POST',
-    'PATCH',
-    'OPTIONS',
-    'PUT',
-    'DELETE',
-    'VIEW',
-)
+# AUTH_USER_MODEL = 'application.user.User'
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -179,10 +163,24 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'id',
 }
 
+# cors setting
 CORS_ORIGIN_ALLOW_ALL = True
 # CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = (
     '*',
+)
+# ALLOWED_HOSTS = ['*']
+CORS_ORIGIN_WHITELIST = (
+    'http://127.0.0.1:8091',
+)
+CORS_ALLOW_METHODS = (
+    'GET',
+    'POST',
+    'PATCH',
+    'OPTIONS',
+    'PUT',
+    'DELETE',
+    'VIEW',
 )
 
 # server url

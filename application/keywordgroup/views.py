@@ -1,8 +1,9 @@
 from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
-from django.contrib.auth.models import Group
 from infra.django.response import JsonResponse
+from application.usergroup.models import UserGroup
+from application.department.models import Department
 from application.keywordgroup.models import KeywordGroup
 from application.keywordgroup.serializers import KeywordGroupSerializers
 
@@ -16,12 +17,23 @@ class KeywordGroupViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
 
     def list(self, request, *args, **kwargs):
         logger.info('get request user keyword group')
-        user_group = Group.objects.get(user=request.user)
+        user_group_query = UserGroup.objects.filter(
+            group__user=request.user
+        ).select_related('group')
+        if not user_group_query.exists():
+            return JsonResponse(code=10801, msg='Not found user group')
+        user_group = user_group_query.first()
+        department = Department.objects.get(id=user_group.department_id)
         queryset = KeywordGroup.objects.filter(
-            user_group_id=user_group.id
+            user_group_id=user_group.group.id
         )
         serializer = self.get_serializer(queryset, many=True)
-        return JsonResponse(data=serializer.data)
+        result = {
+            'department': department.name,
+            'group': user_group.group.name,
+            'keyword_groups': serializer.data
+        }
+        return JsonResponse(data=result)
 
     def create(self, request, *args, **kwargs):
         logger.info(f'create keyword group: {request.data}')

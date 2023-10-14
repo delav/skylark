@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 from infra.django.response import JsonResponse
 from infra.django.pagination.paginator import PagePagination
-from application.manager import get_all_user
+from application.manager import get_user_list
 from application.user.models import User
 from application.user.serializers import LoginSerializer, RegisterSerializer, UserSerializer, UserAdminSerializer
 from application.usergroup.models import UserGroup
@@ -52,7 +52,7 @@ class NormalUserViewSets(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
     def list(self, request, *args, **kwargs):
         logger.info('get all user')
-        user_list = get_all_user()
+        user_list = get_user_list()
         return JsonResponse(user_list)
 
     def retrieve(self, request, *args, **kwargs):

@@ -29,15 +29,17 @@ class ModuleStatus:
     NORMAL = 0
     DISCARDED = 1
     DELETED = 2
-    DISABLED = 4
+    DISABLED = 3
+    READY = 9
 
 
 # build status
 class BuildStatus:
     PENDING = -1
     RUNNING = 0
-    SUCCESS = 1
-    FAILED = 2
+    FINISH = 1
+    SUCCESS = 2
+    FAILED = 3
 
 
 class KeywordCategory:
@@ -70,7 +72,7 @@ class FileSaveMode:
     FILE = 2
 
 
-class NoticeSwitch:
+class NoticeMode:
     WECOM = 1
     DING_TALK = 2
     lARK = 3

@@ -4,12 +4,12 @@ from rest_framework import mixins
 from infra.django.response import JsonResponse
 from application.notice.models import Notice
 from application.notice.serializers import NoticeSerializers
+from application.common.access.projectaccess import has_project_permission
 
 
 # Create your views here.
 
-class NoticeViewSets(mixins.CreateModelMixin,
-                     mixins.UpdateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
+class NoticeViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
 
     queryset = Notice.objects.all()
     serializer_class = NoticeSerializers
@@ -18,16 +18,15 @@ class NoticeViewSets(mixins.CreateModelMixin,
         logger.info(f'create notice setting: {self.request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return JsonResponse(data=serializer.data)
-
-    def update(self, request, *args, **kwargs):
-        logger.info(f'update notice: {request.data}')
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return JsonResponse(serializer.data)
+        project_id = serializer.validated_data.get('project_id')
+        if not has_project_permission(project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
+        instance, _ = Notice.objects.update_or_create(
+            project_id=serializer.validated_data.get('project_id'),
+            defaults=serializer.validated_data
+        )
+        data = self.get_serializer(instance).data
+        return JsonResponse(data=data)
 
     def list(self, request, *args, **kwargs):
         logger.info("get notice by project")

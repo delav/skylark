@@ -4,7 +4,6 @@ from loguru import logger
 
 
 def push_ding_msg(token, keywords, result):
-    logger.info("钉钉群token:{},关键词:{}".format(token, keywords))
     logger.info("结果通知数据: {}".format(result))
     if ";" in token:
         token_list = token.split(";")
@@ -13,8 +12,7 @@ def push_ding_msg(token, keywords, result):
         urls = [token]
     for t in urls:
         url = 'https://oapi.dingtalk.com/robot/send?access_token={}'.format(t)
-        report_url = 'http://192.168.1.50:9090/output/reports/'\
-                     + result["project_name"] + '/' + result["run_id"] + '/log.html'
+        report_url = result['report_url']
         headers = {'Content-Type': 'application/json'}
 
         data = {
@@ -51,8 +49,7 @@ def push_wecom_msg(token, result):
         urls = [token]
     for t in urls:
         url = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key={}'.format(t)
-        report_url = 'http://192.168.1.50:9090/output/reports/'\
-                     + result["project_name"] + '/' + result["run_id"] + '/log.html'
+        report_url = result['report_url']
         headers = {'Content-Type': 'application/json'}
 
         data = {
@@ -87,8 +84,7 @@ def push_lark_msg(token, keywords, result):
         urls = [token]
     for t in urls:
         url = 'https://open.feishu.cn/open-apis/bot/v2/hook/{}'.format(t)
-        report_url = 'http://192.168.1.50:9090/output/reports/'\
-                     + result["project_name"] + '/' + result["run_id"] + '/log.html'
+        report_url = result['report_url']
         headers = {'Content-Type': 'application/json'}
 
         if keywords is not None and keywords != "":

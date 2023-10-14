@@ -8,16 +8,20 @@ from application.project.serializers import ProjectSerializers
 from application.projectpermission.models import ProjectPermission
 from application.user.models import User
 from application.user.serializers import UserSerializer
+from application.usergroup.models import UserGroup
+from application.usergroup.serializers import UserGroupSerializers
+from application.department.models import Department
+from application.department.serializers import DepartmentSerializers
 
 
-def get_all_envs():
+def get_env_list():
     env_query = Environment.objects.filter(
         status=ModuleStatus.NORMAL
     )
     return EnvironmentSerializers(env_query, many=True).data
 
 
-def get_all_regions():
+def get_region_list():
     region_query = Region.objects.filter(
         status=ModuleStatus.NORMAL
     )
@@ -59,11 +63,45 @@ def get_permission_project_by_uid(user_id):
     return [item.project_id for item in permission_project]
 
 
-def get_all_user():
+def get_department_list():
+    department_queryset = Department.objects.all()
+    return DepartmentSerializers(department_queryset, many=True).data
+
+
+def get_user_group_list():
+    department_list = get_department_list()
+    department_map = {}
+    for item in department_list:
+        department_map[item['id']] = item
+    user_group_query = UserGroup.objects.select_related('group').all()
+    group_list = []
+    for item in user_group_query.iterator():
+        group = item.group
+        group_info = UserGroupSerializers(item).data
+        group_info.update({'id': group.id, 'name': group.name})
+        group_info.update(department_map[item.department_id])
+        group_list.append(group_info)
+    return group_list
+
+
+def get_user_list():
     user_query = User.objects.all()
     return UserSerializer(user_query, many=True).data
 
 
 def get_user_info_by_uid(user_id):
-    return {}
+    user = User.objects.get(id=user_id)
+    user_group_query = UserGroup.objects.filter(
+        group__user__id=user_id
+    ).select_related('group')
+    user_group = user_group_query.first()
+    department = Department.objects.get(id=user_group.department_id)
+    user_data = UserSerializer(user).data
+    user_data.update({
+        'group_id': user_group.group.id,
+        'group_name': user_group.group.name,
+        'department_id': department.id,
+        'department_name': department.name
+    })
+    return user_data
 

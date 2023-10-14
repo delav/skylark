@@ -11,7 +11,7 @@ class Project(models.Model):
     create_by = models.CharField(max_length=255, help_text='create user')
     update_by = models.CharField(max_length=255, help_text='last update user')
     group_id = models.IntegerField(help_text='belong to group or team')
-    status = models.IntegerField(default=0, help_text='project status')
+    status = models.IntegerField(default=0, help_text='module status')
     personal = models.BooleanField(default=False, help_text='personal project')
 
     class Meta:

@@ -16,7 +16,7 @@ class BuildRecord(models.Model):
     regions = models.CharField(max_length=255, default=None, blank=True, null=True,
                                help_text='associated region id list')
     periodic = models.BooleanField(default=False, help_text='if periodic task')
-    status = models.IntegerField(default=0, help_text='build status,0:running, 1:finish')
+    status = models.IntegerField(default=0, help_text='build status')
 
     class Meta:
         verbose_name = 'build record'

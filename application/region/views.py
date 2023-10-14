@@ -4,7 +4,7 @@ from rest_framework import viewsets
 from infra.django.response import JsonResponse
 from application.region.models import Region
 from application.region.serializers import RegionSerializers
-from application.manager import get_all_regions
+from application.manager import get_region_list
 
 # Create your views here.
 
@@ -16,7 +16,7 @@ class RegionViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.
 
     def list(self, request, *args, **kwargs):
         logger.info(f'get all regions')
-        region_list = get_all_regions()
+        region_list = get_region_list()
         return JsonResponse(data=region_list)
 
 

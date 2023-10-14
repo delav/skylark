@@ -15,7 +15,7 @@ class BuildHistory(models.Model):
     record_id = models.IntegerField(help_text='associated build record')
     env_id = models.IntegerField(help_text='associated environment')
     region_id = models.IntegerField(default=None, blank=True, null=True, help_text='associated region')
-    status = models.IntegerField(default=-1, help_text='build status,-1:pending, 0:running, 1:failed, 2:success')
+    status = models.IntegerField(default=-1, help_text='build status')
     batch = models.IntegerField(default=1, help_text='task batch number')
     celery_task = models.CharField(default=None, null=True, max_length=255, help_text='celery task id')
     report_path = models.CharField(default='', max_length=255, help_text='build report path')

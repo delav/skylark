@@ -1,4 +1,5 @@
 from loguru import logger
+from django.db.models import Q
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -31,17 +32,11 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         group_queryset = KeywordGroup.objects.filter(
             group_type=KeywordGroupType.LIB
         )
-        # team's keyword group
+        # team's or project's keyword group
         user_group_queryset = KeywordGroup.objects.filter(
-            project_id=None,
-            user_group_id=user_group_id,
+            Q(project_id=project_id) | Q(user_group_id=user_group_id)
         )
         group_queryset |= user_group_queryset
-        # project's keyword group
-        project_group_queryset = KeywordGroup.objects.filter(
-            project_id=project_id
-        )
-        group_queryset |= project_group_queryset
         group_map = {}
         group_id_list = []
         for group in group_queryset.iterator():
@@ -66,6 +61,7 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
 
     @action(methods=['get'], detail=False)
     def get_list_by_group(self, request, *args, **kwargs):
+        logger.info(f'get keyword group by group id: {request.query_params}')
         group_id = request.query_params.get('group')
         queryset = LibKeyword.objects.filter(
             group_id=group_id

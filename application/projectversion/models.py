@@ -16,7 +16,7 @@ class ProjectVersion(models.Model):
     sources = models.TextField(help_text='project source data')
     nodes = models.TextField(help_text='project tree nodes for front')
     remark = models.TextField(help_text='commit remark')
-    status = models.IntegerField(default=0, help_text='version status')
+    status = models.IntegerField(default=0, help_text='module status')
 
     class Meta:
         verbose_name = 'project version'

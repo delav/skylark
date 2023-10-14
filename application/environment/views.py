@@ -4,7 +4,7 @@ from rest_framework import viewsets
 from infra.django.response import JsonResponse
 from application.environment.models import Environment
 from application.environment.serializers import EnvironmentSerializers
-from application.manager import get_all_envs
+from application.manager import get_env_list
 
 # Create your views here.
 
@@ -15,7 +15,7 @@ class EnvironmentViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     def list(self, request, *args, **kwargs):
         logger.info(f'get all environments')
-        environment_list = get_all_envs()
+        environment_list = get_env_list()
         return JsonResponse(data=environment_list)
 
 

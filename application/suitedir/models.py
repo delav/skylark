@@ -17,7 +17,7 @@ class SuiteDir(models.Model):
     project = models.ForeignKey(Project, related_name='dirs', on_delete=models.CASCADE, help_text='associated project')
     parent_dir = models.ForeignKey('self', related_name='children', blank=True, null=True, on_delete=models.CASCADE,
                                    help_text='parent dir')
-    status = models.IntegerField(default=0, help_text='suite dir status')
+    status = models.IntegerField(default=0, help_text='module status')
 
     class Meta:
         verbose_name = 'suite dir'
