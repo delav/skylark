@@ -33,11 +33,11 @@ class NoAuthUserViewSets(viewsets.GenericViewSet):
         serializer.is_valid(raise_exception=True)
         with transaction.atomic():
             user = serializer.save()
-            group_id = request.data.get('group_id')
+            group_id = serializer.validated_data.get('group_id')
             group = UserGroup.objects.get(id=group_id)
             user.groups.add(group)
-        ser = self.get_serializer(user)
-        return JsonResponse(data=ser.data)
+        data = self.get_serializer(user).data
+        return JsonResponse(data=data)
 
     @action(methods=['post'], detail=False)
     def reset(self):
@@ -82,14 +82,18 @@ class AdminUserViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         with transaction.atomic():
-            data = serializer.data
+            data = serializer.validated_data
             username = data.get('email').split('@')[0]
-            user = User(username=username, email=data.get('email'),
-                        group_id=data.get('email'), is_superuser=data.get('is_superuser'))
+            user = User(
+                username=username,
+                email=data.get('email'),
+                group_id=data.get('email'),
+                is_superuser=data.get('is_superuser')
+            )
             user.save()
             group = UserGroup.objects.get(id=data.get('group_id'))
             user.groups.add(group)
-        data = self.get_serializer(user)
+        data = self.get_serializer(user).data
         return JsonResponse(data=data)
 
     def list(self, request, *args, **kwargs):

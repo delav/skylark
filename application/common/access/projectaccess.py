@@ -1,4 +1,4 @@
-from application.user.models import User
+from application.usergroup.models import Group
 from application.manager import get_permission_project_by_uid
 from application.projectpermission.models import ProjectPermission
 
@@ -21,12 +21,18 @@ def add_self_project_permission(project_id, user):
 
 
 def add_group_project_permission(project_id, user):
-    groups_queryset = user.groups.all()
-    users = User.objects.none()
-    for group in groups_queryset:
-        users |= group.user_set.all()
+    groups_queryset = Group.objects.filter(user=user)
+    if not groups_queryset.exists():
+        return
+    users = groups_queryset.first().user_set.all()
     permission_list = []
+    permission_users = ProjectPermission.objects.filter(
+        project_id=project_id
+    )
+    permission_user_list = [u.user_id for u in permission_users]
     for user in users:
+        if user.id in permission_user_list:
+            continue
         obj = ProjectPermission(
             user_id=user.id,
             project_id=project_id

@@ -42,7 +42,7 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
                 desc=item.test_case.document,
                 group_id=serializer_data['group_id'],
                 keyword_type=KeywordType.USER,
-                category=KeywordCategory.CUSTOMIZED,
+                category=KeywordCategory.PLATFORM,
                 input_params=item.test_case.inputs,
                 output_params=item.test_case.outputs,
                 image=serializer_data['image']

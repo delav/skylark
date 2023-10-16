@@ -95,16 +95,17 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
         if not has_project_permission(instance.id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         update_data = request.data
+        old_personal = instance.personal
         # only allowed update personal project to group project
         if 'personal' in update_data:
             update_data['personal'] = False
-        serializer = self.get_serializer(instance, data=update_data)
+        serializer = self.get_serializer(instance, data=update_data, partial=True)
         serializer.is_valid(raise_exception=True)
         new_personal = serializer.validated_data.get('personal')
         with transaction.atomic():
             self.perform_update(serializer)
             # change personal project to group project
-            if instance.personal and not new_personal:
+            if old_personal and not new_personal:
                 add_group_project_permission(instance.id, request.user)
         return JsonResponse(serializer.data)
 
