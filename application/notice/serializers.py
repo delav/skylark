@@ -3,10 +3,12 @@ from application.notice.models import Notice
 
 
 class NoticeSerializers(serializers.ModelSerializer):
+    rcv_email = serializers.ListField(help_text='email list')
 
     class Meta:
         model = Notice
         fields = '__all__'
+        read_only_fields = ('create_by', 'update_by')
 
     def to_representation(self, instance):
         emails = instance.rcv_email

@@ -1,4 +1,5 @@
 import traceback
+import loguru
 from rest_framework.views import exception_handler as rest_handler
 from rest_framework.status import HTTP_500_INTERNAL_SERVER_ERROR
 from infra.django.response import JsonResponse

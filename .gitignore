@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 
 # django
-migrations/0*
+!migrations/__init__.py
 
 # C extensions
 *.so

@@ -20,11 +20,11 @@ class TagViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         result_list = []
         if project_id and isinstance(project_id, str) and project_id.isdigit():
             project_id = int(project_id)
-            query_sql = f'select id,name from tag where project_id={project_id} group by name'
-            queryset = Tag.objects.raw(query_sql)
-            for item in queryset.iterator():
-                item_data = {'id': item.id, 'name': item.name}
-                result_list.append(item_data)
+            # query_sql = f'select id,name from tag where project_id={project_id} group by name'
+            # queryset = Tag.objects.raw(query_sql)
+            queryset = Tag.objects.filter(project_id=project_id).values('name').distinct()
+            result_list = [{'name': item['name']} for item in queryset.iterator()]
+            print(result_list)
         return JsonResponse(data=result_list)
 
     def create(self, request, *args, **kwargs):

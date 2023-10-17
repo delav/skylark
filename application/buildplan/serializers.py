@@ -16,7 +16,7 @@ class BuildPlanSerializers(serializers.ModelSerializer):
             'periodic_expr', 'periodic_switch', 'env_list', 'region_list', 'case_list', 'project_id',
             'branch', 'expect_pass', 'notice_open'
         )
-        read_only_fields = ('create_by', 'status')
+        read_only_fields = ('status', 'create_by', 'update_by')
 
     def validate(self, attrs):
         # validate periodic

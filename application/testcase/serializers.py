@@ -11,7 +11,7 @@ class TestCaseSerializers(serializers.ModelSerializer):
             'id', 'name', 'category', 'document', 'priority_id', 'create_at', 'update_at',
             'create_by', 'update_by', 'test_suite_id', 'order', 'project_id', 'inputs', 'outputs', 'timeout', 'status'
         )
-        read_only_fields = ('category', 'status')
+        read_only_fields = ('category', 'status', 'create_by', 'update_by')
 
     def to_internal_value(self, data):
         ret = super().to_internal_value(data)
