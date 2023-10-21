@@ -3,12 +3,9 @@ from django.conf import settings
 from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
-from rest_framework.decorators import action
 from infra.django.pagination.paginator import PagePagination
 from infra.django.response import JsonResponse
 from application.constant import ModuleStatus
-from application.manager import get_department_list, get_user_group_list
-from application.usergroup.models import UserGroup
 from application.project.models import Project
 from application.projectpermission.models import ProjectPermission
 from application.project.serializers import ProjectSerializers
@@ -24,7 +21,7 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
     serializer_class = ProjectSerializers
 
     def list(self, request, *args, **kwargs):
-        logger.info('get project list info')
+        logger.info('get permission project list')
         user_project_ids = ProjectPermission.objects.filter(
             user_id=request.user.id
         ).values_list('project_id').all()
@@ -117,46 +114,6 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
         delete_operator = ProjectDeleteOperator(instance.id, request.user.email)
         delete_operator.delete_project()
         return JsonResponse(data=instance.id)
-
-    @action(methods=['get'], detail=False)
-    def tree(self, request, *args, **kwargs):
-        logger.info(f'get project tree')
-        department_map = {}
-        for item in get_department_list():
-            # add leaf field for el-tree
-            item['leaf'] = False
-            department_map[item['id']] = item
-        group_map = {}
-        for item in get_user_group_list():
-            # add leaf field for el-tree
-            item['leaf'] = False
-            group_map[item['id']] = item
-        common_project_queryset = Project.objects.filter(
-            status=ModuleStatus.NORMAL,
-            personal=False
-        )
-        personal_project_queryset = Project.objects.filter(
-            status=ModuleStatus.NORMAL,
-            personal=True,
-            create_by=request.user.email
-        )
-        project_queryset = common_project_queryset | personal_project_queryset
-        for project in project_queryset:
-            group_id = project.group_id
-            if group_id not in group_map:
-                continue
-            if 'children' not in group_map[group_id]:
-                group_map[group_id]['children'] = []
-            group_map[group_id]['children'].append(ProjectSerializers(project).data)
-        for group_id, group in group_map.items():
-            department_id = group['department_id']
-            if department_id not in department_map:
-                continue
-            if 'children' not in department_map[department_id]:
-                department_map[department_id]['children'] = []
-            department_map[department_id]['children'].append(group)
-        project_tree = department_map.values()
-        return JsonResponse(data=project_tree)
 
 
 class AdminProjectViewSets(mixins.ListModelMixin, mixins.RetrieveModelMixin,

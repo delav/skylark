@@ -24,7 +24,6 @@ class TagViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
             # queryset = Tag.objects.raw(query_sql)
             queryset = Tag.objects.filter(project_id=project_id).values('name').distinct()
             result_list = [{'name': item['name']} for item in queryset.iterator()]
-            print(result_list)
         return JsonResponse(data=result_list)
 
     def create(self, request, *args, **kwargs):

@@ -19,6 +19,7 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.views.static import serve
 from rest_framework import routers
+from application.views import BaseViewSets
 from application.user.views import NoAuthUserViewSets, NormalUserViewSets
 from application.usergroup.views import UserGroupViewSets
 from application.libkeyword.views import LibKeywordViewSets
@@ -30,8 +31,6 @@ from application.suitedir.views import SuiteDirViewSets
 from application.project.views import ProjectViewSets
 from application.setupteardown.views import SetupTeardownViewSets
 from application.keywordgroup.views import KeywordGroupViewSets
-from application.environment.views import EnvironmentViewSets
-from application.region.views import RegionViewSets
 from application.variable.views import VariableViewSets
 from application.builder.views import BuilderViewSets
 from application.buildplan.views import BuildPlanViewSets
@@ -47,6 +46,7 @@ from application.projectpermission.views import ProjectPermissionViewSets
 router = routers.SimpleRouter(trailing_slash=False)
 router.register('user/info', NormalUserViewSets, basename='user_info')
 router.register('user/group', UserGroupViewSets, basename='user_group')
+router.register('base', BaseViewSets, basename='base')
 router.register('keyword/lib_keyword', LibKeywordViewSets, basename='lib_keyword')
 router.register('keyword/user_keyword', UserKeywordViewSets, basename='user_keyword')
 router.register('project', ProjectViewSets, basename='project')
@@ -56,8 +56,6 @@ router.register('test_case', TestCaseViewSets, basename='test_case')
 router.register('case_entity', CaseEntityViewSets, basename='case_entity')
 router.register('setup_teardown', SetupTeardownViewSets, basename='setup_teardown')
 router.register('keyword_group', KeywordGroupViewSets, basename='keyword_group')
-router.register('environment', EnvironmentViewSets, basename='environment')
-router.register('region', RegionViewSets, basename='region')
 router.register('variable', VariableViewSets, basename='variable')
 router.register('project_version', ProjectVersionViewSets, basename='project_version')
 router.register('build/plan', BuildPlanViewSets, basename='build_plan')

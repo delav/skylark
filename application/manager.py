@@ -69,19 +69,8 @@ def get_department_list():
 
 
 def get_user_group_list():
-    department_list = get_department_list()
-    department_map = {}
-    for item in department_list:
-        department_map[item['id']] = item
-    user_group_query = UserGroup.objects.select_related('group').all()
-    group_list = []
-    for item in user_group_query.iterator():
-        group = item.group
-        group_info = UserGroupSerializers(item).data
-        group_info.update({'id': group.id, 'name': group.name})
-        group_info.update(department_map[item.department_id])
-        group_list.append(group_info)
-    return group_list
+    user_group_queryset = UserGroup.objects.select_related('group').all()
+    return UserGroupSerializers(user_group_queryset, many=True).data
 
 
 def get_user_list():

@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 
 # django
-!migrations/__init__.py
+migrations/
 
 # C extensions
 *.so
@@ -133,3 +133,4 @@ dmypy.json
 
 report/
 .idea
+static/files/
