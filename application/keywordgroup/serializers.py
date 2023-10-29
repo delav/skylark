@@ -5,8 +5,6 @@ from application.libkeyword.serializers import LibKeywordSerializers
 
 class KeywordGroupSerializers(serializers.ModelSerializer):
 
-    image = serializers.ImageField(required=False, help_text='keyword group icon')
-
     class Meta:
         model = KeywordGroup
         fields = '__all__'
@@ -18,5 +16,5 @@ class KeywordGroup2Serializers(serializers.ModelSerializer):
 
     class Meta:
         model = KeywordGroup
-        fields = ('id', 'name', 'image', 'group_type', 'project_id', 'keywords')
+        fields = ('id', 'name', 'group_type', 'project_id', 'keywords')
 

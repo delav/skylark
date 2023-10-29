@@ -12,7 +12,7 @@ from application.common.parser.treeformat import generate_version_data
 
 @app.task
 def generate_version(project_id, version_kwargs):
-    project_name, run_data, nodes = generate_version_data(project_id)
+    project_name, run_data, nodes, case_number = generate_version_data(project_id)
     env_resource_dict = {}
     env_queryset = Environment.objects.all()
     region_queryset = Region.objects.filter(status=ModuleStatus.NORMAL)
@@ -39,6 +39,7 @@ def generate_version(project_id, version_kwargs):
                 PROJECT_FILE_KEY: parser.common_project_files,
             }}
             env_resource_dict[env.id].update(region_resource)
+    version_kwargs['total_case'] = case_number
     version_kwargs['run_data'] = json.dumps(run_data)
     version_kwargs['nodes'] = json.dumps(nodes)
     version_kwargs['sources'] = json.dumps(env_resource_dict)

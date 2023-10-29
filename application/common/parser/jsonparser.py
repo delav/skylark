@@ -35,7 +35,6 @@ class JsonParser(CommonParser):
 
     def _extract(self, path, reader):
         file_text = reader.read()
-        print(reader.body_text_list)
         if len(reader.body_text_list) == 0:
             return
         struct = SuiteStructure()

@@ -1,9 +1,12 @@
+from io import BytesIO
 from loguru import logger
 from django.db.models import Q
+from django.core.files.base import ContentFile
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
+from infra.utils.imagegenerator import ImageGenerator
 from infra.django.response import JsonResponse
 from application.constant import KeywordType, ModuleStatus, KeywordGroupType
 from application.keywordgroup.models import KeywordGroup
@@ -30,7 +33,7 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         user_group_id = project.get('group_id')
         # lib's keyword group
         group_queryset = KeywordGroup.objects.filter(
-            group_type=KeywordGroupType.LIB
+            group_type=KeywordGroupType.PUBLIC
         )
         # team's or project's keyword group
         user_group_queryset = KeywordGroup.objects.filter(
@@ -86,8 +89,17 @@ class AdminKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         logger.info(f'add lib keyword: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return JsonResponse(data=serializer.data)
+        save_data = serializer.validated_data
+        image_name = save_data.get('name') + '.png'
+        img = ImageGenerator.generate(128, image_name, 'PNG')
+        # gen_image = Image.open(BytesIO(img))
+        # image_path = settings.KEYWORD_ICON_PATH / image_name
+        # # gen_image.save(image_path)
+        image_file = ContentFile(BytesIO(img).getvalue(), image_name)
+        save_data['image'] = image_file
+        instance = LibKeyword.objects.create(**save_data)
+        data = self.get_serializer(instance).data
+        return JsonResponse(data=data)
 
     def update(self, request, *args, **kwargs):
         logger.info(f'update lib keyword: {request.data}')

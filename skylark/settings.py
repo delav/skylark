@@ -242,8 +242,12 @@ DISTRIBUTED_BUILD = True
 DISTRIBUTED_WITH_SUITE = False
 WORKER_MAX_CASE_LIMIT = 200
 
-# Customized python lib keyword path, each machine must be the same
-LIB_PATH = BASE_DIR / 'library'
+# keyword icon path
+KEYWORD_ICON_PATH = MEDIA_ROOT / 'icons' / 'keyword'
+
+# Customized python lib keyword path
+LIBRARY_PATH = BASE_DIR.parent / 'skylarklibrary' / 'libraries'
+LIBRARY_GIT = 'https://github.com/delav/skylarklibrary.git'
 
 # Robot report path
 REPORT_PATH = BASE_DIR / 'report'

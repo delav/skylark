@@ -20,7 +20,7 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
     def list(self, request, *args, **kwargs):
         logger.info(f'get project user keyword: {request.query_params}')
         user_group = KeywordGroup.objects.filter(
-            group_type=KeywordGroupType.USER
+            group_type=KeywordGroupType.PROJECT
         )
         if not user_group.exists():
             return JsonResponse(data=[])

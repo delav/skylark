@@ -9,7 +9,6 @@ from infra.constant.constants import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
 
 
 class JsonSuiteReader(object):
-    lib_path = settings.LIB_PATH
 
     def __init__(self, setup_teardown_data, suite_timeout, variable_list,
                  resource_list, variable_files, tag_list, case_data, include_cases):
@@ -62,7 +61,6 @@ class JsonSuiteReader(object):
 
 
 class DBSuiteReader(object):
-    lib_path = settings.LIB_PATH
 
     def __init__(self, suite_id, module_type, suite_timeout, resource_list, variable_files):
         self.head_text_str = ''

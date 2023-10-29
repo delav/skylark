@@ -9,12 +9,11 @@ from infra.django.response import JsonResponse
 from application.constant import ModuleStatus
 from application.manager import get_projects_by_uid
 from application.builder.handler import generate_task_name, convert_task_name
-from application.projectpermission.models import ProjectPermission
-from application.project.models import Project
 from application.buildplan.models import BuildPlan
 from application.buildplan.serializers import BuildPlanSerializers
 from application.buildrecord.models import BuildRecord
 from application.buildrecord.serializers import BuildRecordSerializers
+from application.projectversion.models import ProjectVersion
 from application.common.scheduler.periodic import PeriodicHandler, get_periodic_task, get_periodic_list
 from application.common.access.projectaccess import has_project_permission
 
@@ -49,6 +48,15 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
             queryset = queryset.filter(create_by=create_by)
         pg_queryset = self.paginate_queryset(queryset)
         plan_list = self.get_serializer(pg_queryset, many=True).data
+        # if auto_latest is true, total_case=branch.total_case
+        for plan in plan_list:
+            if not plan.get('auto_latest'):
+                continue
+            version = ProjectVersion.objects.get(
+                project_id=plan.get('project_id'),
+                branch=plan.get('branch')
+            )
+            plan['total_case'] = version.total_case
         result = {'data': plan_list, 'total': queryset.count()}
         return JsonResponse(data=result)
 
@@ -107,6 +115,12 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
         if queryset.exists():
             records = BuildRecordSerializers(queryset, many=True).data
             result['record'] = records
+        if instance.auto_latest:
+            version = ProjectVersion.objects.get(
+                project_id=instance.project_id,
+                branch=instance.branch
+            )
+            result['total_case'] = version.total_case
         return JsonResponse(result)
 
     def destroy(self, request, *args, **kwargs):

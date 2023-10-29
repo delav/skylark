@@ -56,18 +56,17 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
         project_id = serializer.validated_data.get('project_id')
         if not has_project_permission(project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
+        test_suite = TestSuite.objects.filter(
+            id=serializer.validated_data.get('test_suite_id'),
+            status=ModuleStatus.NORMAL
+        )
+        if not test_suite.exists():
+            return JsonResponse(code=40308, msg='suite not exist')
+        test_suite = test_suite.first()
+        if project_id != test_suite.project_id:
+            return JsonResponse(code=40309, msg='create data error')
         try:
-            test_suite = TestSuite.objects.filter(
-                id=serializer.validated_data.get('test_suite_id'),
-                status=ModuleStatus.NORMAL
-            )
-            if not test_suite.exists():
-                return JsonResponse(code=40308, msg='suite not exist')
-            test_suite = test_suite.first()
-            if project_id != test_suite.project_id:
-                return JsonResponse(code=40309, msg='create data error')
             with transaction.atomic():
-                print(serializer.validated_data)
                 instance = TestCase.objects.create(
                     **serializer.validated_data,
                     category=test_suite.category,
@@ -75,7 +74,7 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
                 if instance.category == ModuleCategory.KEYWORD:
                     UserKeyword.objects.create(
                         test_case_id=instance.id,
-                        group_id=KeywordGroupType.USER,
+                        group_id=KeywordGroupType.PROJECT,
                         project_id=instance.project_id
                     )
                     update_user_keyword_storage(UserKeyword, instance.id)

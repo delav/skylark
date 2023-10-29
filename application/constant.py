@@ -42,6 +42,12 @@ class BuildStatus:
     FAILED = 3
 
 
+class LibraryType:
+    STANDARD = 0
+    DEPENDENCE = 1
+    CUSTOMIZED = 2
+
+
 class KeywordCategory:
     RESERVED = 0
     ORDINARY = 1
@@ -56,9 +62,9 @@ class KeywordType:
 
 
 class KeywordGroupType:
-    LIB = 0
-    USER = 1
-    PRO = 2
+    PUBLIC = 0
+    PROJECT = 1
+    PLATFORM = 2
 
 
 class ParamMode:

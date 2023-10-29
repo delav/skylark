@@ -58,6 +58,7 @@ def debug_notify(task_id, project, env, region):
     title = f'{env}-{region}-{project}' if region else f'{env}-{project}'
     rebot(
         *output_list,
+        merge=True,
         logtitle=title + ' Log',
         reporttitle=title + ' Report',
         loglevel='DEBUG',
@@ -115,6 +116,7 @@ def task_end_notify(task_id, project, env, region):
     title = f'{env}-{region}-{project}' if region else f'{env}-{project}'
     rebot(
         *output_list,
+        merge=True,
         logtitle=title + ' Log',
         reporttitle=title + ' Report',
         outputdir=output_path,

@@ -43,7 +43,10 @@ def periodic_builder(plan_id):
     region_list = id_str_to_set(plan.regions, to_int=True)
     run_data = loads(version.run_data)
     common_sources = loads(version.sources)
-    build_cases = id_str_to_set(plan.build_cases, to_int=True)
+    if plan.auto_latest:
+        build_cases = None
+    else:
+        build_cases = id_str_to_set(plan.build_cases, to_int=True)
     record = BuildRecord.objects.create(
         desc=plan.title,
         create_by=plan.create_by,
@@ -62,12 +65,15 @@ def periodic_builder(plan_id):
 
 @app.task
 def instant_builder(record_id, project_id, project_name,
-                    env_ids, region_ids, run_data, common_sources, build_cases):
+                    env_ids, region_ids, run_data, common_sources, auto_latest, build_cases):
     env_list = id_str_to_set(env_ids, to_int=True)
     region_list = id_str_to_set(region_ids, to_int=True)
     run_data = loads(run_data)
     common_sources = loads(common_sources)
-    build_cases = id_str_to_set(build_cases, to_int=True)
+    if auto_latest:
+        build_cases = None
+    else:
+        build_cases = id_str_to_set(build_cases, to_int=True)
     _create_task(
         record_id, project_id, project_name, env_list,
         region_list, run_data, common_sources, build_cases

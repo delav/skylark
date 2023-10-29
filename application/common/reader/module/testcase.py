@@ -10,9 +10,17 @@ class CaseReader(object):
 
     def __init__(self, include_cases=None):
         self.is_filter = False
-        if include_cases is not None:
-            self.is_filter = True
         self.include_cases = include_cases
+        if self._need_filter():
+            self.is_filter = True
+
+    def _need_filter(self):
+        if self.include_cases is None:
+            return False
+        # self.include_cases must set or dict type
+        if isinstance(self.include_cases, set) or isinstance(self.include_cases, dict):
+            return True
+        return False
 
     def _get_case_from_db(self, queryset):
         testcase_list = []

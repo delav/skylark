@@ -12,6 +12,8 @@ from application.usergroup.models import UserGroup
 from application.usergroup.serializers import UserGroupSerializers
 from application.department.models import Department
 from application.department.serializers import DepartmentSerializers
+from application.pythonlib.models import PythonLib
+from application.pythonlib.serializers import PythonLibSerializers
 
 
 def get_env_list():
@@ -94,3 +96,7 @@ def get_user_info_by_uid(user_id):
     })
     return user_data
 
+
+def get_python_library_list():
+    library_queryset = PythonLib.objects.all()
+    return PythonLibSerializers(library_queryset, many=True).data

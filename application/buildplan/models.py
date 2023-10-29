@@ -12,6 +12,7 @@ class BuildPlan(models.Model):
     create_by = models.CharField(max_length=255, help_text='create user')
     update_by = models.CharField(max_length=255, help_text='last update user')
     build_cases = models.TextField(default='',  help_text='build case id list')
+    auto_latest = models.BooleanField(default=False, help_text='auto latest branch all cases')
     periodic_expr = models.CharField(null=True, blank=True, max_length=255, help_text='periodic expr')
     periodic_task_id = models.IntegerField(null=True, blank=True, help_text='associated periodic task')
     periodic_switch = models.BooleanField(default=False, help_text='periodic task switch')

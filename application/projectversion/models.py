@@ -9,6 +9,7 @@ class ProjectVersion(models.Model):
     update_at = models.DateTimeField(auto_now=True, help_text='update time')
     project_id = models.IntegerField(help_text='associated project')
     branch = models.CharField(max_length=255, help_text='project branch')
+    total_case = models.IntegerField(default=0, help_text='branch total case')
     create_by = models.CharField(max_length=255, help_text='create user')
     update_by = models.CharField(max_length=255, help_text='update user')
     version = models.CharField(default='1.0.0', max_length=255, help_text='version')

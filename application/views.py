@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from infra.django.response import JsonResponse
 from application.constant import ModuleStatus
 from application.manager import get_env_list, get_region_list
-from application.manager import get_department_list, get_user_group_list, get_user_list
+from application.manager import get_department_list, get_user_group_list
 from application.project.models import Project
 from application.project.serializers import ProjectSerializers
 from application.projectpermission.models import ProjectPermission

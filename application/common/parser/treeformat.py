@@ -74,6 +74,7 @@ def parse_front_data(tree_data, split='.'):
 def generate_version_data(project_id, root_id=0):
     tree_nodes = []
     run_data = []
+    total_case = 0
     project = Project.objects.get(id=project_id)
     dir_queryset = SuiteDir.objects.filter(
         project_id=project_id,
@@ -115,7 +116,9 @@ def generate_version_data(project_id, root_id=0):
         if 'children' not in dir_data:
             dir_data['children'] = []
         if suites.exists():
-            dir_data['children'].extend(_get_suite_tree(node_id, suites, tree_nodes))
+            suite_tree, case_number = _get_suite_tree(node_id, suites, tree_nodes)
+            total_case += case_number
+            dir_data['children'].extend(suite_tree)
         if not parent_dir_id:
             run_data.append(dir_data)
             continue
@@ -123,11 +126,12 @@ def generate_version_data(project_id, root_id=0):
         if 'children' not in parent_data:
             parent_data['children'] = []
         parent_data['children'].append(dir_data)
-    return project.name, run_data, tree_nodes
+    return project.name, run_data, tree_nodes, total_case
 
 
 def _get_suite_tree(parent_node_id, suite_queryset, tree_nodes):
     suite_tree = []
+    case_count = 0
     for suite_data in suite_queryset.iterator():
         suite_data['extra_data'] = get_model_simple_extra_data(
             suite_data['id'],
@@ -153,6 +157,7 @@ def _get_suite_tree(parent_node_id, suite_queryset, tree_nodes):
         if not case_queryset.exists():
             continue
         suite_data['children'] = []
+        case_count += case_queryset.count()
         for case_data in case_queryset.iterator():
             case_data['extra_data'] = get_model_simple_extra_data(
                 case_data['id'],
@@ -179,7 +184,7 @@ def _get_suite_tree(parent_node_id, suite_queryset, tree_nodes):
 
             suite_data['children'].append(case_data)
         suite_tree.append(suite_data)
-    return suite_tree
+    return suite_tree, case_count
 
 
 def parse_version_data(tree_data, split='.'):

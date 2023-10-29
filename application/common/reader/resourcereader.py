@@ -1,7 +1,9 @@
 from pathlib import PurePath
 from django.conf import settings
+from application.constant import LibraryType
 from application.pythonlib.models import PythonLib
 from application.variable.models import Variable
+from application.manager import get_python_library_list
 from application.common.reader.module.testcase import CaseReader
 from infra.robot.resourcefile import ResourceKeywordFile, ResourceCommonFile
 from infra.constant.constants import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
@@ -40,7 +42,7 @@ class ResourceKeywordReader(object):
 
 
 class ResourceCommonReader(object):
-    lib_path = settings.LIB_PATH
+    library_base_path = settings.LIBRARY_PATH
 
     def __init__(self, env_id, region_id, project_id, module_type):
         self.env_id = env_id
@@ -56,14 +58,20 @@ class ResourceCommonReader(object):
 
     def _get_library_list(self):
         library_list = []
-        pl_queryset = PythonLib.objects.all()
-        for item in pl_queryset.iterator():
-            if item['lib_type'] == 1:
+        lib_list = get_python_library_list()
+        for item in lib_list:
+            if item['lib_type'] == LibraryType.DEPENDENCE:
                 # builtin library
-                library = item['lib_name']
-            else:
+                library = item.lib_name
+            elif item['lib_type'] == LibraryType.CUSTOMIZED:
                 # customize python file
-                library = PurePath.joinpath(self.lib_path, item['lib_name'])
+                library = PurePath.joinpath(
+                    self.library_base_path,
+                    item['lib_path'],
+                    item['lib_name'] + '.py'
+                ).as_posix()
+            else:
+                continue
             library_list.append(library)
         return library_list
 

@@ -8,7 +8,7 @@ class ProjectVersionSerializers(serializers.ModelSerializer):
     class Meta:
         model = ProjectVersion
         fields = (
-            'id', 'project_id', 'branch', 'version',
+            'id', 'project_id', 'branch', 'total_case', 'version',
             'nodes', 'remark', 'create_at', 'update_at', 'create_by', 'update_by', 'status'
         )
         read_only_fields = ('nodes', 'status', 'create_by', 'update_by')

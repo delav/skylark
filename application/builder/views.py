@@ -1,9 +1,8 @@
-from datetime import date, datetime
+from datetime import date
 from loguru import logger
 from pathlib import Path
 from django.conf import settings
 from django.http import FileResponse
-from django.core.cache import cache
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from infra.django.response import JsonResponse
@@ -60,9 +59,6 @@ class BuilderViewSets(viewsets.GenericViewSet):
             region_ids_str = plan.regions
         else:
             region_ids_str = join_id_to_str(region_list)
-        run_data = version.run_data
-        common_sources = version.sources
-        build_cases = plan.build_cases
         record = BuildRecord.objects.create(
             desc=plan.title,
             create_by=request.user.email,
@@ -77,8 +73,8 @@ class BuilderViewSets(viewsets.GenericViewSet):
             queue=settings.BUILDER_QUEUE,
             routing_key=settings.BUILDER_ROUTING_KEY,
             args=(
-                record.id, project_id, project_name,
-                env_ids_str, region_ids_str, run_data, common_sources, build_cases
+                record.id, project_id, project_name, env_ids_str, region_ids_str,
+                version.run_data, version.sources, plan.auto_latest, plan.build_cases
             )
         )
         result = BuildRecordSerializers(record).data
@@ -94,15 +90,15 @@ class BuilderViewSets(viewsets.GenericViewSet):
         branch = serializer.validated_data.get('branch')
         env_list = serializer.validated_data.get('env_list')
         region_list = serializer.validated_data.get('region_list')
+        case_list = serializer.validated_data.get('case_list')
         if not has_project_permission(project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         version = ProjectVersion.objects.get(
             project_id=project_id,
             branch=branch
         )
-        run_data = version.run_data
-        common_sources = version.sources
-        build_cases = join_id_to_str(serializer.validated_data.get('case_list'))
+        build_cases = join_id_to_str(case_list)
+        auto_latest = False
         buidl_desc = f'QuickBuild-@{project_name}'
         env_ids_str = join_id_to_str(env_list)
         region_ids_str = join_id_to_str(region_list)
@@ -120,7 +116,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
             routing_key=settings.BUILDER_ROUTING_KEY,
             args=(
                 record.id, project_id, project_name,
-                env_ids_str, region_ids_str, run_data, common_sources, build_cases
+                env_ids_str, region_ids_str, version.run_data, version.sources, auto_latest, build_cases
             )
         )
         result = BuildRecordSerializers(record).data
@@ -139,7 +135,9 @@ class BuilderViewSets(viewsets.GenericViewSet):
         project_id = serializer.validated_data.get('project_id')
         project_name = serializer.validated_data.get('project_name')
         run_data = serializer.validated_data.get('run_data')
-        common_struct, structure_list = JsonParser(project_id, project_name, env_id, region_id).parse(run_data)
+        common_struct, structure_list = JsonParser(
+            project_id, project_name, env_id, region_id
+        ).parse(run_data)
         engine = DcsEngine(distributed=False, limit=settings.WORKER_MAX_CASE_LIMIT)
         engine.init_common_data(common_struct)
         engine.visit(structure_list)
@@ -209,5 +207,3 @@ class BuilderViewSets(viewsets.GenericViewSet):
         response['Content-Disposition'] = f'attachment;filename={log_file_name}'
         response['Access-Control-Expose-Headers'] = "Content-Disposition"
         return response
-
-

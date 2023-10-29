@@ -9,7 +9,7 @@ from robot.api import SuiteVisitor
 class RobotModifier(SuiteVisitor):
 
     def __init__(self, name_map):
-        self.name_map = name_map
+        self._name_map = name_map
 
     def start_keyword(self, keyword):
         """Called when a keyword starts.
@@ -26,9 +26,9 @@ class RobotModifier(SuiteVisitor):
         By default, calls :meth:`end_body_item` which, by default, does nothing.
         """
         key = keyword.kwname.replace(' ', '_').lower()
-        if key in self.name_map:
+        if key in self._name_map:
             keyword.libname = None
-            keyword.kwname = self.name_map[key]
+            keyword.kwname = self._name_map[key]
 
     def start_message(self, msg):
         """Called when a message starts.

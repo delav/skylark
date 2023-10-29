@@ -1,6 +1,8 @@
 from django.db import models
+from django.conf import settings
 
 # Create your models here.
+DEFAULT_ICON = settings.KEYWORD_ICON_PATH / 'default.png'
 
 
 class LibKeyword(models.Model):
@@ -18,7 +20,7 @@ class LibKeyword(models.Model):
     input_type = models.IntegerField(default=0, help_text='input arg type')
     output_type = models.IntegerField(default=0, help_text='output  arg type')
     category = models.IntegerField(default=1, help_text='keyword category')
-    image = models.ImageField(default='icons/keyword/default.svg', upload_to='icons/keyword', help_text='keyword icon')
+    image = models.ImageField(default=DEFAULT_ICON, upload_to=settings.KEYWORD_ICON_PATH, help_text='keyword icon')
     status = models.IntegerField(default=0, help_text='module status')
     source = models.CharField(default='BuiltIn', max_length=255, help_text='keyword source')
     mark = models.CharField(default=None, blank=True, null=True, max_length=255, help_text='keyword other mark')
