@@ -147,7 +147,7 @@ def task_end_notify(task_id, project, env, region):
     if any(item['status'] not in (BuildStatus.FAILED, BuildStatus.SUCCESS) for item in task_status):
         return
     record = BuildRecord.objects.get(id=instance.record_id)
-    record.status = 1
+    record.status = BuildStatus.FINISH
     record.finish_at = datetime.now()
     record.save()
     app.send_task(

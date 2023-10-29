@@ -1,4 +1,5 @@
 from json import loads
+from copy import deepcopy
 from loguru import logger
 from django.conf import settings
 from infra.engine.dcsengine import DcsEngine
@@ -112,13 +113,14 @@ def _create_task(record_id, project_id, project_name,
 
 def _execute(record_id, project_id, project_name, env_id, env_name,
              region_id, region_name, run_data, env_region_common, build_cases):
+    copy_data = deepcopy(run_data)
     common_struct, structure_list = JsonParser(
         project_id=project_id,
         project_name=project_name,
         env_id=env_id,
         region_id=region_id,
         include_cases=build_cases
-    ).parse(run_data, env_region_common, True)
+    ).parse(copy_data, env_region_common, True)
     engine = DcsEngine(
         distributed=settings.DISTRIBUTED_BUILD,
         limit=settings.WORKER_MAX_CASE_LIMIT
