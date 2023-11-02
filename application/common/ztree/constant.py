@@ -99,7 +99,7 @@ NODE_ACTION_MAP = {
          'title': '新建目录', 'label': '目录名称', 'icon': 'iconfont icon-a-folderadd-line', 'rules': {}},
     'create_test_suite':
         {'type': NODE_ACTION_TYPE.get('create'), 'desc': NODE_DESC.get('suite'),
-         'title': '新建测试套件', 'label': '测试套件名', 'icon': 'iconfont icon-a-additionfile-line', 'rules': {}},
+         'title': '新建测试套件', 'label': '测试套件名称', 'icon': 'iconfont icon-a-additionfile-line', 'rules': {}},
     'create_keyword_file':
         {'type': NODE_ACTION_TYPE.get('create'), 'desc': NODE_DESC.get('suite'),
          'title': '新建关键字套件', 'label': '关键字套件名', 'icon': 'iconfont icon-a-additionfile-line', 'rules': {}},

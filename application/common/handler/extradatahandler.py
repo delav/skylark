@@ -1,4 +1,4 @@
-from application.constant import ModuleType
+from application.status import ModuleType
 from application.setupteardown.models import SetupTeardown
 from application.setupteardown.serializers import SetupTeardownSerializers
 from application.variable.models import Variable
@@ -6,7 +6,7 @@ from application.variable.serializers import VariableSerializers
 from application.tag.models import Tag
 from application.tag.serializers import TagSerializers
 from application.caseentity.models import CaseEntity
-from infra.constant.constants import VARIABLE_KEY, FIXTURE_KEY, TAG_KEY, ENTITY_KEY
+from application.constant import VARIABLE_KEY, FIXTURE_KEY, TAG_KEY, ENTITY_KEY
 
 
 def get_model_extra_data(module_id, module_type):

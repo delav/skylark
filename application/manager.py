@@ -1,4 +1,4 @@
-from application.constant import ModuleStatus
+from application.status import ModuleStatus
 from application.environment.models import Environment
 from application.environment.serializers import EnvironmentSerializers
 from application.region.models import Region

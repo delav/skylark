@@ -4,7 +4,7 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from infra.django.response import JsonResponse
-from application.constant import *
+from application.status import ModuleStatus, ModuleCategory, ModuleType, KeywordGroupType
 from application.storage import update_user_keyword_storage
 from application.testcase.models import TestCase
 from application.testcase.serializers import TestCaseSerializers, DuplicateTestCaseSerializers

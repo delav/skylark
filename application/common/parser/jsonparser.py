@@ -1,4 +1,4 @@
-from infra.constant.constants import *
+from application.constant import *
 from infra.engine.structure import SuiteStructure, CommonStructure
 from application.common.reader.initreader import JsonDirInitReader
 from application.common.reader.suitereader import JsonSuiteReader

@@ -1,7 +1,7 @@
 import uuid
 from django.db.models import F
-from infra.constant.constants import TAG_KEY
-from application.constant import *
+from application.constant import TAG_KEY
+from application.status import ModuleStatus, ModuleCategory, ModuleType
 from application.project.models import Project
 from application.suitedir.models import SuiteDir
 from application.testsuite.models import TestSuite

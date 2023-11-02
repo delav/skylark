@@ -11,7 +11,7 @@ from rest_framework.decorators import action
 from infra.django.response import JsonResponse
 from infra.crypto.crypter import base64_encrypt
 from infra.utils.timehanldler import get_timestamp
-from application.constant import ModuleCategory, ModuleStatus, FileSaveMode
+from application.status import ModuleCategory, ModuleStatus, FileSaveMode
 from application.suitedir.models import SuiteDir
 from application.testsuite.models import TestSuite
 from application.testsuite.serializers import TestSuiteSerializers

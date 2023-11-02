@@ -4,7 +4,7 @@ from loguru import logger
 from django.conf import settings
 from infra.engine.dcsengine import DcsEngine
 from infra.utils.typetransform import id_str_to_set
-from application.constant import ModuleStatus
+from application.status import ModuleStatus
 from application.manager import get_project_by_id
 from application.buildplan.models import BuildPlan
 from application.buildrecord.models import BuildRecord

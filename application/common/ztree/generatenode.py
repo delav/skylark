@@ -1,6 +1,6 @@
 from uuid import uuid1
 from copy import deepcopy
-from application.constant import *
+from application.status import ModuleCategory
 from application.common.ztree.constant import *
 
 

@@ -4,7 +4,7 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from infra.django.response import JsonResponse
-from application.constant import *
+from application.status import ModuleStatus, ModuleCategory, ModuleType
 from application.testsuite.models import TestSuite
 from application.testsuite.serializers import TestSuiteSerializers, DuplicateTestSuiteSerializers
 from application.suitedir.models import SuiteDir

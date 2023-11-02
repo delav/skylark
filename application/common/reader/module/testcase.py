@@ -1,9 +1,9 @@
 from django.db.models import F
-from application.constant import ModuleStatus
+from application.status import ModuleStatus
 from application.testcase.models import TestCase
 from application.testcase.serializers import TestCaseSerializers
 from application.common.reader.module.entity import EntityReader
-from infra.constant.constants import ENTITY_KEY
+from application.constant import ENTITY_KEY
 
 
 class CaseReader(object):

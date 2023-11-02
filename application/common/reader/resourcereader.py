@@ -1,12 +1,12 @@
 from pathlib import PurePath
 from django.conf import settings
-from application.constant import LibraryType
+from application.status import LibraryType
 from application.pythonlib.models import PythonLib
 from application.variable.models import Variable
 from application.manager import get_python_library_list
 from application.common.reader.module.testcase import CaseReader
 from infra.robot.resourcefile import ResourceKeywordFile, ResourceCommonFile
-from infra.constant.constants import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
+from application.constant import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
 
 
 class ResourceKeywordReader(object):

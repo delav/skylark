@@ -3,7 +3,7 @@ from application.tag.models import Tag
 from application.variable.models import Variable
 from application.common.reader.module.fixture import FixtureManager
 from infra.robot.initfile import DirInitFile
-from infra.constant.constants import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
+from application.constant import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
 
 
 class JsonDirInitReader(object):

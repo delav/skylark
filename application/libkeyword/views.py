@@ -8,7 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 from infra.utils.imagegenerator import ImageGenerator
 from infra.django.response import JsonResponse
-from application.constant import KeywordType, ModuleStatus, KeywordGroupType
+from application.status import KeywordType, ModuleStatus, KeywordGroupType
 from application.keywordgroup.models import KeywordGroup
 from application.keywordgroup.serializers import KeywordGroupSerializers
 from application.libkeyword.models import LibKeyword

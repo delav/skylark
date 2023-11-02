@@ -1,5 +1,5 @@
-from infra.constant.constants import PATH_SEP, COMMON_RESOURCE_PREFIX, RESOURCE_FILE_SUFFIX
-from application.constant import *
+from application.constant import PATH_SEP, COMMON_RESOURCE_PREFIX, RESOURCE_FILE_SUFFIX
+from application.status import ModuleStatus, ModuleCategory, ModuleType
 from application.testsuite.models import TestSuite
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers

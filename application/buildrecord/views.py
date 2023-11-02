@@ -1,4 +1,5 @@
 from loguru import logger
+from datetime import datetime
 from rest_framework import mixins
 from rest_framework import viewsets
 from infra.django.response import JsonResponse
@@ -36,6 +37,16 @@ class BuildRecordViewSets(mixins.RetrieveModelMixin, mixins.ListModelMixin, view
         create_by = request.query_params.get('create_by')
         if create_by:
             queryset = queryset.filter(create_by=create_by)
+        start_date = request.query_params.get('s_date')
+        end_date = request.query_params.get('e_date')
+        if start_date and end_date:
+            try:
+                start_date = datetime.strptime(start_date, '%Y-%m-%d')
+                end_date = datetime.strptime(end_date, '%Y-%m-%d')
+            except (Exception,):
+                pass
+            else:
+                queryset = queryset.filter(create_at__range=(start_date, end_date))
         pg_queryset = self.paginate_queryset(queryset)
         record_list = self.get_serializer(pg_queryset, many=True).data
         result = {'data': record_list, 'total': queryset.count()}

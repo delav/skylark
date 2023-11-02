@@ -1,5 +1,5 @@
 import re
-from application.constant import KeywordType, ParamMode
+from application.status import KeywordType, ParamMode
 
 fields = {
     'id': '',

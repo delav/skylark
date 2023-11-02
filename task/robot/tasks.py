@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.cache import cache
 from infra.client.redisclient import RedisClient
 from infra.utils.makedir import make_path
-from application.constant import BuildStatus
+from application.status import BuildStatus
 from application.builder.handler import convert_test_task_id, is_test_mode
 from application.buildrecord.models import BuildRecord
 from application.buildhistory.models import BuildHistory, HistoryDetail
@@ -84,6 +84,8 @@ def task_end_notify(task_id, project, env, region):
     current_result = conn.hgetall(task_redis_key)
     history_id = convert_test_task_id(task_id)
     queryset = BuildHistory.objects.filter(id=history_id)
+    if not queryset.exists():
+        return
     instance = queryset.first()
     batch = instance.batch
     build_result = {
@@ -154,5 +156,5 @@ def task_end_notify(task_id, project, env, region):
         settings.REPORT_TASK,
         queue=settings.DEFAULT_QUEUE,
         routing_key=settings.DEFAULT_ROUTING_KEY,
-        args=(history_id,)
+        args=(record.id, record.project_id)
     )

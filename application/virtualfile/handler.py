@@ -1,6 +1,6 @@
 from pathlib import Path
 from django.conf import settings
-from application.constant import ModuleStatus, FileSaveMode
+from application.status import ModuleStatus, FileSaveMode
 from application.manager import get_project_by_id
 from application.virtualfile.models import VirtualFile
 from application.virtualfile.serializers import VirtualFileSerializers

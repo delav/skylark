@@ -2,7 +2,7 @@ from loguru import logger
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from infra.django.response import JsonResponse
-from application.constant import ModuleStatus
+from application.status import ModuleStatus
 from application.manager import get_env_list, get_region_list
 from application.manager import get_department_list, get_user_group_list
 from application.project.models import Project

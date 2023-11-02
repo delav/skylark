@@ -5,7 +5,7 @@ from application.tag.models import Tag
 from application.common.reader.module.testcase import CaseReader
 from application.common.reader.module.fixture import FixtureManager
 from infra.robot.suitefile import SuiteFile
-from infra.constant.constants import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
+from application.constant import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
 
 
 class JsonSuiteReader(object):

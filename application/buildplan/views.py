@@ -6,7 +6,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from infra.django.pagination.paginator import PagePagination
 from infra.django.response import JsonResponse
-from application.constant import ModuleStatus
+from application.status import ModuleStatus
 from application.manager import get_projects_by_uid
 from application.builder.handler import generate_task_name, convert_task_name
 from application.buildplan.models import BuildPlan

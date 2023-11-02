@@ -1,8 +1,8 @@
 import json
 from datetime import datetime
 from skylark.celeryapp import app
-from infra.constant.constants import BASE_RESOURCE_KEY, USER_KEYWORD_KEY, VARIABLE_FILE_KEY, PROJECT_FILE_KEY
-from application.constant import ModuleStatus
+from application.constant import BASE_RESOURCE_KEY, USER_KEYWORD_KEY, VARIABLE_FILE_KEY, PROJECT_FILE_KEY
+from application.status import ModuleStatus
 from application.projectversion.models import ProjectVersion
 from application.environment.models import Environment
 from application.region.models import Region

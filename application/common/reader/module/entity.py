@@ -1,5 +1,5 @@
-from infra.constant.constants import ENTITY_NAME_KEY, ENTITY_PARAMS_KEY, ENTITY_RETURN_KEY
-from application.constant import KeywordType
+from application.constant import ENTITY_NAME_KEY, ENTITY_PARAMS_KEY, ENTITY_RETURN_KEY
+from application.status import KeywordType
 from application.common.reader.module.keyword import LibKeywordManager, UserKeywordManager
 from application.caseentity.models import CaseEntity
 

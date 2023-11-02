@@ -1,4 +1,4 @@
-from infra.constant.constants import ENTITY_KEY
+from application.constant import ENTITY_KEY
 from infra.robot.assembler.setting import ResourceSetting, VariableSetting, TagSetting
 from infra.robot.assembler.setting import SetupTeardownSetting, TimeoutSetting
 from infra.robot.assembler.variable import VariableAssembler

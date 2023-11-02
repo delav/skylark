@@ -1,8 +1,7 @@
 from pathlib import Path
 from django.conf import settings
 from infra.utils.timehanldler import get_timestamp
-from application.constant import *
-from application.project.models import Project
+from application.status import ModuleStatus, ModuleCategory, ModuleType, FileSaveMode
 from application.suitedir.models import SuiteDir
 from application.testsuite.models import TestSuite
 from application.testcase.models import TestCase

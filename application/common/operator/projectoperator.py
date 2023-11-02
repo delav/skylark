@@ -1,5 +1,5 @@
 from infra.utils.timehanldler import get_timestamp
-from application.constant import ModuleType, ModuleStatus
+from application.status import ModuleType, ModuleStatus
 from application.project.models import Project
 from application.variable.models import Variable
 from application.common.operator.diroperator import DirCopyOperator, DirDeleteOperator

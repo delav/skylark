@@ -1,4 +1,4 @@
-from application.constant import ModuleStatus
+from application.status import ModuleStatus
 
 LIB_KEYWORD_MAP = {}
 LIB_NAME_MAP = {}

@@ -1,86 +1,33 @@
+# robot input split chars
+SPECIAL_SEP = '#@#'
 
-# module data category
-class ModuleCategory:
-    TESTCASE = 0
-    KEYWORD = 1
-    VARIABLE = 2
-    FILE = 3
+# extra data variables key
+VARIABLE_KEY = 'variables'
+# extra data fixture key
+FIXTURE_KEY = 'fixtures'
+# extra data tag key
+TAG_KEY = 'tags'
+# extra data entity key
+ENTITY_KEY = 'entities'
 
+# case entity dict key
+ENTITY_NAME_KEY = 'entity_name'
+ENTITY_PARAMS_KEY = 'entity_input'
+ENTITY_RETURN_KEY = 'entity_output'
 
-# module data type
-class ModuleType:
-    PROJECT = 0
-    DIR = 1
-    SUITE = 2
-    CASE = 3
+# resource save key
+BASE_RESOURCE_KEY = 'base_resources'
+USER_KEYWORD_KEY = 'user_keywords'
+VARIABLE_FILE_KEY = 'variable_files'
+PROJECT_FILE_KEY = 'project_files'
 
+# project variable dict key
+VARIABLE_NAME_KEY = 'name'
+VARIABLE_VALUE_KEY = 'value'
 
-# variable value type
-class ValueType:
-    NONE = 0
-    STRING = 1
-    NUMBER = 2
-    LIST = 3
-    DICT = 4
-
-
-# model data status
-class ModuleStatus:
-    NORMAL = 0
-    DISCARDED = 1
-    DELETED = 2
-    DISABLED = 3
-    READY = 9
-
-
-# build status
-class BuildStatus:
-    PENDING = -1
-    RUNNING = 0
-    FINISH = 1
-    SUCCESS = 2
-    FAILED = 3
-
-
-class LibraryType:
-    STANDARD = 0
-    DEPENDENCE = 1
-    CUSTOMIZED = 2
-
-
-class KeywordCategory:
-    RESERVED = 0
-    ORDINARY = 1
-    DEPENDENCE = 2
-    CUSTOMIZED = 3
-    PLATFORM = 9
-
-
-class KeywordType:
-    LIB = 1
-    USER = 2
-
-
-class KeywordGroupType:
-    PUBLIC = 0
-    PROJECT = 1
-    PLATFORM = 2
-
-
-class ParamMode:
-    NONE = 0
-    SINGLE = 1
-    MULTI = 2
-    LIST = 3
-    DICT = 4
-
-
-class FileSaveMode:
-    DB = 1
-    FILE = 2
-
-
-class NoticeMode:
-    WECOM = 1
-    DING_TALK = 2
-    lARK = 3
+# robot file path config
+PATH_SEP = '/'
+INIT_FILE_NAME = '__init__'
+COMMON_RESOURCE_PREFIX = 'common'
+ROBOT_FILE_SUFFIX = '.robot'
+RESOURCE_FILE_SUFFIX = '.resource'

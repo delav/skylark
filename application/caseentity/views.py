@@ -3,7 +3,7 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from django.db import transaction
 from infra.django.response import JsonResponse
-from application.constant import ModuleStatus, KeywordType
+from application.status import ModuleStatus, KeywordType
 from application.testcase.models import TestCase
 from application.caseentity.models import CaseEntity
 from application.caseentity.serializers import CaseEntitySerializers, CaseEntityListSerializers

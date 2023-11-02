@@ -268,9 +268,10 @@ DEBUG_RESULT_KEY_PREFIX = 'robot:debug:'
 
 # Celery task
 CELERY_TASKS_PATH = (
+    'task.builder.tasks',
     'task.robot.tasks',
     'task.version.tasks',
-    'task.builder.tasks'
+    'task.reporter.tasks'
 )
 DEFAULT_QUEUE = 'default'
 DEFAULT_ROUTING_KEY = 'default'

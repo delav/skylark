@@ -5,7 +5,7 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from infra.django.pagination.paginator import PagePagination
 from infra.django.response import JsonResponse
-from application.constant import ModuleStatus
+from application.status import ModuleStatus
 from application.project.models import Project
 from application.projectpermission.models import ProjectPermission
 from application.project.serializers import ProjectSerializers

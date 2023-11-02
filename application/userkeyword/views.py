@@ -2,8 +2,8 @@ from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
 from infra.django.response import JsonResponse
-from application.constant import KeywordGroupType, KeywordCategory
-from application.constant import KeywordType, ModuleStatus
+from application.status import KeywordGroupType, KeywordCategory
+from application.status import KeywordType, ModuleStatus
 from application.userkeyword.models import UserKeyword
 from application.userkeyword.serializers import UserKeywordSerializers
 from application.keywordgroup.models import KeywordGroup

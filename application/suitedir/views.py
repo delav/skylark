@@ -3,7 +3,7 @@ from django.db import IntegrityError
 from rest_framework import mixins
 from rest_framework import viewsets
 from infra.django.response import JsonResponse
-from application.constant import *
+from application.status import ModuleStatus, ModuleCategory, ModuleType
 from application.manager import get_project_by_id
 from application.suitedir.models import SuiteDir
 from application.suitedir.serializers import SuiteDirSerializers

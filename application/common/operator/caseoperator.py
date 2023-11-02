@@ -1,5 +1,5 @@
 from infra.utils.timehanldler import get_timestamp
-from application.constant import *
+from application.status import ModuleStatus, ModuleCategory, ModuleType
 from application.testsuite.models import TestSuite
 from application.testcase.models import TestCase
 from application.tag.models import Tag

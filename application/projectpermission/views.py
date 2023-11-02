@@ -2,7 +2,7 @@ from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
 from infra.django.response import JsonResponse
-from application.constant import ModuleStatus
+from application.status import ModuleStatus
 from application.manager import get_department_list, get_user_group_list, get_user_info_by_uid
 from application.projectpermission.models import ProjectPermission
 from application.projectpermission.serializers import ProjectPermissionSerializers
