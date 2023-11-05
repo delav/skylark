@@ -13,6 +13,8 @@ from application.keywordgroup.models import KeywordGroup
 from application.keywordgroup.serializers import KeywordGroupSerializers
 from application.libkeyword.models import LibKeyword
 from application.libkeyword.serializers import LibKeywordSerializers
+from application.libkeyword.handler import scan_keyword
+from application.usergroup.models import UserGroup
 from application.common.keyword.formatter import format_keyword_data
 from application.manager import get_project_by_id
 
@@ -62,6 +64,31 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
             group_map[item.group_id]['keywords'].append(keyword_data)
         return JsonResponse(data=group_map.values())
 
+    def create(self, request, *args, **kwargs):
+        logger.info(f'create keyword: {request.data}')
+        image_name = request.data.get('name') + '.png'
+        if request.data.get('image'):
+            img = bytes(request.data.get('image'))
+        else:
+            img = ImageGenerator.generate(128, image_name, 'PNG')
+        image_file = ContentFile(BytesIO(img).getvalue(), image_name)
+        request.data['image'] = image_file
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        group_id = serializer.validated_data.get('group_id')
+        keyword_group_query = KeywordGroup.objects.filter(id=group_id)
+        if not keyword_group_query.exists():
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
+        user_group_query = UserGroup.objects.filter(
+            group__user__id=request.user.id
+        ).select_related('group')
+        user_group = user_group_query.first()
+        if user_group.group_id != keyword_group_query.first().user_group_id:
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
+
+    def update(self, request, *args, **kwargs):
+        logger.info('update keyword')
+
     @action(methods=['get'], detail=False)
     def get_list_by_group(self, request, *args, **kwargs):
         logger.info(f'get keyword group by group id: {request.query_params}')
@@ -71,6 +98,19 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         )
         serializer = self.get_serializer(queryset, many=True)
         return JsonResponse(data=serializer.data)
+
+    @action(methods=['get'], detail=False)
+    def scan_keyword(self, request, *args, **kwargs):
+        logger.info('scan keyword file by team')
+        user_group_query = UserGroup.objects.filter(
+            group__user__id=request.user.id
+        ).select_related('group')
+        user_group = user_group_query.first()
+        grou_id = user_group.group_id
+        suc, result = scan_keyword([grou_id], True)
+        if not suc:
+            return JsonResponse(code=10502, data=result)
+        return JsonResponse(data=result)
 
 
 class AdminKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,

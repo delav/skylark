@@ -1,5 +1,5 @@
 from infra.robot.assembler.configure import Config
-from application.constant import SPECIAL_SEP, VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
+from application.constant import ROBOT_SPECIAL_SEP, VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
 
 config = Config()
 
@@ -27,8 +27,8 @@ class VariableAssembler(object):
         return variable_str
 
     def _get_value_str(self, value):
-        if SPECIAL_SEP in value:
-            value_list = value.split(SPECIAL_SEP)
+        if ROBOT_SPECIAL_SEP in value:
+            value_list = value.split(ROBOT_SPECIAL_SEP)
             value_text = config.small_sep.join(value_list)
         else:
             value_text = value

@@ -30,7 +30,6 @@ class ModuleStatus:
     DISCARDED = 1
     DELETED = 2
     DISABLED = 3
-    READY = 9
 
 
 # build status
@@ -67,12 +66,11 @@ class KeywordGroupType:
     PLATFORM = 2
 
 
-class ParamMode:
+class KeywordParamMode:
     NONE = 0
-    SINGLE = 1
-    MULTI = 2
-    LIST = 3
-    DICT = 4
+    FINITE = 1
+    LIST = 2
+    DICT = 3
 
 
 class FileSaveMode:

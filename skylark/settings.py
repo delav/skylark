@@ -246,8 +246,10 @@ WORKER_MAX_CASE_LIMIT = 200
 KEYWORD_ICON_PATH = MEDIA_ROOT / 'icons' / 'keyword'
 
 # Customized python lib keyword path
-LIBRARY_PATH = BASE_DIR.parent / 'skylarklibrary' / 'libraries'
 LIBRARY_GIT = 'https://github.com/delav/skylarklibrary.git'
+LIBRARY_BASE_DIR = BASE_DIR.parent
+LIBRARY_PROJECT_NAME = 'skylarklibrary'
+LIBRARY_FILE_DIR = LIBRARY_BASE_DIR / LIBRARY_PROJECT_NAME / 'libraries'
 
 # Robot report path
 REPORT_PATH = BASE_DIR / 'report'
@@ -261,31 +263,55 @@ PROJECT_MODULE = 'SKYLARK'
 # Robot result redis
 REDIS_EXPIRE_TIME = 60*60*24*2
 ROBOT_REDIS_URL = f'redis://{REDIS.get("HOST")}:{REDIS.get("PORT")}/1'
-CASE_RESULT_KEY_PREFIX = 'robot:case:'
-TASK_RESULT_KEY_PREFIX = 'robot:task:'
-DEBUG_RESULT_KEY_PREFIX = 'robot:debug:'
 
 
-# Celery task
-CELERY_TASKS_PATH = (
+# Celery task imports
+CELERY_TASKS_IMPORTS = (
     'task.builder.tasks',
     'task.robot.tasks',
     'task.version.tasks',
-    'task.reporter.tasks'
+    'task.reporter.tasks',
 )
+# Celery queues
 DEFAULT_QUEUE = 'default'
-DEFAULT_ROUTING_KEY = 'default'
 RUNNER_QUEUE = 'runner'
-RUNNER_TASK = 'task.robot.tasks.robot_runner'
-RUNNER_ROUTING_KEY = 'robot.runner'
 NOTIFIER_QUEUE = 'notifier'
-NOTIFIER_TASK = 'task.robot.tasks.robot_notifier'
-NOTIFIER_ROUTING_KEY = 'robot.notifier'
-VERSION_TASK = 'task.version.tasks.generate_version'
 BUILDER_QUEUE = 'builder'
-BUILDER_ROUTING_KEY = 'periodic.builder'
+# Celery tasks
+NOTIFIER_TASK = 'task.robot.tasks.robot_notifier'
+RUNNER_TASK = 'task.robot.tasks.robot_runner'
 INSTANT_TASK = 'task.builder.tasks.instant_builder'
 PERIODIC_TASK = 'task.builder.tasks.periodic_builder'
 REPORT_TASK = 'task.reporter.tasks.send_report'
+VERSION_TASK = 'task.version.tasks.generate_version'
+
+CELERY_TASK_CONF = [
+    {
+        'queue': DEFAULT_QUEUE,
+        'tasks': [
+            VERSION_TASK,
+            REPORT_TASK,
+        ]
+    },
+    {
+        'queue': RUNNER_QUEUE,
+        'tasks': [
+            # RUNNER_TASK
+        ]
+    },
+    {
+        'queue': NOTIFIER_QUEUE,
+        'tasks': [
+            NOTIFIER_TASK
+        ]
+    },
+    {
+        'queue': BUILDER_QUEUE,
+        'tasks': [
+            INSTANT_TASK,
+            PERIODIC_TASK
+        ]
+    }
+]
 
 

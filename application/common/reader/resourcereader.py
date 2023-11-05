@@ -42,7 +42,7 @@ class ResourceKeywordReader(object):
 
 
 class ResourceCommonReader(object):
-    library_base_path = settings.LIBRARY_PATH
+    library_base_path = settings.LIBRARY_FILE_DIR
 
     def __init__(self, env_id, region_id, project_id, module_type):
         self.env_id = env_id

@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.cache import cache
 from infra.client.redisclient import RedisClient
 from infra.utils.makedir import make_path
+from application.constant import REDIS_CASE_RESULT_KEY_PREFIX, REDIS_TASK_RESULT_KEY_PREFIX
 from application.status import BuildStatus
 from application.builder.handler import convert_test_task_id, is_test_mode
 from application.buildrecord.models import BuildRecord
@@ -41,7 +42,7 @@ def robot_notifier(task_id, project, env, region, notify_type):
 
 def debug_notify(task_id, project, env, region):
     conn = RedisClient(settings.ROBOT_REDIS_URL).connector
-    task_redis_key = settings.TASK_RESULT_KEY_PREFIX + task_id
+    task_redis_key = REDIS_TASK_RESULT_KEY_PREFIX + task_id
     current_result = conn.hgetall(task_redis_key)
     batch = current_result.pop('batch')
     # test task not finish complete(maybe have multiple batches)
@@ -80,7 +81,7 @@ def task_start_notify(task_id):
 
 def task_end_notify(task_id, project, env, region):
     conn = RedisClient(settings.ROBOT_REDIS_URL).connector
-    task_redis_key = settings.TASK_RESULT_KEY_PREFIX + task_id
+    task_redis_key = REDIS_TASK_RESULT_KEY_PREFIX + task_id
     current_result = conn.hgetall(task_redis_key)
     history_id = convert_test_task_id(task_id)
     queryset = BuildHistory.objects.filter(id=history_id)
@@ -129,7 +130,7 @@ def task_end_notify(task_id, project, env, region):
     build_result['end_time'] = datetime.fromtimestamp(build_result['end_time'])
     # build_result['report_content'] = str(output_list)
     queryset.update(**build_result)
-    case_redis_key = settings.CASE_RESULT_KEY_PREFIX + task_id
+    case_redis_key = REDIS_CASE_RESULT_KEY_PREFIX + task_id
     case_detail_list = []
     cases_result = conn.hgetall(case_redis_key)
     # cases_result = cache.hgetall(case_redis_key)
@@ -154,7 +155,5 @@ def task_end_notify(task_id, project, env, region):
     record.save()
     app.send_task(
         settings.REPORT_TASK,
-        queue=settings.DEFAULT_QUEUE,
-        routing_key=settings.DEFAULT_ROUTING_KEY,
         args=(record.id, record.project_id)
     )

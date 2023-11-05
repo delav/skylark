@@ -1,5 +1,5 @@
 from infra.robot.assembler.configure import Config
-from application.constant import SPECIAL_SEP, ENTITY_NAME_KEY, ENTITY_PARAMS_KEY, ENTITY_RETURN_KEY
+from application.constant import ROBOT_SPECIAL_SEP, ENTITY_NAME_KEY, ENTITY_PARAMS_KEY, ENTITY_RETURN_KEY
 
 config = Config()
 
@@ -149,8 +149,8 @@ class EntityAssembler(object):
     def _get_inout(self, outputs_or_inputs):
         if not outputs_or_inputs:
             return ''
-        if SPECIAL_SEP in outputs_or_inputs:
-            cco_var = outputs_or_inputs.split(SPECIAL_SEP)
+        if ROBOT_SPECIAL_SEP in outputs_or_inputs:
+            cco_var = outputs_or_inputs.split(ROBOT_SPECIAL_SEP)
             inout_str = config.small_sep.join(cco_var)
         else:
             inout_str = outputs_or_inputs

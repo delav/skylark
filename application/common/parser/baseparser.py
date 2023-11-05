@@ -1,4 +1,4 @@
-from application.constant import PATH_SEP, COMMON_RESOURCE_PREFIX, RESOURCE_FILE_SUFFIX
+from application.constant import ROBOT_PATH_SEP, ROBOT_COMMON_RESOURCE_PREFIX, ROBOT_RESOURCE_FILE_SUFFIX
 from application.status import ModuleStatus, ModuleCategory, ModuleType
 from application.testsuite.models import TestSuite
 from application.suitedir.models import SuiteDir
@@ -51,11 +51,11 @@ class CommonParser(object):
             file_name = suite.name
             # user keyword will add suffix
             if suite.category == ModuleCategory.KEYWORD:
-                file_name = suite.name + RESOURCE_FILE_SUFFIX
+                file_name = suite.name + ROBOT_RESOURCE_FILE_SUFFIX
             # file type will read name from reader
             if suite.category == ModuleCategory.VARIABLE or suite.category == ModuleCategory.FILE:
                 file_name = instance.name() if hasattr(instance, 'name') else suite.name
-            file = PATH_SEP.join([self.project_name, path, file_name])
+            file = ROBOT_PATH_SEP.join([self.project_name, path, file_name])
             text = instance.read()
             if not text:
                 continue
@@ -72,7 +72,7 @@ class CommonParser(object):
         dir_ser = SuiteDirSerializers(dir_queryset, many=True)
         dir_list = dir_ser.data
         path_tree = list_to_tree(dir_list)
-        path_map = get_path_from_tree(path_tree, PATH_SEP)
+        path_map = get_path_from_tree(path_tree, ROBOT_PATH_SEP)
         for item in dir_list:
             suite_queryset = TestSuite.objects.filter(
                 suite_dir_id=item['id'],
@@ -95,8 +95,8 @@ class CommonParser(object):
         handle common variable file. belong resource file, too
         """
         un_name = f'{self.env_id}_{self.region_id}' if self.region_id else f'{self.env_id}'
-        common_name = f'{un_name}_{COMMON_RESOURCE_PREFIX}{RESOURCE_FILE_SUFFIX}'
-        common_file = PATH_SEP.join([self.project_name, common_name])
+        common_name = f'{un_name}_{ROBOT_COMMON_RESOURCE_PREFIX}{ROBOT_RESOURCE_FILE_SUFFIX}'
+        common_file = ROBOT_PATH_SEP.join([self.project_name, common_name])
         common_text = ResourceCommonReader(
             env_id=self.env_id,
             region_id=self.region_id,

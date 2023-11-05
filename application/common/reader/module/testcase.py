@@ -3,7 +3,7 @@ from application.status import ModuleStatus
 from application.testcase.models import TestCase
 from application.testcase.serializers import TestCaseSerializers
 from application.common.reader.module.entity import EntityReader
-from application.constant import ENTITY_KEY
+from application.constant import EXTRA_ENTITY_KEY
 
 
 class CaseReader(object):
@@ -31,7 +31,7 @@ class CaseReader(object):
                     continue
             case_info = TestCaseSerializers(item).data
             entity_list = entity_reader.get_by_case_id(item.id)
-            case_info.update({ENTITY_KEY: entity_list})
+            case_info.update({EXTRA_ENTITY_KEY: entity_list})
             testcase_list.append(case_info)
         return testcase_list
 
@@ -43,11 +43,11 @@ class CaseReader(object):
                 if item['id'] not in self.include_cases:
                     continue
             extra_data = item.pop('extra_data')
-            if ENTITY_KEY in extra_data:
-                entity_list = entity_reader.get_by_entity_data(extra_data[ENTITY_KEY])
+            if EXTRA_ENTITY_KEY in extra_data:
+                entity_list = entity_reader.get_by_entity_data(extra_data[EXTRA_ENTITY_KEY])
             else:
                 entity_list = entity_reader.get_by_case_id(item['id'])
-            item.update({ENTITY_KEY: entity_list})
+            item.update({EXTRA_ENTITY_KEY: entity_list})
             testcase_list.append(item)
         return testcase_list
 

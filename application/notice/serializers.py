@@ -20,8 +20,6 @@ class NoticeSerializers(serializers.ModelSerializer):
         ret = super().to_internal_value(data)
         ret['rcv_email'] = ','.join(ret['rcv_email'])
         request = self.context.get('request')
-        if not request:
-            return ret
         if request.method == 'POST':
             ret['create_by'] = request.user.email
         ret['update_by'] = request.user.email

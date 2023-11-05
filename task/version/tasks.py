@@ -1,7 +1,9 @@
 import json
 from datetime import datetime
 from skylark.celeryapp import app
-from application.constant import BASE_RESOURCE_KEY, USER_KEYWORD_KEY, VARIABLE_FILE_KEY, PROJECT_FILE_KEY
+from application.constant import (
+    VERSION_BASE_RESOURCE_KEY, VERSION_USER_KEYWORD_KEY, VERSION_VARIABLE_FILE_KEY, VERSION_PROJECT_FILE_KEY
+)
 from application.status import ModuleStatus
 from application.projectversion.models import ProjectVersion
 from application.environment.models import Environment
@@ -21,23 +23,27 @@ def generate_version(project_id, version_kwargs):
         if not region_queryset.exists():
             parser = CommonParser(project_id, project_name, env.id, None)
             parser.init_sources()
-            base_resource = {'base': {
-                BASE_RESOURCE_KEY: parser.common_base_resources,
-                USER_KEYWORD_KEY: parser.common_user_keywords,
-                VARIABLE_FILE_KEY: parser.common_variable_files,
-                PROJECT_FILE_KEY: parser.common_project_files,
-            }}
+            base_resource = {
+                'base': {
+                    VERSION_BASE_RESOURCE_KEY: parser.common_base_resources,
+                    VERSION_USER_KEYWORD_KEY: parser.common_user_keywords,
+                    VERSION_VARIABLE_FILE_KEY: parser.common_variable_files,
+                    VERSION_PROJECT_FILE_KEY: parser.common_project_files,
+                }
+            }
             env_resource_dict[env.id].update(base_resource)
             continue
         for region in region_queryset:
             parser = CommonParser(project_id, project_name, env.id, region.id)
             parser.init_sources()
-            region_resource = {region.id: {
-                BASE_RESOURCE_KEY: parser.common_base_resources,
-                USER_KEYWORD_KEY: parser.common_user_keywords,
-                VARIABLE_FILE_KEY: parser.common_variable_files,
-                PROJECT_FILE_KEY: parser.common_project_files,
-            }}
+            region_resource = {
+                region.id: {
+                    VERSION_BASE_RESOURCE_KEY: parser.common_base_resources,
+                    VERSION_USER_KEYWORD_KEY: parser.common_user_keywords,
+                    VERSION_VARIABLE_FILE_KEY: parser.common_variable_files,
+                    VERSION_PROJECT_FILE_KEY: parser.common_project_files,
+                }
+            }
             env_resource_dict[env.id].update(region_resource)
     version_kwargs['total_case'] = case_number
     version_kwargs['run_data'] = json.dumps(run_data)

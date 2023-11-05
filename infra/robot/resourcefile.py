@@ -2,7 +2,7 @@ from infra.robot.assembler.setting import LibrarySetting, ResourceSetting, Varia
 from infra.robot.assembler.variable import VariableAssembler
 from infra.robot.assembler.testcase import KeywordAssembler
 from infra.robot.basefile import BaseFile
-from application.constant import ENTITY_KEY
+from application.constant import EXTRA_ENTITY_KEY
 
 
 class ResourceKeywordFile(BaseFile):
@@ -49,7 +49,7 @@ class ResourceKeywordFile(BaseFile):
                 keyword_name=item.get('name'),
                 keyword_inputs=item.get('inputs'),
                 keyword_outputs=item.get('outputs'),
-                entity_list=item.get(ENTITY_KEY)
+                entity_list=item.get(EXTRA_ENTITY_KEY)
             ).get_keyword_content()
         return result
 

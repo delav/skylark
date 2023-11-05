@@ -11,6 +11,9 @@ from infra.engine.dcsengine import DcsEngine
 from infra.utils.typetransform import join_id_to_str
 from application.common.access.projectaccess import has_project_permission
 from application.manager import get_project_by_id
+from application.constant import (
+    REDIS_CASE_RESULT_KEY_PREFIX, REDIS_TASK_RESULT_KEY_PREFIX, REDIS_DEBUG_RESULT_KEY_PREFIX
+)
 from application.buildplan.models import BuildPlan
 from application.projectversion.models import ProjectVersion
 from application.buildrecord.models import BuildRecord
@@ -70,8 +73,6 @@ class BuilderViewSets(viewsets.GenericViewSet):
         )
         app.send_task(
             settings.INSTANT_TASK,
-            queue=settings.BUILDER_QUEUE,
-            routing_key=settings.BUILDER_ROUTING_KEY,
             args=(
                 record.id, project_id, project_name, env_ids_str, region_ids_str,
                 version.run_data, version.sources, plan.auto_latest, plan.build_cases
@@ -112,8 +113,6 @@ class BuilderViewSets(viewsets.GenericViewSet):
         )
         app.send_task(
             settings.INSTANT_TASK,
-            queue=settings.BUILDER_QUEUE,
-            routing_key=settings.BUILDER_ROUTING_KEY,
             args=(
                 record.id, project_id, project_name,
                 env_ids_str, region_ids_str, version.run_data, version.sources, auto_latest, build_cases
@@ -145,7 +144,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
         task_id = generate_debug_task_id()
         # debug mode save batch to redis
         conn = RedisClient(settings.ROBOT_REDIS_URL).connector
-        task_redis_key = settings.TASK_RESULT_KEY_PREFIX + task_id
+        task_redis_key = REDIS_TASK_RESULT_KEY_PREFIX + task_id
         conn.hset(task_redis_key, 'batch', len(batch_data))
         # waiting django-redis add feature to support hash
         # cache.hset(task_redis_key, 'batch', len(batch_data))
@@ -153,8 +152,6 @@ class BuilderViewSets(viewsets.GenericViewSet):
             suites, sources, resources, files = data[0], data[1], data[2], data[3]
             app.send_task(
                 settings.RUNNER_TASK,
-                queue=settings.RUNNER_QUEUE,
-                routing_key=settings.RUNNER_ROUTING_KEY,
                 priority=0,
                 args=(project_name, env_name, region_name, task_id, str(batch_no), suites, sources, resources, files)
             )
@@ -164,7 +161,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
             'build_id': task_id,
             'total_case': engine.get_case_count(),
         }
-        log_redis_key = settings.DEBUG_RESULT_KEY_PREFIX + task_id
+        log_redis_key = REDIS_DEBUG_RESULT_KEY_PREFIX + task_id
         conn.hmset(log_redis_key, {'report_path': report_path})
         conn.expire(log_redis_key, 3600)
         return JsonResponse(data=build_result)
@@ -175,7 +172,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
         conn = RedisClient(settings.ROBOT_REDIS_URL).connector
         if mode == 'debug':
             task_id = request.data.get('task_id')
-            redis_key = settings.CASE_RESULT_KEY_PREFIX+task_id
+            redis_key = REDIS_CASE_RESULT_KEY_PREFIX + task_id
             current_build_result = conn.hgetall(redis_key)
             # current_build_result = cache.hgetall(redis_key)
             logger.debug("build progress: {}".format(current_build_result))
@@ -186,7 +183,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
             histories = BuildHistory.objects.filter(record_id=record_id)
             for item in histories:
                 task_id = generate_test_task_id(item.id)
-                redis_keys.append(settings.CASE_RESULT_KEY_PREFIX + task_id)
+                redis_keys.append(REDIS_CASE_RESULT_KEY_PREFIX + task_id)
         cases_result = conn.mget(redis_keys)
         # cases_result = cache.get_many(redis_keys)
         return JsonResponse(data=cases_result or [])
@@ -195,7 +192,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
     def log(self, request, *args, **kwargs):
         build_id = request.query_params.get('id')
         conn = RedisClient(settings.ROBOT_REDIS_URL).connector
-        log_redis_key = settings.DEBUG_RESULT_KEY_PREFIX + build_id
+        log_redis_key = REDIS_DEBUG_RESULT_KEY_PREFIX + build_id
         log_info = conn.hgetall(log_redis_key)
         log_file_name = 'log.html'
         file = Path(log_info.get('report_path', ''), log_file_name)

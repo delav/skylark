@@ -1,4 +1,4 @@
-from application.constant import ENTITY_KEY
+from application.constant import EXTRA_ENTITY_KEY
 from infra.robot.assembler.setting import ResourceSetting, VariableSetting, TagSetting
 from infra.robot.assembler.setting import SetupTeardownSetting, TimeoutSetting
 from infra.robot.assembler.variable import VariableAssembler
@@ -64,7 +64,7 @@ class SuiteFile(BaseFile):
                 case_name=item.get('name'),
                 case_id=item.get('id'),
                 case_timeout=item.get('timeout'),
-                entity_list=item.get(ENTITY_KEY)
+                entity_list=item.get(EXTRA_ENTITY_KEY)
             ).get_case_content()
             result += case_text
             self.case_text_list.append(case_text)

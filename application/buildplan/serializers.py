@@ -45,8 +45,6 @@ class BuildPlanSerializers(serializers.ModelSerializer):
             ret['total_case'] = len(ret.get('case_list'))
             ret['build_cases'] = join_id_to_str(ret.pop('case_list'))
         request = self.context.get('request')
-        if not request:
-            return ret
         if request.method == 'POST':
             ret['create_by'] = request.user.email
         ret['update_by'] = request.user.email

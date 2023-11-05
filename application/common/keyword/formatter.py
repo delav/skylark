@@ -1,5 +1,5 @@
 import re
-from application.status import KeywordType, ParamMode
+from application.status import KeywordType, KeywordParamMode
 
 fields = {
     'id': '',
@@ -31,21 +31,19 @@ def format_keyword_data(**kwargs):
         return {}
     if keyword_data['keyword_type'] == KeywordType.USER:
         keyword_data['input_type'] = handler_user_keyword_type(keyword_data['input_params'])
-        keyword_data['output_type'] = ParamMode.NONE
+        keyword_data['output_type'] = KeywordParamMode.NONE
     return keyword_data
 
 
 def handler_user_keyword_type(inputs):
     if inputs is None or inputs == '':
-        return ParamMode.NONE
+        return KeywordParamMode.NONE
     list_pattern = re.compile(r'\@\{(.*)\}')
     list_arg = list_pattern.search(inputs)
     if list_arg:
-        return ParamMode.LIST
+        return KeywordParamMode.LIST
     dict_pattern = re.compile(r'\&|\&\{(.*)\}')
     dict_arg = dict_pattern.search(inputs)
     if dict_arg:
-        return ParamMode.DICT
-    elif '|' in inputs:
-        return ParamMode.MULTI
-    return ParamMode.SINGLE
+        return KeywordParamMode.DICT
+    return KeywordParamMode.FINITE

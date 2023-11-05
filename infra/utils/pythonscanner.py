@@ -1,57 +1,57 @@
-import os
 import ast
+from pathlib import Path
 
-KEYWORD = 'keyword'  # 被@keyword装饰器装饰的函数的关键字
+KEYWORD = 'keyword'
 
 
-def get_functions_info(file_path):
-    """
-    获取一个python文件中的所有函数信息
-    """
+def get_functions_info(file_path: Path):
     with open(file_path, 'r', encoding='utf-8') as f:
         tree = ast.parse(f.read())
 
-    module_name = os.path.basename(file_path).split('.')[0]
+    module_name = file_path.name.split('.')[0]
     functions = []
     for node in tree.body:
-        if isinstance(node, ast.FunctionDef):
-            func_name = node.name
-            func_args = [arg.arg for arg in node.args.args]
-            func_doc = ast.get_docstring(node)
+        if not isinstance(node, ast.FunctionDef):
+            continue
+        func_name = node.name
+        func_args = [arg.arg for arg in node.args.args]
+        func_vararg = True if node.args.vararg else False
+        func_kwarg = True if node.args.kwarg else False
+        func_doc = ast.get_docstring(node)
+        func_returns = None
+        for stmt in node.body:
+            if isinstance(stmt, ast.Return):
+                if stmt.value:
+                    func_returns = stmt.value.id
+                break
+        is_keyword = False
+        for decorator in node.decorator_list:
+            if isinstance(decorator, ast.Name) and decorator.id == KEYWORD:
+                is_keyword = True
+                break
 
-            # 查找函数是否被@keyword装饰器装饰
-            is_decorated = False
-            for decorator in node.decorator_list:
-                if isinstance(decorator, ast.Call) and decorator.func.id == KEYWORD:
-                    is_decorated = True
-                    break
-
-            functions.append({
-                'module': module_name,
-                'name': func_name,
-                'args': func_args,
-                'doc': func_doc,
-                'decorated': is_decorated
-            })
+        functions.append({
+            'module': module_name,
+            'name': func_name,
+            'args': func_args,
+            'vararg': func_vararg,
+            'kwarg': func_kwarg,
+            'doc': func_doc,
+            'keyword': is_keyword,
+            'returns': func_returns,
+        })
 
     return functions
 
 
-def scan_directory(directory_path):
-    """
-    扫描某个目录下的所有python文件并解析函数信息
-    """
+def scan_directory(dir_path: Path):
+    if not isinstance(dir_path, Path):
+        dir_path = Path(dir_path)
+    if not dir_path.exists():
+        return []
     functions = []
-    for root, dirs, files in os.walk(directory_path):
-        for file in files:
-            if file.endswith('.py'):
-                file_path = os.path.join(root, file)
-                functions.extend(get_functions_info(file_path))
-
+    for f in dir_path.iterdir():
+        if f.is_file() and f.suffix == '.py':
+            functions.extend(get_functions_info(f))
     return functions
 
-
-if __name__ == '__main__':
-    functions = scan_directory('/path/to/directory')
-    for function in functions:
-        print(function)

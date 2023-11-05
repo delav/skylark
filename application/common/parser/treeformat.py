@@ -1,6 +1,6 @@
 import uuid
 from django.db.models import F
-from application.constant import TAG_KEY
+from application.constant import EXTRA_TAG_KEY
 from application.status import ModuleStatus, ModuleCategory, ModuleType
 from application.project.models import Project
 from application.suitedir.models import SuiteDir
@@ -165,7 +165,7 @@ def _get_suite_tree(parent_node_id, suite_queryset, tree_nodes):
                 include_entity=True
             )
             case_data['type'] = NODE_DESC['case']
-            tag_list = case_data['extra_data'].pop(TAG_KEY)
+            tag_list = case_data['extra_data'].pop(EXTRA_TAG_KEY)
             # ztree node
             node_extra_data = {
                 'tag': [item.get('name') for item in tag_list],

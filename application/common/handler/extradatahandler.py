@@ -6,7 +6,7 @@ from application.variable.serializers import VariableSerializers
 from application.tag.models import Tag
 from application.tag.serializers import TagSerializers
 from application.caseentity.models import CaseEntity
-from application.constant import VARIABLE_KEY, FIXTURE_KEY, TAG_KEY, ENTITY_KEY
+from application.constant import EXTRA_VARIABLE_KEY, EXTRA_FIXTURE_KEY, EXTRA_TAG_KEY, EXTRA_ENTITY_KEY
 
 
 def get_model_extra_data(module_id, module_type):
@@ -31,9 +31,9 @@ def get_model_extra_data(module_id, module_type):
     if tag_queryset.exists():
         tag_list = TagSerializers(tag_queryset, many=True).data
     extra_data_result = {
-        VARIABLE_KEY: variable_list,
-        FIXTURE_KEY: fixture_dict,
-        TAG_KEY: tag_list
+        EXTRA_VARIABLE_KEY: variable_list,
+        EXTRA_FIXTURE_KEY: fixture_dict,
+        EXTRA_TAG_KEY: tag_list
     }
     return extra_data_result
 
@@ -72,14 +72,14 @@ def get_model_simple_extra_data(module_id, module_type, include_entity=False):
     if tag_queryset.exists():
         tag_list = list(tag_queryset)
     extra_data_result = {
-        VARIABLE_KEY: variable_list,
-        FIXTURE_KEY: fixture_dict,
-        TAG_KEY: tag_list
+        EXTRA_VARIABLE_KEY: variable_list,
+        EXTRA_FIXTURE_KEY: fixture_dict,
+        EXTRA_TAG_KEY: tag_list
     }
     if include_entity:
         entity_queryset = CaseEntity.objects.filter(
             test_case_id=module_id
         ).order_by('order').values(*entity_simple_fields)
-        extra_data_result[ENTITY_KEY] = list(entity_queryset)
+        extra_data_result[EXTRA_ENTITY_KEY] = list(entity_queryset)
     return extra_data_result
 

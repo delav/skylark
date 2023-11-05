@@ -81,7 +81,7 @@ class ImageGenerator(object):
 
 
 if __name__ == '__main__':
-    name = 'for.png'
+    name = 'http_get.png'
     img = ImageGenerator.generate(128, name, 'PNG')
     gen_image = Image.open(BytesIO(img))
     image_path = f'C:/Users/Delav/Desktop/skylark/media/icons/keyword/{name}'

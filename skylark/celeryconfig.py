@@ -5,34 +5,38 @@ from kombu import Queue
 redis_host = settings.REDIS.get('HOST')
 redis_port = settings.REDIS.get('PORT')
 
+
+def get_task_queues():
+    queues = []
+    for item in settings.CELERY_TASK_CONF:
+        queue_info = Queue(
+            item.get('queue')
+        )
+        queues.append(queue_info)
+    return tuple(queues)
+
+
+def get_task_routes():
+    routes = {}
+    for item in settings.CELERY_TASK_CONF:
+        queue_info = {
+            'queue': item.get('queue')
+        }
+        for task in item.get('tasks'):
+            routes[task] = queue_info
+    return routes
+
+
 # Celery config
-imports = settings.CELERY_TASKS_PATH
+imports = settings.CELERY_TASKS_IMPORTS
 broker_url = f'redis://{redis_host}:{redis_port}/0'
 result_backend = f'redis://{redis_host}:{redis_port}/0'
 beat_schedule = 'django_celery_beat.schedulers:DatabaseScheduler'
 default_queue = 'default'
-task_queues = (
-    Queue(settings.DEFAULT_QUEUE, routing_key=settings.DEFAULT_ROUTING_KEY),
-    Queue(settings.NOTIFIER_QUEUE, routing_key=settings.NOTIFIER_ROUTING_KEY),
-    Queue(settings.BUILDER_QUEUE, routing_key=settings.BUILDER_ROUTING_KEY),
- )
-task_routes = {
-    settings.VERSION_TASK: {
-        'queue': settings.DEFAULT_QUEUE, 'routing_key': settings.DEFAULT_ROUTING_KEY
-    },
-    settings.INSTANT_TASK: {
-        'queue': settings.BUILDER_QUEUE, 'routing_key': settings.BUILDER_ROUTING_KEY
-    },
-    settings.PERIODIC_TASK: {
-        'queue': settings.BUILDER_QUEUE, 'routing_key': settings.BUILDER_ROUTING_KEY
-    },
-    settings.NOTIFIER_TASK: {
-        'queue': settings.NOTIFIER_QUEUE, 'routing_key': settings.NOTIFIER_ROUTING_KEY
-    },
-    settings.REPORT_TASK: {
-        'queue': settings.DEFAULT_QUEUE, 'routing_key': settings.DEFAULT_ROUTING_KEY
-    }
- }
+# register queue
+task_queues = get_task_queues()
+# register task
+task_routes = get_task_routes()
 # notify mq message is consumed only task finish, notifier not need
 ack_late = False
 # serialize type
