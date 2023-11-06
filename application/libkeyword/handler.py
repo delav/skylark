@@ -62,19 +62,24 @@ def serializer_to_keyword(func_list, allowed_update=False):
         keyword_query = LibKeyword.objects.filter(name=func_name)
         if keyword_query.exists() and not allowed_update:
             continue
-        input_type = KeywordParamMode.NONE
         output_type = KeywordParamMode.NONE
         input_args = func.get('args')
         if len(input_args) == 0:
             input_type = KeywordParamMode.NONE
-        elif len(input_args) > 0:
+            if func.get('vararg'):
+                input_type = KeywordParamMode.LIST
+                input_args.append('*args')
+            if func.get('kwarg'):
+                input_type = KeywordParamMode.DICT
+                input_args.append('**kwarg')
+        else:
             input_type = KeywordParamMode.FINITE
-        if func.get('vararg'):
-            input_type = KeywordParamMode.LIST
-            input_args.append('*args')
-        if func.get('kwarg'):
-            input_type = KeywordParamMode.DICT
-            input_args.append('**kwarg')
+            if func.get('vararg'):
+                input_type = KeywordParamMode.MIXED
+                input_args.append('*args')
+            if func.get('kwarg'):
+                input_type = KeywordParamMode.MIXED
+                input_args.append('**kwarg')
         if func.get('returns'):
             returns = '${' + func.get('returns') + '}'
             output_type = KeywordParamMode.FINITE

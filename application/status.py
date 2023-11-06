@@ -71,6 +71,7 @@ class KeywordParamMode:
     FINITE = 1
     LIST = 2
     DICT = 3
+    MIXED = 4
 
 
 class FileSaveMode:

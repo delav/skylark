@@ -85,9 +85,21 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         user_group = user_group_query.first()
         if user_group.group_id != keyword_group_query.first().user_group_id:
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
+        self.perform_create(serializer)
+        return JsonResponse(data=serializer.data)
 
     def update(self, request, *args, **kwargs):
-        logger.info('update keyword')
+        logger.info(f'update keyword: {request.data}')
+        instance = self.get_object()
+        if request.data.get('image'):
+            name = request.data.get('name') or instance.name
+            img = bytes(request.data.get('image'))
+            image_file = ContentFile(BytesIO(img).getvalue(), name+'.png')
+            request.data['image'] = image_file
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return JsonResponse(serializer.data)
 
     @action(methods=['get'], detail=False)
     def get_list_by_group(self, request, *args, **kwargs):

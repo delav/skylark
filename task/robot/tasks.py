@@ -155,5 +155,6 @@ def task_end_notify(task_id, project, env, region):
     record.save()
     app.send_task(
         settings.REPORT_TASK,
+        queue=settings.DEFAULT_QUEUE,
         args=(record.id, record.project_id)
     )

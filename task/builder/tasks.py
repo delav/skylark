@@ -143,6 +143,7 @@ def _execute(record_id, project_id, project_name, env_id, env_name,
         suites, sources, resources, files = data[0], data[1], data[2], data[3]
         celery_task = app.send_task(
             settings.RUNNER_TASK,
+            queue=settings.RUNNER_QUEUE,
             priority=1,
             args=(project_name, env_name, region_name, task_id, str(batch_no), suites, sources, resources, files)
         )

@@ -73,6 +73,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
         )
         app.send_task(
             settings.INSTANT_TASK,
+            queue=settings.RUNNER_QUEUE,
             args=(
                 record.id, project_id, project_name, env_ids_str, region_ids_str,
                 version.run_data, version.sources, plan.auto_latest, plan.build_cases
@@ -113,6 +114,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
         )
         app.send_task(
             settings.INSTANT_TASK,
+            queue=settings.RUNNER_QUEUE,
             args=(
                 record.id, project_id, project_name,
                 env_ids_str, region_ids_str, version.run_data, version.sources, auto_latest, build_cases
@@ -152,6 +154,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
             suites, sources, resources, files = data[0], data[1], data[2], data[3]
             app.send_task(
                 settings.RUNNER_TASK,
+                queue=settings.RUNNER_QUEUE,
                 priority=0,
                 args=(project_name, env_name, region_name, task_id, str(batch_no), suites, sources, resources, files)
             )

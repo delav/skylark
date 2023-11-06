@@ -45,6 +45,7 @@ class ProjectVersionViewSets(mixins.RetrieveModelMixin,
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         app.send_task(
             settings.VERSION_TASK,
+            queue=settings.DEFAULT_QUEUE,
             args=(project_id, serializer.validated_data)
         )
         return JsonResponse(data='send task success')
