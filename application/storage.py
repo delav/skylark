@@ -9,17 +9,17 @@ USER_KEYWORD_MAP = {}
 def load_lib_keyword_to_storage(model):
     lib_keywords = model.objects.filter(
         status=ModuleStatus.NORMAL
-    )
+    ).values('id', 'name', 'ext_name', 'input_params', 'output_params')
     for keyword in lib_keywords.iterator():
         item_data = {
-            'name': keyword.name,
-            'ext_name': keyword.ext_name,
-            'input_params': keyword.input_params,
-            'output_params': keyword.output_params,
+            'name': keyword['name'],
+            'ext_name': keyword['ext_name'],
+            'input_params': keyword['input_params'],
+            'output_params': keyword['output_params'],
         }
-        LIB_KEYWORD_MAP[keyword.id] = item_data
-        LIB_NAME_MAP[keyword.name] = keyword.ext_name
-        LIB_ALIAS_MAP[keyword.ext_name] = keyword.name
+        LIB_KEYWORD_MAP[keyword['id']] = item_data
+        LIB_NAME_MAP[keyword['name']] = keyword['ext_name']
+        LIB_ALIAS_MAP[keyword['ext_name']] = keyword['name']
 
 
 def load_user_keyword_to_storage(model):

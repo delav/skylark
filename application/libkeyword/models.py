@@ -10,6 +10,8 @@ class LibKeyword(models.Model):
     name = models.CharField(max_length=255, unique=True, help_text='keyword name')
     create_at = models.DateTimeField(auto_now_add=True, help_text='create time')
     update_at = models.DateTimeField(auto_now=True, help_text='update time')
+    create_by = models.CharField(max_length=255, help_text='create user')
+    update_by = models.CharField(max_length=255, help_text='last update user')
     ext_name = models.CharField(max_length=255, unique=True, help_text='external name')
     desc = models.TextField(default=None, blank=True, null=True, help_text='keyword desc')
     group_id = models.IntegerField(help_text='associated keyword group')

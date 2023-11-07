@@ -8,7 +8,8 @@ class LibKeywordSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = LibKeyword
-        exclude = ('create_at', 'update_at')
+        fields = '__all__'
+        read_only_fields = ('create_by', 'update_by')
 
     def validate(self, attrs):
         attrs['category'] = KeywordCategory.CUSTOMIZED
@@ -17,3 +18,12 @@ class LibKeywordSerializers(serializers.ModelSerializer):
             # new keyword status
             attrs['status'] = ModuleStatus.NORMAL
         return attrs
+
+    def to_internal_value(self, data):
+        ret = super().to_internal_value(data)
+        request = self.context.get('request')
+        user_email = request.user.email
+        if request.method == 'POST':
+            ret['create_by'] = user_email
+        ret['update_by'] = user_email
+        return ret
