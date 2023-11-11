@@ -83,3 +83,8 @@ class NoticeMode:
     WECOM = 1
     DING_TALK = 2
     lARK = 3
+
+
+class SystemInfoType:
+    NOTICE = 1
+    FEEDBACK = 2

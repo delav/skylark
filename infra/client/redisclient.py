@@ -25,4 +25,4 @@ class RedisClient(metaclass=Singleton):
         return self._conn
 
     def get_connection(self):
-        self._conn = Redis(connection_pool=self.pool)
+        self._conn = Redis(connection_pool=self.pool, decode_responses=True)

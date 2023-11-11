@@ -1,5 +1,5 @@
-from application.notice.models import Notice
-from application.notice.handler import ReportNotifier
+from application.notification.models import Notification
+from application.notification.handler import ReportNotifier
 from application.buildrecord.models import BuildRecord
 from application.buildhistory.models import BuildHistory
 from application.status import NoticeMode
@@ -9,7 +9,7 @@ from skylark.celeryapp import app
 
 @app.task
 def send_report(record_id, project_id):
-    notice_query = Notice.objects.filter(project_id=project_id)
+    notice_query = Notification.objects.filter(project_id=project_id)
     if not notice_query.exists():
         return
     notice = notice_query.first()

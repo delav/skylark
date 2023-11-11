@@ -1,6 +1,6 @@
+import re
 from pathlib import Path
 from io import StringIO
-from re import search
 from loguru import logger
 from django.db import transaction
 from django.utils.http import urlquote
@@ -46,7 +46,7 @@ class VirtualFileViewSets(viewsets.GenericViewSet):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         full_path_list = get_full_dir_path(suite.suite_dir, [])
         file_name = suite.name
-        suffix = str(search(r'\w*(.\w*)', file_name).group(1))
+        suffix = str(re.search(r'\w*(.\w*)', file_name).group(1))
         file_data['file_name'] = file_name
         file_data['file_suffix'] = suffix
         file_data['update_time'] = int(get_timestamp(10))
@@ -80,7 +80,7 @@ class VirtualFileViewSets(viewsets.GenericViewSet):
             'region_id': None,
             'file_path': '',
             'file_name': suite.name,
-            'file_suffix': str(search(r'\w*(.\w*)', suite.name).group(1)),
+            'file_suffix': str(re.search(r'\w*(.\w*)', suite.name).group(1)),
             'file_text': '',
             'suite_id': suite.id,
             'edit_file': True
@@ -115,7 +115,7 @@ class ProjectFileViewSets(viewsets.GenericViewSet):
             for f in files:
                 if f.size > settings.FILE_SIZE_LIMIT:
                     continue
-                suffix = str(search(r'\w*(.\w*)', f.name).group(1))
+                suffix = str(re.search(r'\w*(.\w*)', f.name).group(1))
                 related_suite_data = {
                     'project_id': dir_obj.project_id,
                     'category': ModuleCategory.FILE,

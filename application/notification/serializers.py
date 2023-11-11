@@ -1,12 +1,12 @@
 from rest_framework import serializers
-from application.notice.models import Notice
+from application.notification.models import Notification
 
 
-class NoticeSerializers(serializers.ModelSerializer):
+class NotificationSerializers(serializers.ModelSerializer):
     rcv_email = serializers.ListField(help_text='email list')
 
     class Meta:
-        model = Notice
+        model = Notification
         fields = '__all__'
         read_only_fields = ('create_by', 'update_by')
 

@@ -3,7 +3,7 @@ from django.db import models
 
 # Create your models here.
 
-class Notice(models.Model):
+class Notification(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
     project_id = models.IntegerField(help_text='associated project')
     create_at = models.DateTimeField(auto_now_add=True, help_text='build time')
@@ -22,6 +22,6 @@ class Notice(models.Model):
     email_switch = models.BooleanField(default=False, help_text='email notify switch')
 
     class Meta:
-        verbose_name = 'notice'
+        verbose_name = 'notification'
         verbose_name_plural = verbose_name
-        db_table = 'notice'
+        db_table = 'notification'

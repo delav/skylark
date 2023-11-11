@@ -74,7 +74,7 @@ INSTALLED_APPS = [
     'application.casepriority.apps.CasePriorityConfig',
     'application.pythonlib.apps.PythonlibConfig',
     'application.projectversion.apps.ProjectVersionConfig',
-    'application.notice.apps.NoticeConfig'
+    'application.notification.apps.NotificationConfig'
 ]
 
 MIDDLEWARE = [
@@ -231,14 +231,16 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
-PROJECT_FILES = BASE_DIR / 'static/files'
+SYSTEM_FILES = BASE_DIR / 'static/systemfiles'
+
+PROJECT_FILES = BASE_DIR / 'static/projectfiles'
 FILE_SIZE_LIMIT = 10 * 1024 * 1024
 SAVE_TO_DB_SIZE_LIMIT = 1 * 1024 * 1024
 VARIABLE_FILE_TYPE = ('.py', '.yaml')
 SAVE_TO_DB_FILE_TYPE = ()
 
 # distributed execute
-DISTRIBUTED_BUILD = True
+DISTRIBUTED_BUILD = False
 DISTRIBUTED_WITH_SUITE = False
 WORKER_MAX_CASE_LIMIT = 200
 

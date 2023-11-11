@@ -32,4 +32,4 @@ REDIS_CASE_RESULT_KEY_PREFIX = 'robot:case:'
 REDIS_TASK_RESULT_KEY_PREFIX = 'robot:task:'
 REDIS_DEBUG_RESULT_KEY_PREFIX = 'robot:debug:'
 REDIS_KEYWORD_SCAN_KEY_PREFIX = 'keyword.scan.team:'
-
+REDIS_SYSTEM_KEY_PREFIX = 'system:'
