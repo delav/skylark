@@ -4,12 +4,11 @@ from io import StringIO
 from loguru import logger
 from django.db import transaction
 from django.utils.http import urlquote
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse
 from django.conf import settings
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from infra.django.response import JsonResponse
-from infra.crypto.crypter import base64_encrypt
 from infra.utils.timehanldler import get_timestamp
 from application.status import ModuleCategory, ModuleStatus, FileSaveMode
 from application.suitedir.models import SuiteDir
@@ -20,7 +19,7 @@ from application.virtualfile.serializers import VirtualFileSerializers, UploadFo
 from application.common.ztree.generatenode import handler_suite_node
 from application.common.access.projectaccess import has_project_permission
 from application.virtualfile.handler import PATH_SEPARATOR
-from application.virtualfile.handler import get_file_content, get_full_dir_path, get_download_file_stream
+from application.virtualfile.handler import get_file_content, get_full_dir_path
 
 # Create your views here.
 
@@ -206,26 +205,3 @@ class ProjectFileViewSets(viewsets.GenericViewSet):
         if not file.exists():
             return None
         return open(file, 'rb')
-
-
-class InternalFileViewSets(viewsets.GenericViewSet):
-
-    @action(methods=['post'], detail=False)
-    def download_file(self, request, *args, **kwargs):
-        logger.info(f'接受slaver下载请求: {request.data}')
-        auth = request.headers.get('auth')
-        if auth != base64_encrypt(settings.INTERNAL_KEY):
-            return HttpResponse('FORBIDDEN', status=403)
-        path_str = request.data.get('path')
-        file_name = request.data.get('name')
-        if not path_str or path_str.strip() == '':
-            return HttpResponse('404_NOT_FOUND', status=404)
-        file = get_download_file_stream(path_str, file_name)
-        if not file:
-            return HttpResponse('404_NOT_FOUND', status=404)
-        response = FileResponse(file)
-        response['Content-Type'] = "application/octet-stream"
-        response['Content-Disposition'] = f'attachment;filename={urlquote(file_name)}'
-        response['Access-Control-Expose-Headers'] = "Content-Disposition"
-        return response
-

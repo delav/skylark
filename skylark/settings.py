@@ -74,7 +74,8 @@ INSTALLED_APPS = [
     'application.casepriority.apps.CasePriorityConfig',
     'application.pythonlib.apps.PythonlibConfig',
     'application.projectversion.apps.ProjectVersionConfig',
-    'application.notification.apps.NotificationConfig'
+    'application.notification.apps.NotificationConfig',
+    'application.webhook.apps.WebhookConfig'
 ]
 
 MIDDLEWARE = [
@@ -222,6 +223,14 @@ AES_KEY = '20220427@)@@)$@&'
 
 INTERNAL_KEY = "123!@#"
 
+# Email setting
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST = 'smtp.163.com'
+EMAIL_PORT = 25
+EMAIL_HOST_USER = 'admin@skylark.com'
+EMAIL_HOST_PASSWORD = 'xxxxxx'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/

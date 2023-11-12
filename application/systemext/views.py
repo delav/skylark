@@ -68,7 +68,7 @@ class SystemExtViewSets(viewsets.GenericViewSet):
         user_id = request.user.id
         info_type = SystemInfoType.NOTICE
         redis_key = f'{REDIS_SYSTEM_KEY_PREFIX}{user_id}:{info_type}:{message_id}'
-        conn.delete([redis_key])
+        conn.delete(redis_key)
         return JsonResponse()
 
     @action(methods=['post'], detail=False)

@@ -1,6 +1,7 @@
 import json
 import requests
 from loguru import logger
+from django.core.mail import send_mail
 
 
 class ReportNotifier(object):
@@ -13,8 +14,16 @@ class ReportNotifier(object):
         self.report_url = report_url
         self.result = result
     
-    def send_email(self, to_emails):
-        pass
+    def send_email(self, from_email, to_emails):
+        send_info = self._generate_email_info()
+        send_mail(
+            subject=send_info.get('title'),
+            message=send_info.get('content'),
+            from_email=from_email,
+            recipient_list=to_emails,
+            fail_silently=False
+        )
+        logger.info(f'email send finish')
     
     def send_ding(self, tokens, keywords):
         """
@@ -53,12 +62,30 @@ class ReportNotifier(object):
     def post(url, message, headers=None):
         if headers is None:
             headers = {'Content-Type': 'application/json'}
-        # json_data = json.dumps(message)
-        # r = requests.post(url, data=json_data, headers=headers)
-        # logger.info(f'notice send finish|{r.status_code}|{r.text}')
+        json_data = json.dumps(message)
+        r = requests.post(url, data=json_data, headers=headers)
+        logger.info(f'notice send finish|{r.status_code}|{r.text}')
 
-    def _generate_email_content(self):
-        return self.result
+    def _generate_email_info(self):
+        report_url = self.result['report_url']
+        title = '接口自动化测试报告【{}】'.format(self.result['project_name'])
+        body = {
+            'title': title,
+            'content': ''
+        }
+        pgs = round(self.result['success_number']/self.result['total_number'], 3)
+        self.result['progress'] = round(float(pgs*1000))/10
+        self.result['times'] = str(self.result['end_time'] - self.result['start_time']).split('.')[0]
+        part1 = '## 接口自动化测试报告【{}】\n'.format(self.result['project_name'])
+        part2 = '总用例个数：{}\n\n'.format(self.result['total_number'])
+        part3 = '通过用例数：{}\n\n'.format(self.result['success_number'])
+        part4 = '失败用例数：{}\n\n'.format(self.result['failed_number'])
+        part5 = '测试通过率：{}\n\n'.format(self.result['progress'])
+        part6 = '耗用的时间：{}\n\n'.format(self.result['times'])
+        part7 = '&nbsp;\n\n[点击查看报告]({})\n'.format(report_url)
+        content = part1 + part2 + part3 + part4 + part5 + part6 + part7
+        body['content'] = content
+        return body
 
     def _generate_ding_body(self, keywords):
         report_url = self.result['report_url']

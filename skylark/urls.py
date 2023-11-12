@@ -20,6 +20,7 @@ from django.conf.urls import include, url
 from django.views.static import serve
 from rest_framework import routers
 from application.views import BaseViewSets
+from application.internal.views.fileviews import InternalFileViewSets
 from application.user.views import NoAuthUserViewSets, NormalUserViewSets
 from application.usergroup.views import UserGroupViewSets
 from application.libkeyword.views import LibKeywordViewSets
@@ -39,7 +40,7 @@ from application.buildhistory.views import BuildHistoryViewSets
 from application.projectversion.views import ProjectVersionViewSets
 from application.tag.views import TagViewSets
 from application.casepriority.views import CasePriorityViewSets
-from application.virtualfile.views import VirtualFileViewSets, ProjectFileViewSets, InternalFileViewSets
+from application.virtualfile.views import VirtualFileViewSets, ProjectFileViewSets
 from application.notification.views import NotificationViewSets
 from application.projectpermission.views import ProjectPermissionViewSets
 from application.statistics.views import StatisticsViewSets

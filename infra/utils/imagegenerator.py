@@ -81,8 +81,10 @@ class ImageGenerator(object):
 
 
 if __name__ == '__main__':
-    name = 'http_get.png'
+    from pathlib import Path
+    icon_path = Path(__file__).resolve().parent.parent.parent / 'media' / 'icons' / 'keyword'
+    name = 'comment.png'
     img = ImageGenerator.generate(128, name, 'PNG')
     gen_image = Image.open(BytesIO(img))
-    image_path = f'C:/Users/Delav/Desktop/skylark/media/icons/keyword/{name}'
+    image_path = (icon_path / name).as_posix()
     gen_image.save(image_path)

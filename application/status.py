@@ -85,6 +85,10 @@ class NoticeMode:
     lARK = 3
 
 
+class WebhookType:
+    BuildHook = 1
+
+
 class SystemInfoType:
     NOTICE = 1
     FEEDBACK = 2

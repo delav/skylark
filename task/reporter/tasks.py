@@ -1,3 +1,4 @@
+from django.conf import settings
 from application.notification.models import Notification
 from application.notification.handler import ReportNotifier
 from application.buildrecord.models import BuildRecord
@@ -31,7 +32,7 @@ def send_report(record_id, project_id):
         elif notice_mode == NoticeMode.lARK:
             notifier.send_lark(notice.lark_token, notice.lark_keyword)
     if email_switch:
-        notifier.send_email(notice.rcv_email)
+        notifier.send_email(settings.EMAIL_HOST_USER, notice.rcv_email)
 
 
 def build_report_data(record_id, project_id):
