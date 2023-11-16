@@ -1,9 +1,8 @@
 from pathlib import PurePath
 from django.conf import settings
 from application.status import LibraryType
-from application.pythonlib.models import PythonLib
 from application.variable.models import Variable
-from application.manager import get_python_library_list
+from application.manager import get_group_library_list, get_project_by_id
 from application.common.reader.module.testcase import CaseReader
 from infra.robot.resourcefile import ResourceKeywordFile, ResourceCommonFile
 from application.constant import VARIABLE_NAME_KEY, VARIABLE_VALUE_KEY
@@ -58,7 +57,9 @@ class ResourceCommonReader(object):
 
     def _get_library_list(self):
         library_list = []
-        lib_list = get_python_library_list()
+        project = get_project_by_id(self.project_id)
+        group_id = project.get('group_id')
+        lib_list = get_group_library_list(group_id)
         for item in lib_list:
             if item['lib_type'] == LibraryType.DEPENDENCE:
                 # builtin library

@@ -87,6 +87,7 @@ class NoticeMode:
 
 class WebhookType:
     BuildHook = 1
+    GitHook = 2
 
 
 class SystemInfoType:

@@ -9,6 +9,7 @@ class PythonLib(models.Model):
     lib_type = models.IntegerField(default=1, help_text='python library type')
     lib_path = models.CharField(max_length=255, help_text='library path')
     lib_desc = models.TextField(default=None, blank=True, null=True, help_text='lib description')
+    user_group_id = models.IntegerField(default=None, null=True, blank=True, help_text='related user group')
 
     class Meta:
         verbose_name = 'python lib'

@@ -1,3 +1,4 @@
+from django.db.models import Q
 from application.status import ModuleStatus
 from application.environment.models import Environment
 from application.environment.serializers import EnvironmentSerializers
@@ -99,4 +100,11 @@ def get_user_info_by_uid(user_id):
 
 def get_python_library_list():
     library_queryset = PythonLib.objects.all()
+    return PythonLibSerializers(library_queryset, many=True).data
+
+
+def get_group_library_list(group_id):
+    library_queryset = PythonLib.objects.filter(
+        Q(user_group_id=group_id) | Q(user_group_id=None)
+    )
     return PythonLibSerializers(library_queryset, many=True).data

@@ -45,6 +45,7 @@ from application.notification.views import NotificationViewSets
 from application.projectpermission.views import ProjectPermissionViewSets
 from application.statistics.views import StatisticsViewSets
 from application.systemext.views import SystemExtViewSets
+from application.webhook.views import WebhookViewSets
 
 router = routers.SimpleRouter(trailing_slash=False)
 router.register('user/info', NormalUserViewSets, basename='user_info')
@@ -73,6 +74,7 @@ router.register('notification', NotificationViewSets, basename='notification')
 router.register('permission_project', ProjectPermissionViewSets, basename='permission_project')
 router.register('statistics', StatisticsViewSets, basename='statistics')
 router.register('system', SystemExtViewSets, basename='system')
+router.register('webhook', WebhookViewSets, basename='webhook')
 
 
 urlpatterns = [
