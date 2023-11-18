@@ -98,11 +98,6 @@ def get_user_info_by_uid(user_id):
     return user_data
 
 
-def get_python_library_list():
-    library_queryset = PythonLib.objects.all()
-    return PythonLibSerializers(library_queryset, many=True).data
-
-
 def get_group_library_list(group_id):
     library_queryset = PythonLib.objects.filter(
         Q(user_group_id=group_id) | Q(user_group_id=None)

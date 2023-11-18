@@ -1,21 +1,24 @@
 from loguru import logger
 from rest_framework import viewsets
-from rest_framework.decorators import action
+from rest_framework import mixins
 from infra.django.response.jsonresponse import JsonResponse
 from application.status import WebhookType, ModuleStatus
+from application.usergroup.models import Group
 from application.webhook.models import Webhook
 from application.webhook.serializers import WebhookSerializers
-from application.webhook.handler import common_data, create_build_hook_data, generate_secret
+from application.webhook.handler import generate_secret
 from application.buildplan.models import BuildPlan
 from application.common.access.projectaccess import has_project_permission
 
 
-class WebhookViewSets(viewsets.GenericViewSet):
+class WebhookViewSets(mixins.CreateModelMixin,
+                      mixins.ListModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = Webhook.objects.all()
+    serializer_class = WebhookSerializers
 
-    @action(methods=['post'], detail=False)
-    def create_webhook(self, request, *args, **kwargs):
-        logger.info('create webhook')
-        serializer = WebhookSerializers(data=request.data)
+    def create(self, request, *args, **kwargs):
+        logger.info(f'create webhook: {request.data}')
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         if serializer.validated_data.get('hook_type') == WebhookType.BuildHook:
             plan_list = serializer.validated_data.get('extra_data').get('plan_list', '')
@@ -33,27 +36,43 @@ class WebhookViewSets(viewsets.GenericViewSet):
             **serializer.validated_data,
             secret=generate_secret()
         )
-        data = WebhookSerializers(instance).data
+        data = self.get_serializer(instance).data
         return JsonResponse(data=data)
 
-    @action(methods=['get'], detail=False)
-    def build_webhook(self, request, *args, **kwargs):
-        logger.info(f'build webhook')
-        hook_type = request.query_params.get('type')
-        hook_data = common_data()
-        if hook_type == WebhookType.BuildHook:
-            buidl_extra_data = create_build_hook_data()
-            hook_data.update(buidl_extra_data)
-        return JsonResponse(data=hook_data)
-
-    @action(methods=['get'], detail=False)
-    def get_webhook_list(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
         logger.info('get webhook list by user')
+        groups_queryset = Group.objects.filter(
+            user=request.user
+        )
+        if not groups_queryset.exists():
+            return
+        users = groups_queryset.first().user_set.all()
+        user_email_list = [u.email for u in users]
+        webhook_queryset = Webhook.objects.filter(
+            status=ModuleStatus.NORMAL,
+            create_by__in=user_email_list
+        )
+        webhook_list = self.get_serializer(webhook_queryset, many=True).data
         result = {
-            'webhook_list': [],
+            'webhook_list': webhook_list,
             'type_list': [
                 {'name': 'Build', 'value': WebhookType.BuildHook}
             ]
         }
         return JsonResponse(data=result)
 
+    def destroy(self, request, *args, **kwargs):
+        logger.info(f'delete webhook: {kwargs.get("pk")}')
+        instance = self.get_object()
+        groups_queryset = Group.objects.filter(
+            user=request.user
+        )
+        if not groups_queryset.exists():
+            return
+        users = groups_queryset.first().user_set.all()
+        user_email_list = [u.email for u in users]
+        if request.user.email not in user_email_list:
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
+        instance.status = ModuleStatus.DELETED
+        instance.save()
+        return JsonResponse(data=instance.id)

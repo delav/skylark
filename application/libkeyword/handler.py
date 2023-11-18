@@ -1,12 +1,14 @@
 from django.conf import settings
 from infra.client.gitclient import GitClient
 from infra.utils.pythonscanner import scan_directory, get_functions_info
-from application.status import KeywordCategory, KeywordParamMode
+from infra.robot.utils.modulemathcher import check_python_module
+from application.status import KeywordCategory, KeywordParamMode, LibraryType
 from application.usergroup.models import UserGroup
 from application.libkeyword.models import LibKeyword
+from application.pythonlib.models import PythonLib
 
 
-def scan_keyword(group_id_list, force_update=False):
+def scan_library_and_keyword(group_id_list, force_update=False):
     git = GitClient()
     library_path = settings.LIBRARY_BASE_DIR / settings.LIBRARY_PROJECT_NAME
     # if not library_path.exists():
@@ -24,13 +26,64 @@ def scan_keyword(group_id_list, force_update=False):
     #     return
     user_group_queryset = UserGroup.objects.filter(
         group_id__in=group_id_list
-    )
-    all_func_list = []
-    for group in user_group_queryset:
+    ).select_related('group')
+    all_func_list = get_group_func_list(user_group_queryset)
+    result = {
+        'ready_keywords': serializer_to_keyword(all_func_list),
+        'operation_libraries': get_group_library_operation(user_group_queryset)
+    }
+    return True, result
+
+
+def get_group_library_operation(user_groups):
+    operation_libraries = {
+        'delete': [],
+        'update': [],
+        'create': []
+    }
+    for group in user_groups:
+        absolute_path = settings.LIBRARY_FILE_DIR / group.library_path
+        group_modules = {}
+        for f in absolute_path.iterdir():
+            if check_python_module(f):
+                module_name = f.name.split('.')[0]
+                group_modules[module_name] = group.library_path
+        group_library_queryset = PythonLib.objects.filter(
+            user_group_id=group.group_id
+        )
+        exist_modules = {}
+        for library in group_library_queryset:
+            module = library.lib_name
+            exist_modules[module] = library
+            # delete not exist module
+            if module not in group_modules:
+                operation_libraries['delete'].append(library)
+        for module, file_path in group_modules.items():
+            if module in exist_modules:
+                instance = exist_modules[module]
+                # update exist module path
+                if file_path != instance.lib_path:
+                    instance.lib_path = file_path
+                    operation_libraries['update'].append(instance)
+            else:
+                # create new module
+                instance = PythonLib(
+                    lib_name=module,
+                    lib_type=LibraryType.CUSTOMIZED,
+                    lib_path=file_path,
+                    user_group_id=group.group_id
+                )
+                operation_libraries['create'].append(instance)
+    return operation_libraries
+
+
+def get_group_func_list(user_groups):
+    group_func_list = []
+    for group in user_groups:
         absolute_path = settings.LIBRARY_FILE_DIR / group.library_path
         function_list = scan_directory(absolute_path)
-        all_func_list.extend(function_list)
-    return True, serializer_to_keyword(all_func_list)
+        group_func_list.extend(function_list)
+    return group_func_list
 
 
 def admin_scan_keyword(scan_files=None):

@@ -1,5 +1,6 @@
 from io import BytesIO
 from loguru import logger
+from django.db import transaction
 from django.db.models import Q
 from django.core.files.base import ContentFile
 from rest_framework import mixins
@@ -9,14 +10,15 @@ from rest_framework.permissions import IsAdminUser
 from infra.utils.imagegenerator import ImageGenerator
 from infra.django.response import JsonResponse
 from application.status import KeywordType, ModuleStatus, KeywordGroupType
+from application.common.keyword.formatter import format_keyword_data
+from application.manager import get_project_by_id
 from application.keywordgroup.models import KeywordGroup
 from application.keywordgroup.serializers import KeywordGroupSerializers
 from application.libkeyword.models import LibKeyword
 from application.libkeyword.serializers import LibKeywordSerializers
-from application.libkeyword.handler import scan_keyword
+from application.libkeyword.handler import scan_library_and_keyword
 from application.usergroup.models import UserGroup
-from application.common.keyword.formatter import format_keyword_data
-from application.manager import get_project_by_id
+from application.pythonlib.models import PythonLib
 
 # Create your views here.
 
@@ -119,10 +121,23 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         ).select_related('group')
         user_group = user_group_query.first()
         grou_id = user_group.group_id
-        suc, result = scan_keyword([grou_id], True)
+        suc, result = scan_library_and_keyword([grou_id], True)
         if not suc:
             return JsonResponse(code=10502, data=result)
-        return JsonResponse(data=result)
+        # update python library info
+        try:
+            with transaction.atomic():
+                for operation, operation_list in result['operation_libraries']:
+                    if operation == 'delete' and operation_list:
+                        for instance in operation_list:
+                            instance.delete()
+                    if operation == 'update' and operation_list:
+                        PythonLib.objects.bulk_update(operation_list)
+                    if operation == 'create' and operation_list:
+                        PythonLib.objects.bulk_create(operation_list)
+        except (Exception,):
+            logger.warning('parse group library failed')
+        return JsonResponse(data=result['ready_keywords'])
 
 
 class AdminKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,

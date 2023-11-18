@@ -1,13 +1,6 @@
 import secrets
 
 
-def common_data():
-    return {
-        'name': '',
-        'desc': ''
-    }
-
-
 def create_build_hook_data():
     return {
         'plan_list': ''

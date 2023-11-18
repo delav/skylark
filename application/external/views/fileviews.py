@@ -8,7 +8,7 @@ from infra.crypto.crypter import base64_encrypt
 from application.virtualfile.handler import get_download_file_stream
 
 
-class InternalFileViewSets(viewsets.GenericViewSet):
+class ExternalFileViewSets(viewsets.GenericViewSet):
 
     @action(methods=['post'], detail=False)
     def download_file(self, request, *args, **kwargs):

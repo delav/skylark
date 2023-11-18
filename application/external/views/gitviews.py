@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from infra.client.gitclient import GitClient
 
 
-class InternalGitViewSets(viewsets.GenericViewSet):
+class ExternalGitViewSets(viewsets.GenericViewSet):
     MERGE_STATUS = 'can_be_merged'
     STATE = 'merged'
     TARGET_BRANCH = 'master'

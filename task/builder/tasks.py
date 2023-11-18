@@ -27,6 +27,9 @@ def periodic_builder(plan_id):
         logger.warning(f'periodic builder not found plan: {plan_id}')
         return
     plan = plan_query.first()
+    if plan.status != ModuleStatus.NORMAL:
+        logger.warning(f'periodic builder plan status not normal: {plan_id}')
+        return
     project = get_project_by_id(plan.project_id)
     if not project:
         logger.warning(f'periodic builder not found project: {plan.project_id}')

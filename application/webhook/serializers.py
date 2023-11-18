@@ -24,4 +24,4 @@ class WebhookSerializers(serializers.ModelSerializer):
         return ret
 
     def get_payload_url(self, obj):
-        return settings.SERVER_DOMAIN + '/webhook?secret=' + obj.secret
+        return settings.SERVER_DOMAIN + '/api/external/webhook?secret=' + obj.secret
