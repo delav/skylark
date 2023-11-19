@@ -62,7 +62,7 @@ class KeywordType:
 
 class KeywordGroupType:
     PUBLIC = 0
-    PROJECT = 1
+    TEAM = 1
     PLATFORM = 2
 
 

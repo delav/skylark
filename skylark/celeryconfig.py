@@ -31,18 +31,20 @@ def get_task_routes():
 imports = settings.CELERY_TASKS_IMPORTS
 broker_url = f'redis://{redis_host}:{redis_port}/0'
 result_backend = f'redis://{redis_host}:{redis_port}/0'
-beat_schedule = 'django_celery_beat.schedulers:DatabaseScheduler'
+beat_scheduler = 'django_celery_beat.schedulers:DatabaseScheduler'
 default_queue = 'default'
 # register queue
 task_queues = get_task_queues()
 # register task
 task_routes = get_task_routes()
+# register periodic task
+beat_schedule = settings.CELERY_PERIOD_TASKS
 # notify mq message is consumed only task finish, notifier not need
 ack_late = False
 # serialize type
 task_serializer = 'json'
 # timezone
-timezone = 'Asia/Shanghai'
+timezone = settings.TIME_ZONE
 enable_utc = False
 # task result expire time(s)
 result_expires = 60*60

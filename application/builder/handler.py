@@ -29,7 +29,12 @@ def generate_task_name(plan_id):
 
 
 def convert_task_name(task_name):
-    return int(task_name.split('-')[1])
+    name_list = task_name.split('-')
+    if len(name_list) != 2:
+        return None
+    if not name_list[1].isdigit():
+        return None
+    return int(name_list[1])
 
 
 def execute_plan_by_id(plan_id, user):

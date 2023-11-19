@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from croniter import croniter
 from django_celery_beat.models import CrontabSchedule
 from django_celery_beat.models import PeriodicTask, IntervalSchedule
@@ -11,20 +11,24 @@ class PeriodicHandler(object):
 
     def __init__(self, periodic_expr=''):
         self.periodic_expr = periodic_expr
-        self.periodic_type = self.get_periodic_type()
+        self.periodic_type = self._get_periodic_type()
 
-    def get_periodic_type(self):
+    def create_task(self, task_name, task, task_args, queue, routing_key):
+        kwargs = self._get_schedule_kwargs()
+        return self._create_periodic_task(task_name, task, task_args, queue, routing_key, kwargs)
+
+    def update_task(self, periodic_task_id):
+        kwargs = self._get_schedule_kwargs()
+        self._update_periodic_task(periodic_task_id, kwargs)
+
+    def _get_periodic_type(self):
         if len(self.periodic_expr.split()) != 5:
-            self.validate_interval(self.periodic_expr)
+            self._validate_interval(self.periodic_expr)
             return self.INTERVAL_TYPE
         valid = croniter.is_valid(self.periodic_expr)
         if not valid:
             raise ValueError('Invalid crontab expr')
         return self.CRONTAB_TYPE
-
-    def save_task(self, task_name, task, task_args, queue, routing_key):
-        kwargs = self._get_schedule_kwargs()
-        return self.create_periodic_task(task_name, task, task_args, queue, routing_key, kwargs)
 
     def _get_schedule_kwargs(self):
         kwargs = {}
@@ -46,24 +50,38 @@ class PeriodicHandler(object):
             }
         return kwargs
 
-    def create_periodic_task(self, name, task, args, queue, routing_key, schedule_kwargs):
+    def _update_periodic_task(self, periodic_task_id, schedule_kwargs):
+        periodic_schedule = self._get_periodic_schedule(schedule_kwargs)
+        periodic = PeriodicTask.objects.get(id=periodic_task_id)
+        if 'crontab' in periodic_schedule:
+            periodic.crontab = periodic_schedule['crontab']
+        elif 'interval' in periodic_schedule:
+            periodic.interval = periodic_schedule['interval']
+        periodic.save()
+
+    def _create_periodic_task(self, name, task, args, queue, routing_key, schedule_kwargs):
         periodic_kwargs = {'name': name, 'task': task, 'args': args, 'queue': queue, 'routing_key': routing_key}
+        periodic_schedule = self._get_periodic_schedule(schedule_kwargs)
+        periodic_kwargs.update(periodic_schedule)
+        periodic = PeriodicTask.objects.create(**periodic_kwargs)
+        return periodic.id
+
+    def _get_periodic_schedule(self, schedule_kwargs):
+        periodic_schedule = {}
         if self.periodic_type == self.CRONTAB_TYPE:
-            periodic_kwargs['crontab'], _ = CrontabSchedule.objects.get_or_create(
+            periodic_schedule['crontab'], _ = CrontabSchedule.objects.get_or_create(
                 defaults=schedule_kwargs,
                 **schedule_kwargs
             )
         elif self.periodic_type == self.INTERVAL_TYPE:
-            periodic_kwargs['interval'], _ = IntervalSchedule.objects.get_or_create(
+            periodic_schedule['interval'], _ = IntervalSchedule.objects.get_or_create(
                 defaults=schedule_kwargs,
                 **schedule_kwargs
             )
-        periodic = PeriodicTask.objects.create(**periodic_kwargs)
-        periodic.save()
-        return periodic.id
+        return periodic_schedule
 
     @staticmethod
-    def validate_interval(interval_str):
+    def _validate_interval(interval_str):
         periods = ('days', 'hours', 'minutes', 'seconds', 'microseconds')
         str_list = interval_str.split()
         if len(str_list) != 2:
@@ -96,11 +114,11 @@ def get_periodic_list(**kwargs):
             ])
             cron = croniter(periodic_expr)
             next_timestamp = cron.get_next()
-            next_time = datetime.utcfromtimestamp(next_timestamp)
+            next_time = datetime.fromtimestamp(next_timestamp)
             to_next = (next_time - datetime.now()).total_seconds()
         elif item.interval:
             every = item.interval.every
-            period = item.period
+            period = item.interval.period
             if period == 'days':
                 t = 60 * 60 * 24 * every
             elif period == 'hours':
@@ -113,7 +131,7 @@ def get_periodic_list(**kwargs):
                 t = 60 * 60
             if item.last_run_at:
                 next_time = item.last_run_at + timedelta(seconds=t)
-                to_next = (next_time - datetime.now()).total_seconds()
+                to_next = (next_time - datetime.now().timestamp()).total_seconds()
             else:
                 next_time = datetime.now() + timedelta(seconds=t)
                 to_next = t

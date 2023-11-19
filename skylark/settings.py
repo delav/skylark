@@ -295,6 +295,13 @@ INSTANT_TASK = 'task.builder.tasks.instant_builder'
 PERIODIC_TASK = 'task.builder.tasks.periodic_builder'
 REPORT_TASK = 'task.reporter.tasks.send_report'
 VERSION_TASK = 'task.version.tasks.generate_version'
+# Celery periodic tasks
+CELERY_PERIOD_TASKS = {
+    'clear_expired_file': {
+        'task': 'task.period.clear_expired_file',
+        'schedule': timedelta(days=7)
+    },
+}
 
 CELERY_TASK_CONF = [
     {

@@ -2,7 +2,8 @@ from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
 from infra.django.response import JsonResponse
-from application.usergroup.models import UserGroup
+from application.status import KeywordGroupType
+from application.usergroup.models import Group, UserGroup
 from application.department.models import Department
 from application.keywordgroup.models import KeywordGroup
 from application.keywordgroup.serializers import KeywordGroupSerializers
@@ -39,8 +40,20 @@ class KeywordGroupViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         logger.info(f'create keyword group: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return JsonResponse(data=serializer.data)
+        group_queryset = Group.objects.filter(
+            user=request.user
+        )
+        if not group_queryset.exists():
+            return JsonResponse(code=10803, msg='create keyword group failed')
+        group_id = group_queryset.first().id
+        instance = KeywordGroup.objects.create(
+            name=serializer.validated_data.get('name'),
+            project_id=serializer.validated_data.get('project_id'),
+            group_type=KeywordGroupType.TEAM,
+            user_group_id=group_id
+        )
+        data = self.get_serializer(instance).data
+        return JsonResponse(data=data)
 
     def update(self, request, *args, **kwargs):
         logger.info(f'update keyword group: {request.data}')

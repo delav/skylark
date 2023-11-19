@@ -18,13 +18,13 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = UserKeywordSerializers
 
     def list(self, request, *args, **kwargs):
-        logger.info(f'get project user keyword: {request.query_params}')
-        user_group = KeywordGroup.objects.filter(
-            group_type=KeywordGroupType.PROJECT
+        logger.info(f'get project platform keyword: {request.query_params}')
+        user_group_query = KeywordGroup.objects.filter(
+            group_type=KeywordGroupType.PLATFORM
         )
-        if not user_group.exists():
+        if not user_group_query.exists():
             return JsonResponse(data=[])
-        group = KeywordGroupSerializers(user_group.first()).data
+        group = KeywordGroupSerializers(user_group_query.first()).data
         project_id = request.query_params.get('project')
         queryset = UserKeyword.objects.filter(
             project_id=project_id,

@@ -127,7 +127,7 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         # update python library info
         try:
             with transaction.atomic():
-                for operation, operation_list in result['operation_libraries']:
+                for operation, operation_list in result['operation_libraries'].items():
                     if operation == 'delete' and operation_list:
                         for instance in operation_list:
                             instance.delete()
@@ -135,8 +135,8 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
                         PythonLib.objects.bulk_update(operation_list)
                     if operation == 'create' and operation_list:
                         PythonLib.objects.bulk_create(operation_list)
-        except (Exception,):
-            logger.warning('parse group library failed')
+        except (Exception,) as e:
+            logger.warning(f'parse group library failed: {e}')
         return JsonResponse(data=result['ready_keywords'])
 
 

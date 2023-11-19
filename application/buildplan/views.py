@@ -78,7 +78,7 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
                 return JsonResponse(data=result)
             task_name = generate_task_name(plan_id)
             periodic_handler = PeriodicHandler(periodic_expr)
-            periodic_task_id = periodic_handler.save_task(
+            periodic_task_id = periodic_handler.create_task(
                 task_name,
                 settings.PERIODIC_TASK,
                 str(plan_id),
@@ -98,10 +98,14 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        try:
+        with transaction.atomic():
             self.perform_update(serializer)
-        except IntegrityError:
-            return JsonResponse(code=40302, msg='update dir name already exist')
+            periodic_expr = serializer.validated_data.get('periodic_expr', '')
+            if periodic_expr:
+                periodic_handler = PeriodicHandler(periodic_expr)
+                periodic_handler.update_task(instance.periodic_task_id)
+        result = serializer.data
+        result['periodic'] = get_periodic_task(id=instance.periodic_task_id)
         return JsonResponse(data=serializer.data)
 
     def retrieve(self, request, *args, **kwargs):
@@ -137,13 +141,15 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
     def get_instantly_plan_list(self, request, *args, **kwargs):
         logger.info(f'get instantly build plan')
         limit = request.query_params.get('limit')
-        periodic_list = get_periodic_list(enabled=True)
+        periodic_list = get_periodic_list(enabled=True, task=settings.PERIODIC_TASK)
         plan_id_list = []
         periodic_dict = {}
         min_length = min(len(periodic_list), int(limit))
         for i in range(min_length):
             periodic = periodic_list[i]
             plan_id = convert_task_name(periodic.get('name'))
+            if not plan_id:
+                continue
             plan_id_list.append(plan_id)
             periodic_dict[plan_id] = periodic
         queryset = BuildPlan.objects.filter(

@@ -8,6 +8,7 @@ class KeywordGroupSerializers(serializers.ModelSerializer):
     class Meta:
         model = KeywordGroup
         fields = '__all__'
+        read_only_fields = ('group_type', 'user_group_id')
 
 
 class KeywordGroup2Serializers(serializers.ModelSerializer):

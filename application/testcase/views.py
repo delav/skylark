@@ -10,6 +10,7 @@ from application.testcase.models import TestCase
 from application.testcase.serializers import TestCaseSerializers, DuplicateTestCaseSerializers
 from application.userkeyword.models import UserKeyword
 from application.testsuite.models import TestSuite
+from application.keywordgroup.models import KeywordGroup
 from application.common.access.projectaccess import has_project_permission
 from application.common.handler import get_model_extra_data
 from application.common.ztree.generatenode import handler_case_node
@@ -72,9 +73,12 @@ class TestCaseViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
                     category=test_suite.category,
                 )
                 if instance.category == ModuleCategory.KEYWORD:
+                    keyword_group = KeywordGroup.objects.get(
+                        group_type=KeywordGroupType.PLATFORM
+                    )
                     UserKeyword.objects.create(
                         test_case_id=instance.id,
-                        group_id=KeywordGroupType.PROJECT,
+                        group_id=keyword_group.id,
                         project_id=instance.project_id
                     )
                     update_user_keyword_storage(UserKeyword, instance.id)
