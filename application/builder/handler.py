@@ -70,6 +70,6 @@ def execute_plan_by_id(plan_id, user):
         queue=settings.RUNNER_QUEUE,
         args=(
             record.id, project_id, project_name, env_ids_str, region_ids_str,
-            version.run_data, version.sources, plan.auto_latest, plan.build_cases
+            plan.parameters, version.run_data, version.sources, plan.auto_latest, plan.build_cases
         )
     )

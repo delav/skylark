@@ -75,7 +75,8 @@ INSTALLED_APPS = [
     'application.pythonlib.apps.PythonlibConfig',
     'application.projectversion.apps.ProjectVersionConfig',
     'application.notification.apps.NotificationConfig',
-    'application.webhook.apps.WebhookConfig'
+    'application.webhook.apps.WebhookConfig',
+    'application.executeparam.apps.ExecuteParamConfig'
 ]
 
 MIDDLEWARE = [
@@ -217,7 +218,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = False
+USE_TZ = True
 
 AES_KEY = '20220427@)@@)$@&'
 
@@ -311,12 +312,10 @@ CELERY_TASK_CONF = [
             REPORT_TASK,
         ]
     },
-    {
-        'queue': RUNNER_QUEUE,
-        'tasks': [
-            # RUNNER_TASK
-        ]
-    },
+    # {
+    #     'queue': RUNNER_QUEUE,
+    #     'tasks': []
+    # },
     {
         'queue': NOTIFIER_QUEUE,
         'tasks': [

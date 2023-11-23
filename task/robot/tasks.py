@@ -16,7 +16,7 @@ from skylark.celeryapp import app
 
 
 @app.task
-def robot_runner(project, env, region, task_id,
+def robot_runner(project, env, region, args, task_id,
                  batch_no, run_suite, run_data, variable_files, external_files):
     """robot execute task, no logic needed here, worker will do it"""
     pass

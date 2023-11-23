@@ -25,7 +25,7 @@ class LibKeyword(models.Model):
     image = models.ImageField(default=DEFAULT_ICON, upload_to=settings.KEYWORD_ICON_PATH, help_text='keyword icon')
     status = models.IntegerField(default=0, help_text='module status')
     source = models.CharField(default='BuiltIn', max_length=255, help_text='keyword source')
-    mark = models.CharField(default=None, blank=True, null=True, max_length=255, help_text='keyword other mark')
+    remark = models.TextField(default=None, blank=True, null=True, help_text='keyword other remark')
 
     class Meta:
         verbose_name = 'lib keyword'

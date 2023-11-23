@@ -56,7 +56,8 @@ class WebhookViewSets(mixins.CreateModelMixin,
         result = {
             'webhook_list': webhook_list,
             'type_list': [
-                {'name': 'Build', 'value': WebhookType.BuildHook}
+                {'name': 'BuildHook', 'value': WebhookType.BuildHook},
+                {'name': 'GitHook', 'value': WebhookType.GitHook}
             ]
         }
         return JsonResponse(data=result)

@@ -2,9 +2,11 @@ from django.conf import settings
 from infra.client.gitclient import GitClient
 from infra.utils.pythonscanner import scan_directory, get_functions_info
 from infra.robot.utils.modulemathcher import check_python_module
+from application.constant import KEYWORD_PARAMS_SEP
 from application.status import KeywordCategory, KeywordParamMode, LibraryType
 from application.usergroup.models import UserGroup
 from application.libkeyword.models import LibKeyword
+from application.libkeyword.serializers import LibKeywordSerializers
 from application.pythonlib.models import PythonLib
 
 
@@ -109,53 +111,95 @@ def admin_scan_keyword(scan_files=None):
 
 
 def serializer_to_keyword(func_list, allowed_update=False):
-    ready_func_list = []
+    serializer_func_list = []
     for func in func_list:
         func_name = func.get('name')
         keyword_query = LibKeyword.objects.filter(name=func_name)
         if keyword_query.exists() and not allowed_update:
             continue
-        output_type = KeywordParamMode.NONE
-        input_args = func.get('args')
-        if len(input_args) == 0:
-            input_type = KeywordParamMode.NONE
-            if func.get('vararg'):
-                input_type = KeywordParamMode.LIST
-                input_args.append('*args')
-            if func.get('kwarg'):
-                input_type = KeywordParamMode.DICT
-                input_args.append('**kwarg')
-        else:
-            input_type = KeywordParamMode.FINITE
-            if func.get('vararg'):
-                input_type = KeywordParamMode.MIXED
-                input_args.append('*args')
-            if func.get('kwarg'):
-                input_type = KeywordParamMode.MIXED
-                input_args.append('**kwarg')
-        if func.get('returns'):
-            returns = '${' + func.get('returns') + '}'
-            output_type = KeywordParamMode.FINITE
-        else:
-            returns = None
-        if input_args:
-            input_args = '|'.join(input_args)
+        pr_info = get_params_return_info(func)
+        if keyword_query.exists():
+            keyword = keyword_query.first()
+            old_pr_info = {
+                'input_params': keyword.input_params,
+                'output_params': keyword.output_params,
+                'input_type': keyword.input_type,
+                'output_type': keyword.output_type,
+            }
+            is_change = check_params_return_change(pr_info, old_pr_info)
+            if is_change:
+                update_keyword_data = LibKeywordSerializers(keyword).data
+                update_keyword_data['new_info'] = pr_info
+                serializer_func_list.append(update_keyword_data)
+                continue
         ready_keyword_data = {
             'name': func_name,
             'ext_name': '',
             'desc': func.get('doc'),
             'group_id': None,
-            'input_params': input_args,
+            'input_params': pr_info['input_params'],
             'input_desc': '',
-            'output_params': returns,
+            'output_params': pr_info['output_params'],
             'output_desc': '',
-            'input_type': input_type,
-            'output_type': output_type,
+            'input_type': pr_info['input_type'],
+            'output_type': pr_info['output_type'],
             'category': KeywordCategory.CUSTOMIZED,
             'image': '',
             'status': -1,
             'source': func.get('module'),
-            'mark': ''
+            'remark': ''
         }
-        ready_func_list.append(ready_keyword_data)
-    return ready_func_list
+        serializer_func_list.append(ready_keyword_data)
+    return serializer_func_list
+
+
+def get_params_return_info(func_data):
+    input_args = func_data.get('args', [])
+    if len(input_args) == 0:
+        input_type = KeywordParamMode.NONE
+        if func_data.get('vararg'):
+            input_type = KeywordParamMode.LIST
+            input_args.append('*args')
+        if func_data.get('kwarg'):
+            input_type = KeywordParamMode.DICT
+            input_args.append('**kwarg')
+    else:
+        input_type = KeywordParamMode.FINITE
+        if func_data.get('vararg'):
+            input_type = KeywordParamMode.MIXED
+            input_args.append('*args')
+        if func_data.get('kwarg'):
+            input_type = KeywordParamMode.MIXED
+            input_args.append('**kwarg')
+    if input_args:
+        input_args = KEYWORD_PARAMS_SEP.join(input_args)
+    if not func_data.get('returns'):
+        returns = None
+        output_type = KeywordParamMode.NONE
+    else:
+        returns = '${' + func_data.get('returns') + '}'
+        output_type = KeywordParamMode.FINITE
+    return {
+        'input_params': input_args,
+        'output_params': returns,
+        'input_type': input_type,
+        'output_type': output_type
+    }
+
+
+def check_params_return_change(new_info, old_info):
+    param_change_flag, return_change_flag = False, False
+    need_check_type = [
+        KeywordParamMode.FINITE,
+        KeywordParamMode.MIXED
+    ]
+    if new_info['input_type'] == old_info['input_type']:
+        if new_info['input_type'] in need_check_type:
+            if new_info['input_params'] != old_info['input_params']:
+                param_change_flag = True
+    elif new_info['input_type'] != old_info['input_type']:
+        param_change_flag = True
+    if new_info['output_type'] != old_info['output_type']:
+        return_change_flag = True
+    return param_change_flag or return_change_flag
+

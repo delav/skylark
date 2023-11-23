@@ -22,12 +22,13 @@ class TestQuickBuildSerializers(serializers.ModelSerializer):
     branch = serializers.CharField(help_text='project branch')
     env_list = serializers.ListField(help_text='build env id list')
     region_list = serializers.ListField(required=False, help_text='build region id list')
+    parameters = serializers.CharField(required=False, help_text='run parameters')
     case_list = serializers.ListField(help_text='build case ids')
 
     class Meta:
         model = Builder
         fields = (
-            'project_id', 'project_name', 'branch', 'env_list', 'region_list', 'case_list'
+            'project_id', 'project_name', 'branch', 'env_list', 'region_list', 'parameters', 'case_list'
         )
 
 
@@ -39,10 +40,11 @@ class DebugBuildSerializers(serializers.ModelSerializer):
     env_name = serializers.CharField(help_text='build env name')
     region_id = serializers.IntegerField(required=False, help_text='build region id')
     region_name = serializers.CharField(required=False, help_text='build region name')
+    parameters = serializers.CharField(required=False, allow_blank=True, help_text='run parameters')
     run_data = serializers.ListField(help_text='detail data or module ids')
 
     class Meta:
         model = Builder
         fields = (
-            'project_id', 'project_name', 'env_id', 'env_name', 'region_id', 'region_name', 'run_data'
+            'project_id', 'project_name', 'env_id', 'env_name', 'region_id', 'region_name', 'parameters', 'run_data'
         )

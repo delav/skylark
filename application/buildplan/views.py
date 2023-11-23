@@ -1,6 +1,7 @@
+import json
 from loguru import logger
 from django.conf import settings
-from django.db import transaction, IntegrityError
+from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -81,7 +82,7 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
             periodic_task_id = periodic_handler.create_task(
                 task_name,
                 settings.PERIODIC_TASK,
-                str(plan_id),
+                json.dumps([plan_id]),
                 settings.BUILDER_QUEUE,
                 settings.BUILDER_ROUTING_KEY
             )

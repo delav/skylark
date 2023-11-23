@@ -45,6 +45,7 @@ def periodic_builder(plan_id):
     version = version_query.first()
     env_list = id_str_to_set(plan.envs, to_int=True)
     region_list = id_str_to_set(plan.regions, to_int=True)
+    parameters = plan.parameters
     run_data = loads(version.run_data)
     common_sources = loads(version.sources)
     if plan.auto_latest:
@@ -63,13 +64,13 @@ def periodic_builder(plan_id):
     )
     _create_task(
         record.id, plan.project_id, project_name, env_list,
-        region_list, run_data, common_sources, build_cases
+        region_list, parameters, run_data, common_sources, build_cases
     )
 
 
 @app.task
-def instant_builder(record_id, project_id, project_name,
-                    env_ids, region_ids, run_data, common_sources, auto_latest, build_cases):
+def instant_builder(record_id, project_id, project_name, env_ids, region_ids,
+                    parameters, run_data, common_sources, auto_latest, build_cases):
     env_list = id_str_to_set(env_ids, to_int=True)
     region_list = id_str_to_set(region_ids, to_int=True)
     run_data = loads(run_data)
@@ -80,12 +81,12 @@ def instant_builder(record_id, project_id, project_name,
         build_cases = id_str_to_set(build_cases, to_int=True)
     _create_task(
         record_id, project_id, project_name, env_list,
-        region_list, run_data, common_sources, build_cases
+        region_list, parameters, run_data, common_sources, build_cases
     )
 
 
-def _create_task(record_id, project_id, project_name,
-                 env_id_list, region_id_list, run_data, common_sources, build_cases):
+def _create_task(record_id, project_id, project_name, env_id_list, region_id_list,
+                 parameters, run_data, common_sources, build_cases):
     env_map = {item.get('id'): item.get('name') for item in get_env_list()}
     region_map = {item.get('id'): item.get('name') for item in get_region_list()}
     for env_id in env_id_list:
@@ -99,7 +100,7 @@ def _create_task(record_id, project_id, project_name,
             env_region_common = env_common.get('base')
             _execute(
                 record_id, project_id, project_name, env_id, env_name,
-                region_id, region_name, run_data, env_region_common, build_cases
+                region_id, region_name, parameters, run_data, env_region_common, build_cases
             )
             continue
         for region_id in region_id_list:
@@ -110,12 +111,12 @@ def _create_task(record_id, project_id, project_name,
             env_region_common = env_common.get(str(region_id))
             _execute(
                 record_id, project_id, project_name, env_id, env_name,
-                region_id, region_name, run_data, env_region_common, build_cases
+                region_id, region_name, parameters, run_data, env_region_common, build_cases
             )
 
 
 def _execute(record_id, project_id, project_name, env_id, env_name,
-             region_id, region_name, run_data, env_region_common, build_cases):
+             region_id, region_name, parameters, run_data, env_region_common, build_cases):
     copy_data = deepcopy(run_data)
     common_struct, structure_list = JsonParser(
         project_id=project_id,
@@ -148,7 +149,10 @@ def _execute(record_id, project_id, project_name, env_id, env_name,
             settings.RUNNER_TASK,
             queue=settings.RUNNER_QUEUE,
             priority=1,
-            args=(project_name, env_name, region_name, task_id, str(batch_no), suites, sources, resources, files)
+            args=(
+                project_name, env_name, region_name, parameters,
+                task_id, str(batch_no), suites, sources, resources, files
+            )
         )
         celery_task_list.append(celery_task.id)
     instance.celery_task = ','.join(celery_task_list)

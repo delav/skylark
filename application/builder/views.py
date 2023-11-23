@@ -76,7 +76,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
             queue=settings.RUNNER_QUEUE,
             args=(
                 record.id, project_id, project_name, env_ids_str, region_ids_str,
-                version.run_data, version.sources, plan.auto_latest, plan.build_cases
+                plan.parameters, version.run_data, version.sources, plan.auto_latest, plan.build_cases
             )
         )
         result = BuildRecordSerializers(record).data
@@ -92,6 +92,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
         branch = serializer.validated_data.get('branch')
         env_list = serializer.validated_data.get('env_list')
         region_list = serializer.validated_data.get('region_list')
+        parameters = serializer.validated_data.get('parameters', '')
         case_list = serializer.validated_data.get('case_list')
         if not has_project_permission(project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
@@ -116,8 +117,8 @@ class BuilderViewSets(viewsets.GenericViewSet):
             settings.INSTANT_TASK,
             queue=settings.RUNNER_QUEUE,
             args=(
-                record.id, project_id, project_name,
-                env_ids_str, region_ids_str, version.run_data, version.sources, auto_latest, build_cases
+                record.id, project_id, project_name, env_ids_str, region_ids_str,
+                parameters, version.run_data, version.sources, auto_latest, build_cases
             )
         )
         result = BuildRecordSerializers(record).data
@@ -135,6 +136,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
         region_name = serializer.validated_data.get('region_name')
         project_id = serializer.validated_data.get('project_id')
         project_name = serializer.validated_data.get('project_name')
+        parameters = serializer.validated_data.get('parameters', '')
         run_data = serializer.validated_data.get('run_data')
         common_struct, structure_list = JsonParser(
             project_id, project_name, env_id, region_id
@@ -156,7 +158,10 @@ class BuilderViewSets(viewsets.GenericViewSet):
                 settings.RUNNER_TASK,
                 queue=settings.RUNNER_QUEUE,
                 priority=0,
-                args=(project_name, env_name, region_name, task_id, str(batch_no), suites, sources, resources, files)
+                args=(
+                    project_name, env_name, region_name, parameters,
+                    task_id, str(batch_no), suites, sources, resources, files
+                )
             )
         child_dir = date.today().strftime('%Y/%m/%d')
         report_path = settings.REPORT_PATH.as_posix() + f'/{project_name}/{child_dir}/' + task_id

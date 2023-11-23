@@ -20,6 +20,7 @@ class BuildPlan(models.Model):
     regions = models.CharField(max_length=255, default=None, blank=True, null=True,
                                help_text='associated region id list')
     project_id = models.IntegerField(help_text='associated project id')
+    parameters = models.CharField(default='', max_length=255, help_text='run parameters')
     branch = models.CharField(max_length=255, help_text='project branch')
     expect_pass = models.FloatField(default=100, help_text='expected pass rate')
     notice_open = models.BooleanField(default=False, help_text='notice switch for plan')

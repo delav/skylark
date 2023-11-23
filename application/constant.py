@@ -6,6 +6,9 @@ ROBOT_COMMON_RESOURCE_PREFIX = 'common'
 ROBOT_SUITE_FILE_SUFFIX = '.robot'
 ROBOT_RESOURCE_FILE_SUFFIX = '.resource'
 
+# keyword params config
+KEYWORD_PARAMS_SEP = '|'
+
 # node extra data key
 EXTRA_VARIABLE_KEY = 'variables'
 EXTRA_FIXTURE_KEY = 'fixtures'

@@ -14,7 +14,7 @@ class BuildPlanSerializers(serializers.ModelSerializer):
         fields = (
             'id', 'title', 'total_case', 'create_at', 'update_at', 'create_by', 'update_by',
             'periodic_expr', 'periodic_switch', 'env_list', 'region_list', 'case_list', 'auto_latest', 'project_id',
-            'branch', 'expect_pass', 'notice_open'
+            'parameters', 'branch', 'expect_pass', 'notice_open'
         )
         read_only_fields = ('status', 'create_by', 'update_by')
 

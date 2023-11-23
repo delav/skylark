@@ -47,6 +47,7 @@ from application.projectpermission.views import ProjectPermissionViewSets
 from application.statistics.views import StatisticsViewSets
 from application.systemext.views import SystemExtViewSets
 from application.webhook.views import WebhookViewSets
+from application.executeparam.views import ExecuteParamViewSets
 
 router = routers.SimpleRouter(trailing_slash=False)
 router.register('user/info', NormalUserViewSets, basename='user_info')
@@ -76,6 +77,7 @@ router.register('permission_project', ProjectPermissionViewSets, basename='permi
 router.register('statistics', StatisticsViewSets, basename='statistics')
 router.register('system', SystemExtViewSets, basename='system')
 router.register('webhook', WebhookViewSets, basename='webhook')
+router.register('execute_param', ExecuteParamViewSets, basename='execute_param')
 
 
 urlpatterns = [
