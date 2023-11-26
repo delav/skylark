@@ -8,6 +8,7 @@ class BuildPlanSerializers(serializers.ModelSerializer):
     env_list = serializers.ListField(help_text='env id list')
     region_list = serializers.ListField(required=False, help_text='region id list')
     case_list = serializers.ListField(required=False, help_text='plan case id list')
+    parameters = serializers.CharField(required=False, allow_blank=True, help_text='build parameter')
 
     class Meta:
         model = BuildPlan

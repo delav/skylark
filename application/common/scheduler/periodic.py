@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta, timezone
+import pytz
+from datetime import datetime, timedelta
 from croniter import croniter
 from django_celery_beat.models import CrontabSchedule
 from django_celery_beat.models import PeriodicTask, IntervalSchedule
@@ -13,7 +14,7 @@ class PeriodicHandler(object):
         self.periodic_expr = periodic_expr
         self.periodic_type = self._get_periodic_type()
 
-    def create_task(self, task_name, task, task_args, queue, routing_key):
+    def create_task(self, task_name, task, task_args, queue, routing_key=None):
         kwargs = self._get_schedule_kwargs()
         return self._create_periodic_task(task_name, task, task_args, queue, routing_key, kwargs)
 
@@ -112,7 +113,9 @@ def get_periodic_list(**kwargs):
                 item.crontab.day_of_month,
                 item.crontab.month_of_year
             ])
-            cron = croniter(periodic_expr)
+            tz = pytz.timezone('Asia/Shanghai')
+            local_date = tz.localize(datetime(2017, 3, 26))
+            cron = croniter(periodic_expr, local_date)
             next_timestamp = cron.get_next()
             next_time = datetime.fromtimestamp(next_timestamp)
             to_next = (next_time - datetime.now()).total_seconds()
@@ -163,9 +166,9 @@ def get_periodic_task(**kwargs):
     return periodic_data
 
 
-def able_task(task_name, switch):
+def able_task(task_id, switch):
     try:
-        task = PeriodicTask.objects.get(name=task_name)
+        task = PeriodicTask.objects.get(id=task_id)
         task.enabled = switch
         task.save()
     except (Exception,):

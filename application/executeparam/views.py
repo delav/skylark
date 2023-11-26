@@ -8,31 +8,34 @@ from application.executeparam.serializers import ExecuteParamSerializers
 # Create your views here.
 
 
-class ExecuteParamViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
-                           mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class ExecuteParamViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
+                           mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = ExecuteParam.objects.all()
     serializer_class = ExecuteParamSerializers
 
     def create(self, request, *args, **kwargs):
-        logger.info(f'create execute param: {request.data}')
+        logger.info(f'create or update execute param: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return JsonResponse(data=serializer.data)
+        instance, created = ExecuteParam.objects.update_or_create(
+            defaults=serializer.validated_data,
+            project_id=serializer.validated_data.get('project_id'),
+            parameters=serializer.validated_data.get('parameters')
+        )
+        data = self.get_serializer(instance).data if created else None
+        return JsonResponse(data=data)
 
     def list(self, request, *args, **kwargs):
-        logger.info(f'get project execute param')
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return JsonResponse(data=serializer.data)
-
-    def update(self, request, *args, **kwargs):
-        logger.info(f'update execute param: {request.data}')
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return JsonResponse(serializer.data)
+        logger.info(f'get project execute params')
+        project_id = request.query_params.get('project')
+        result_list = []
+        if project_id and isinstance(project_id, str) and project_id.isdigit():
+            project_id = int(project_id)
+            queryset = self.get_queryset().filter(
+                project_id=project_id
+            ).order_by('-create_at')
+            result_list = self.get_serializer(queryset, many=True).data
+        return JsonResponse(data=result_list)
 
     def destroy(self, request, *args, **kwargs):
         logger.info(f'delete execute param: {kwargs.get("pk")}')

@@ -63,6 +63,7 @@ function addReportOrLogLink(myType) {
         url = window.settings.reportURL;
         text = 'REPORT';
     }
+    url = null
     if (url) {
         container.find('a').attr('href', url);
         container.find('a').text(text);

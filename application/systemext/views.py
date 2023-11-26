@@ -1,3 +1,4 @@
+import random
 import re
 import json
 from datetime import datetime
@@ -139,6 +140,6 @@ class AdminSystemExtViewSets(viewsets.GenericViewSet):
             user_id = user.get('id')
             redis_key = f'{REDIS_SYSTEM_KEY_PREFIX}{user_id}:{info_type}:{message_id}'
             conn.set(redis_key, json.dumps(notify_dict))
-            conn.expire(redis_key, expired_seconds)
+            conn.expire(redis_key, (expired_seconds+random.randint(0, 200)))
         data = self.get_serializer(instance).data
         return JsonResponse(data=data)

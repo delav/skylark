@@ -44,7 +44,7 @@ ack_late = False
 # serialize type
 task_serializer = 'json'
 # timezone
-timezone = settings.TIME_ZONE
+timezone = 'Asia/Shanghai'
 enable_utc = False
 # task result expire time(s)
 result_expires = 60*60

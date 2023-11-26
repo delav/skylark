@@ -15,7 +15,7 @@ from application.buildplan.serializers import BuildPlanSerializers
 from application.buildrecord.models import BuildRecord
 from application.buildrecord.serializers import BuildRecordSerializers
 from application.projectversion.models import ProjectVersion
-from application.common.scheduler.periodic import PeriodicHandler, get_periodic_task, get_periodic_list
+from application.common.scheduler.periodic import PeriodicHandler, get_periodic_task, get_periodic_list, able_task
 from application.common.access.projectaccess import has_project_permission
 
 # Create your views here.
@@ -71,20 +71,17 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
             return JsonResponse(code=40301, msg='403_FORBIDDEN')
         with transaction.atomic():
             plan = BuildPlan.objects.create(**valid_data)
-            plan_id = plan.id
             periodic_expr = valid_data.get('periodic_expr', '')
             if not valid_data.get('periodic_switch'):
                 result = self.get_serializer(plan).data
                 result['periodic'] = {}
                 return JsonResponse(data=result)
-            task_name = generate_task_name(plan_id)
             periodic_handler = PeriodicHandler(periodic_expr)
             periodic_task_id = periodic_handler.create_task(
-                task_name,
+                generate_task_name(plan.id),
                 settings.PERIODIC_TASK,
-                json.dumps([plan_id]),
+                json.dumps([plan.id]),
                 settings.BUILDER_QUEUE,
-                settings.BUILDER_ROUTING_KEY
             )
             plan.periodic_task_id = periodic_task_id
             plan.save()
@@ -100,14 +97,29 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         with transaction.atomic():
-            self.perform_update(serializer)
+            instance = serializer.save()
+            task_enable = serializer.validated_data.get('periodic_switch', False)
             periodic_expr = serializer.validated_data.get('periodic_expr', '')
-            if periodic_expr:
+            if instance.periodic_task_id:
+                # update enabled/disabled task
+                able_task(instance.periodic_task_id, task_enable)
+                if periodic_expr:
+                    periodic_handler = PeriodicHandler(periodic_expr)
+                    periodic_handler.update_task(instance.periodic_task_id)
+            else:
+                # create task
                 periodic_handler = PeriodicHandler(periodic_expr)
-                periodic_handler.update_task(instance.periodic_task_id)
-        result = serializer.data
+                periodic_task_id = periodic_handler.create_task(
+                    generate_task_name(instance.id),
+                    settings.PERIODIC_TASK,
+                    json.dumps([instance.id]),
+                    settings.BUILDER_QUEUE
+                )
+                instance.periodic_task_id = periodic_task_id
+                instance.save()
+        result = self.get_serializer(instance).data
         result['periodic'] = get_periodic_task(id=instance.periodic_task_id)
-        return JsonResponse(data=serializer.data)
+        return JsonResponse(data=result)
 
     def retrieve(self, request, *args, **kwargs):
         logger.info(f'get plan detail: {kwargs.get("pk")}')
@@ -135,7 +147,10 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         instance.status = ModuleStatus.DELETED
         instance.update_by = request.user.email
+        instance.periodic_switch = False
         instance.save()
+        if instance.periodic_task_id:
+            able_task(instance.periodic_task_id, False)
         return JsonResponse(data=instance.id)
 
     @action(methods=['get'], detail=False)

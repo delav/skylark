@@ -22,7 +22,7 @@ class TestQuickBuildSerializers(serializers.ModelSerializer):
     branch = serializers.CharField(help_text='project branch')
     env_list = serializers.ListField(help_text='build env id list')
     region_list = serializers.ListField(required=False, help_text='build region id list')
-    parameters = serializers.CharField(required=False, help_text='run parameters')
+    parameters = serializers.CharField(required=False,  allow_blank=True, help_text='run parameters')
     case_list = serializers.ListField(help_text='build case ids')
 
     class Meta:

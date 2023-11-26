@@ -67,7 +67,7 @@ def execute_plan_by_id(plan_id, user):
     )
     app.send_task(
         settings.INSTANT_TASK,
-        queue=settings.RUNNER_QUEUE,
+        queue=settings.BUILDER_QUEUE,
         args=(
             record.id, project_id, project_name, env_ids_str, region_ids_str,
             plan.parameters, version.run_data, version.sources, plan.auto_latest, plan.build_cases
