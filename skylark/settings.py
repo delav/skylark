@@ -251,7 +251,7 @@ SAVE_TO_DB_FILE_TYPE = ()
 
 # distributed execute
 DISTRIBUTED_BUILD = False
-DISTRIBUTED_WITH_SUITE = False
+DISTRIBUTED_BY_SUITE = False
 WORKER_MAX_CASE_LIMIT = 200
 
 # keyword icon path

@@ -102,7 +102,7 @@ NODE_ACTION_MAP = {
          'title': '新建测试套件', 'label': '测试套件名称', 'icon': 'iconfont icon-a-additionfile-line', 'rules': {}},
     'create_keyword_file':
         {'type': NODE_ACTION_TYPE.get('create'), 'desc': NODE_DESC.get('suite'),
-         'title': '新建关键字套件', 'label': '关键字套件名', 'icon': 'iconfont icon-a-additionfile-line', 'rules': {}},
+         'title': '新建资源文件', 'label': '资源文件名', 'icon': 'iconfont icon-a-additionfile-line', 'rules': {}},
     'create_variable_file':
         {'type': NODE_ACTION_TYPE.get('create'), 'desc': NODE_DESC.get('suite'),
          'title': '新建变量文件', 'label': '变量文件名', 'icon': 'iconfont icon-a-additionfile-line',
@@ -115,7 +115,7 @@ NODE_ACTION_MAP = {
          'title': '新建测试用例', 'label': '用例名称', 'icon': 'iconfont icon-a-addline-line', 'rules': {}},
     'create_cust_keyword':
         {'type': NODE_ACTION_TYPE.get('create'), 'desc': NODE_DESC.get('case'),
-         'title': '新建关键字组件', 'label': '组件名称', 'icon': 'iconfont icon-a-addline-line', 'rules': {}},
+         'title': '新建组件', 'label': '组件名称', 'icon': 'iconfont icon-a-addline-line', 'rules': {}},
     'upload_project_file':
         {'type': NODE_ACTION_TYPE.get('upload'), 'desc': NODE_DESC.get('suite'),
          'title': '上传文件', 'label': '文件名称', 'icon': 'iconfont icon-a-cloudupload-line', 'rules': {}},

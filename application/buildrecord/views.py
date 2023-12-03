@@ -2,9 +2,11 @@ from loguru import logger
 from datetime import datetime
 from rest_framework import mixins
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from infra.django.response import JsonResponse
 from infra.django.pagination.paginator import PagePagination
 from application.manager import get_projects_by_uid
+from application.mapping import build_status_map
 from application.buildrecord.models import BuildRecord
 from application.buildrecord.serializers import BuildRecordSerializers
 from application.buildhistory.models import BuildHistory
@@ -48,7 +50,11 @@ class BuildRecordViewSets(mixins.RetrieveModelMixin, mixins.ListModelMixin, view
             else:
                 queryset = queryset.filter(create_at__range=(start_date, end_date))
         pg_queryset = self.paginate_queryset(queryset)
-        record_list = self.get_serializer(pg_queryset, many=True).data
+        record_list = []
+        for item in pg_queryset:
+            data = self.get_serializer(item).data
+            data['status_desc'] = build_status_map.get(data['status'])
+            record_list.append(data)
         result = {'data': record_list, 'total': queryset.count()}
         return JsonResponse(data=result)
 
@@ -61,7 +67,23 @@ class BuildRecordViewSets(mixins.RetrieveModelMixin, mixins.ListModelMixin, view
             record_id=instance.id
         )
         if history_queryset.exists():
-            histories = BuildHistorySerializers(history_queryset, many=True).data
-            record['history'] = histories
+            history_list = []
+            for item in history_queryset.iterator():
+                data = BuildHistorySerializers(item).data
+                data['status_desc'] = build_status_map.get(data['status'])
+                history_list.append(data)
+            record['history'] = history_list
         return JsonResponse(record)
 
+    @action(methods=['get'], detail=False)
+    def query_status(self, request, *args, **kwargs):
+        logger.info(f'get record')
+        record_id = request.query_params.get('id')
+        record_query = BuildRecord.objects.filter(
+            id=record_id
+        )
+        if not record_query.exists():
+            return JsonResponse(code=50101, msg='record not found')
+        data = BuildRecordSerializers(record_query.first()).data
+        data['status_desc'] = build_status_map.get(data['status'])
+        return JsonResponse(data=data)

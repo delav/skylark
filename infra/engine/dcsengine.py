@@ -1,4 +1,3 @@
-from infra.engine.structure import SuiteStructure
 
 
 class DcsEngine(object):
@@ -12,21 +11,22 @@ class DcsEngine(object):
         self.variable_files = {}
         self.external_files = {}
 
-    def init_common_data(self, common_struct):
+    def visit(self, structure):
+        self._init_common_data(structure.common_structure)
+        suite_structures = structure.suite_structures
+        for struct in suite_structures:
+            self.total_case += struct.case_count()
+        if self._use_multi_model(structure.total_cases):
+            return self._multi_operator(suite_structures)
+        self._single_operator(suite_structures)
+
+    def _init_common_data(self, common_struct):
         init_file_paths = common_struct.get_init_file_path()
         common_sources = common_struct.get_common_source()
         self.variable_files = common_struct.get_variable_files()
         self.external_files = common_struct.get_external_files()
         self.path_list.extend(init_file_paths)
         self.source_map.update(common_sources)
-
-    def visit(self, structures):
-        max_batch_case = self.options.get('limit')
-        for struct in structures:
-            self.total_case += struct.case_count()
-        if self.options.get('distributed') and self.total_case > max_batch_case:
-            return self._multi_operator(structures)
-        self._single_operator(structures)
 
     def _single_operator(self, structure_list):
         for structure in structure_list:
@@ -40,6 +40,7 @@ class DcsEngine(object):
 
     # TODO
     def _multi_operator(self, structure_list):
+        print(structure_list)
         for i in range(len(structure_list)):
             paths, sources = [], {}
             structure = structure_list[i]
@@ -49,9 +50,14 @@ class DcsEngine(object):
             sources.update({path: text})
             paths.extend(self.path_list)
             sources.update(self.source_map)
-            self.batch_data[i] = (
+            self.batch_data[i+1] = (
                 paths, sources, self.variable_files, self.external_files
             )
+
+    def _use_multi_model(self, total_case):
+        distributed_switch = self.options.get('distributed')
+        max_batch_case = self.options.get('limit')
+        return distributed_switch and total_case > max_batch_case
 
     def get_batch_data(self):
         return self.batch_data

@@ -17,6 +17,8 @@ class VariableFileReader(object):
         ).get_text()
 
     def name(self):
+        if not self.file_data:
+            return None
         last_update = self.file_data.get('update_time')
         file_name = self.file_data.get('file_name')
         env, region = self.file_data.get('env_id'), self.file_data.get('region_id')
@@ -29,7 +31,7 @@ class VariableFileReader(object):
         if not self.file_data:
             return file_text
         env, region = self.file_data.get('env_id'), self.file_data.get('region_id')
-        if not (env and region):
+        if not (env or region):
             file_text = self.file_data.get('file_text', '')
         elif env and region:
             if env == self.env_id and region == self.region_id:
@@ -58,5 +60,5 @@ class ProjectFileReader(object):
         return file_info
 
     def name(self):
-        return self.file_data.get('file_name', '')
+        return self.file_data.get('file_name')
 

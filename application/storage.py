@@ -36,6 +36,25 @@ def load_user_keyword_to_storage(model):
         USER_KEYWORD_MAP[keyword.id] = data
 
 
+def update_lib_keyword_storage(model, keyword_id):
+    lib_keyword = model.objects.filter(
+        id=keyword_id,
+        status=ModuleStatus.NORMAL,
+    ).values('id', 'name', 'ext_name', 'input_params', 'output_params')
+    if not lib_keyword.exists():
+        return
+    lib_keyword = lib_keyword.first()
+    data = {
+        'name': lib_keyword['name'],
+        'ext_name': lib_keyword['ext_name'],
+        'input_params': lib_keyword['input_params'],
+        'output_params': lib_keyword['output_params'],
+    }
+    LIB_KEYWORD_MAP[lib_keyword['id']] = data
+    LIB_NAME_MAP[lib_keyword['name']] = lib_keyword['ext_name']
+    LIB_ALIAS_MAP[lib_keyword['ext_name']] = lib_keyword['name']
+
+
 def update_user_keyword_storage(model, case_id):
     user_keyword = model.objects.filter(
         test_case_id=case_id,

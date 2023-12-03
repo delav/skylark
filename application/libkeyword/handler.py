@@ -3,14 +3,15 @@ from infra.client.gitclient import GitClient
 from infra.utils.pythonscanner import scan_directory, get_functions_info
 from infra.robot.utils.modulemathcher import check_python_module
 from application.constant import KEYWORD_PARAMS_SEP
-from application.status import KeywordCategory, KeywordParamMode, LibraryType
+from application.status import KeywordCategory, KeywordParamMode, LibraryType, ModuleStatus
+from application.mapping import module_status_map
 from application.usergroup.models import UserGroup
 from application.libkeyword.models import LibKeyword
 from application.libkeyword.serializers import LibKeywordSerializers
 from application.pythonlib.models import PythonLib
 
 
-def scan_library_and_keyword(group_id_list, force_update=False):
+def scan_keyword(group_id_list, force_update=False):
     git = GitClient()
     library_path = settings.LIBRARY_BASE_DIR / settings.LIBRARY_PROJECT_NAME
     # if not library_path.exists():
@@ -29,20 +30,23 @@ def scan_library_and_keyword(group_id_list, force_update=False):
     user_group_queryset = UserGroup.objects.filter(
         group_id__in=group_id_list
     ).select_related('group')
-    all_func_list = get_group_func_list(user_group_queryset)
-    result = {
-        'ready_keywords': serializer_to_keyword(all_func_list),
-        'operation_libraries': get_group_library_operation(user_group_queryset)
-    }
-    return True, result
+    library_queryset = PythonLib.objects.filter(
+        user_group_id__in=group_id_list
+    )
+    func_list = get_group_func_list(user_group_queryset)
+    library_map = {t.lib_name: t.id for t in library_queryset}
+    return serializer_to_keyword(func_list, library_map)
 
 
-def get_group_library_operation(user_groups):
+def get_last_library_info(group_id_list):
     operation_libraries = {
         'delete': [],
         'update': [],
         'create': []
     }
+    user_groups = UserGroup.objects.filter(
+        group_id__in=group_id_list
+    ).select_related('group')
     for group in user_groups:
         absolute_path = settings.LIBRARY_FILE_DIR / group.library_path
         group_modules = {}
@@ -95,6 +99,10 @@ def admin_scan_keyword(scan_files=None):
         git.clone(settings.LIBRARY_GIT, settings.LIBRARY_BASE_DIR)
     else:
         git.pull(library_path)
+    library_queryset = PythonLib.objects.filter(
+        lib_type=LibraryType.CUSTOMIZED
+    )
+    library_map = {t.lib_name: t.id for t in library_queryset}
     func_list = []
     if scan_files:
         for f in scan_files:
@@ -107,10 +115,10 @@ def admin_scan_keyword(scan_files=None):
         for group_dir in group_dir_list:
             group_func_list = scan_directory(group_dir)
             func_list.extend(group_func_list)
-    return serializer_to_keyword(func_list)
+    return serializer_to_keyword(func_list, library_map)
 
 
-def serializer_to_keyword(func_list, allowed_update=False):
+def serializer_to_keyword(func_list, library_map, allowed_update=False):
     serializer_func_list = []
     for func in func_list:
         func_name = func.get('name')
@@ -132,6 +140,10 @@ def serializer_to_keyword(func_list, allowed_update=False):
                 update_keyword_data['new_info'] = pr_info
                 serializer_func_list.append(update_keyword_data)
                 continue
+        library_name = func.get('module')
+        library_id = library_map.get(library_name)
+        if not library_id:
+            continue
         ready_keyword_data = {
             'name': func_name,
             'ext_name': '',
@@ -146,7 +158,9 @@ def serializer_to_keyword(func_list, allowed_update=False):
             'category': KeywordCategory.CUSTOMIZED,
             'image': '',
             'status': -1,
-            'source': func.get('module'),
+            'status_desc': 'Ready',
+            'library_id': library_id,
+            'library_name': library_name,
             'remark': ''
         }
         serializer_func_list.append(ready_keyword_data)

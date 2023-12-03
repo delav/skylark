@@ -54,6 +54,8 @@ class CommonParser(object):
                 file_name = suite.name + ROBOT_RESOURCE_FILE_SUFFIX
             # file type will read name from reader
             if suite.category == ModuleCategory.VARIABLE or suite.category == ModuleCategory.FILE:
+                if not instance.name():
+                    continue
                 file_name = instance.name() if hasattr(instance, 'name') else suite.name
             file = ROBOT_PATH_SEP.join([self.project_name, path, file_name])
             text = instance.read()

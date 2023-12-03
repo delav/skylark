@@ -10,7 +10,7 @@ from application.buildplan.models import BuildPlan
 from application.buildrecord.models import BuildRecord
 from application.projectversion.models import ProjectVersion
 from application.buildhistory.models import BuildHistory
-from application.common.parser.jsonparser import JsonParser
+from application.common.parser.structureparser import StructureParser
 from application.manager import get_env_list, get_region_list
 from application.builder.handler import generate_test_task_id
 from skylark.celeryapp import app
@@ -118,7 +118,7 @@ def _create_task(record_id, project_id, project_name, env_id_list, region_id_lis
 def _execute(record_id, project_id, project_name, env_id, env_name,
              region_id, region_name, parameters, run_data, env_region_common, build_cases):
     copy_data = deepcopy(run_data)
-    common_struct, structure_list = JsonParser(
+    structure = StructureParser(
         project_id=project_id,
         project_name=project_name,
         env_id=env_id,
@@ -129,8 +129,7 @@ def _execute(record_id, project_id, project_name, env_id, env_name,
         distributed=settings.DISTRIBUTED_BUILD,
         limit=settings.WORKER_MAX_CASE_LIMIT
     )
-    engine.init_common_data(common_struct)
-    engine.visit(structure_list)
+    engine.visit(structure)
     batch_data = engine.get_batch_data()
     batch = len(batch_data)
     instance = BuildHistory.objects.create(

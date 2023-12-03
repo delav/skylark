@@ -3,21 +3,20 @@ from application.constant import (
     VERSION_PROJECT_FILE_KEY, EXTRA_VARIABLE_KEY,
     EXTRA_FIXTURE_KEY, ROBOT_INIT_FILE_NAME, ROBOT_SUITE_FILE_SUFFIX, EXTRA_TAG_KEY,
 )
-from infra.engine.structure import SuiteStructure, CommonStructure
+from infra.engine.structure import SuiteStructure, CommonStructure, Structure
 from application.common.reader.initreader import JsonDirInitReader
 from application.common.reader.suitereader import JsonSuiteReader
 from application.common.parser.baseparser import CommonParser
 from application.common.parser.treeformat import parse_front_data, parse_version_data
 
 
-class JsonParser(CommonParser):
+class StructureParser(CommonParser):
 
     def __init__(self, project_id, project_name, env_id, region_id, include_cases=None):
-        super(JsonParser, self).__init__(
+        super(StructureParser, self).__init__(
             project_id, project_name, env_id, region_id
         )
         self.build_cases = include_cases
-        self.structures = []
 
     def parse(self, run_data, common=None, from_db=False):
         if common is None:
@@ -37,18 +36,20 @@ class JsonParser(CommonParser):
             VERSION_PROJECT_FILE_KEY: self.common_project_files,
         }
 
-    def _extract(self, path, reader):
+    @classmethod
+    def _suite_structure_builder(cls, path, reader):
         file_text = reader.read()
         if len(reader.body_text_list) == 0:
-            return
+            return None
         struct = SuiteStructure()
         struct.set_path(path)
         struct.set_header(reader.head_text_str)
         struct.set_testcase(reader.body_text_list)
         struct.set_content(file_text)
-        self.structures.append(struct)
+        return struct
 
     def _parse(self, format_build_data, common_data):
+        structure = Structure()
         common_file_sources = {}
         # handle base common resource
         base_resource_map = common_data.get(VERSION_BASE_RESOURCE_KEY)
@@ -101,6 +102,10 @@ class JsonParser(CommonParser):
                 case_data=suite_case_data,
                 include_cases=self.build_cases,
             )
-            self._extract(suite_file, suite_reader)
+            suite_structure = self._suite_structure_builder(suite_file, suite_reader)
+            if suite_structure:
+                structure.add_suite(suite_structure)
+                structure.increase_case(suite_structure.case_count())
         common_structure = CommonStructure(init_file_paths, common_file_sources, variable_file_map, project_file_map)
-        return common_structure, self.structures
+        structure.set_common(common_structure)
+        return structure

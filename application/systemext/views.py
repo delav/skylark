@@ -101,12 +101,11 @@ class SystemExtViewSets(viewsets.GenericViewSet):
                 destination.write(chunk)
             destination.close()
             file_path_list.append(file.as_posix())
-        extra_dict = json.loads(extra_data)
-        extra_dict['file_list'] = file_path_list
+        extra_data['file_list'] = file_path_list
         instance = SystemExt.objects.create(
             user_id=user_id,
             info_type=info_type,
-            extra_data=json.dumps(extra_dict)
+            extra_data=json.dumps(extra_data)
         )
         data = self.get_serializer(instance).data
         return JsonResponse(data=data)

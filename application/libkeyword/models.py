@@ -24,7 +24,7 @@ class LibKeyword(models.Model):
     category = models.IntegerField(default=1, help_text='keyword category')
     image = models.ImageField(default=DEFAULT_ICON, upload_to=settings.KEYWORD_ICON_PATH, help_text='keyword icon')
     status = models.IntegerField(default=0, help_text='module status')
-    source = models.CharField(default='BuiltIn', max_length=255, help_text='keyword source')
+    library_id = models.IntegerField(default=0, help_text='related python library')
     remark = models.TextField(default=None, blank=True, null=True, help_text='keyword other remark')
 
     class Meta:

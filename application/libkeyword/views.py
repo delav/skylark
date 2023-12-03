@@ -12,12 +12,14 @@ from infra.django.response import JsonResponse
 from application.status import KeywordType, ModuleStatus, KeywordGroupType
 from application.common.keyword.formatter import format_keyword_data
 from application.manager import get_project_by_id
+from application.mapping import module_status_map
+from application.storage import update_lib_keyword_storage
 from application.keywordgroup.models import KeywordGroup
 from application.keywordgroup.serializers import KeywordGroupSerializers
 from application.libkeyword.models import LibKeyword
 from application.libkeyword.serializers import LibKeywordSerializers
-from application.libkeyword.handler import scan_library_and_keyword
-from application.usergroup.models import UserGroup
+from application.libkeyword.handler import get_last_library_info, scan_keyword
+from application.usergroup.models import Group
 from application.pythonlib.models import PythonLib
 
 # Create your views here.
@@ -81,13 +83,15 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         keyword_group_query = KeywordGroup.objects.filter(id=group_id)
         if not keyword_group_query.exists():
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
-        user_group_query = UserGroup.objects.filter(
-            group__user__id=request.user.id
-        ).select_related('group')
-        user_group = user_group_query.first()
-        if user_group.group_id != keyword_group_query.first().user_group_id:
+        user_group_ids = Group.objects.filter(
+            user=request.user
+        ).values_list('id')
+        user_group_id = keyword_group_query.first().user_group_id
+        if (user_group_id,) not in user_group_ids:
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         self.perform_create(serializer)
+        instance = serializer.save()
+        update_lib_keyword_storage(LibKeyword, instance.id)
         return JsonResponse(data=serializer.data)
 
     def update(self, request, *args, **kwargs):
@@ -100,34 +104,63 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
             request.data['image'] = image_file
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
+        group_id = serializer.validated_data.get('group_id')
+        keyword_group_query = KeywordGroup.objects.filter(id=group_id)
+        if not keyword_group_query.exists():
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
+        user_group_ids = Group.objects.filter(
+            user=request.user
+        ).values_list('id')
+        user_group_id = keyword_group_query.first().user_group_id
+        if (user_group_id,) not in user_group_ids:
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         self.perform_update(serializer)
+        update_lib_keyword_storage(LibKeyword, instance.id)
         return JsonResponse(serializer.data)
 
     @action(methods=['get'], detail=False)
     def get_list_by_group(self, request, *args, **kwargs):
         logger.info(f'get keyword group by group id: {request.query_params}')
-        group_id = request.query_params.get('group')
-        queryset = LibKeyword.objects.filter(
-            group_id=group_id
+        keyword_group_id = request.query_params.get('group')
+        keyword_group_query = KeywordGroup.objects.filter(
+            id=keyword_group_id
         )
-        serializer = self.get_serializer(queryset, many=True)
-        return JsonResponse(data=serializer.data)
+        if not keyword_group_query.exists():
+            return JsonResponse(code=10503, msg='query failed')
+        user_group_ids = Group.objects.filter(
+            user=request.user
+        ).values_list('id')
+        user_group_id = keyword_group_query.first().user_group_id
+        if (user_group_id,) not in user_group_ids:
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
+        queryset = LibKeyword.objects.filter(
+            group_id=keyword_group_id
+        )
+        library_queryset = PythonLib.objects.filter(
+            user_group_id=user_group_id
+        )
+        library_map = {t.id: t.lib_name for t in library_queryset}
+        group_keywords = []
+        for item in queryset.iterator():
+            data = self.get_serializer(item).data
+            data['status_desc'] = module_status_map.get(data['status'])
+            data['library_name'] = library_map.get(item.library_id)
+            group_keywords.append(data)
+        return JsonResponse(data=group_keywords)
 
     @action(methods=['get'], detail=False)
     def scan_keyword(self, request, *args, **kwargs):
         logger.info('scan keyword file by team')
-        user_group_query = UserGroup.objects.filter(
-            group__user__id=request.user.id
-        ).select_related('group')
+        user_group_query = Group.objects.filter(
+            user=request.user
+        )
         user_group = user_group_query.first()
-        grou_id = user_group.group_id
-        suc, result = scan_library_and_keyword([grou_id], True)
-        if not suc:
-            return JsonResponse(code=10502, data=result)
+        grou_id = user_group.id
+        operation_libraries = get_last_library_info([grou_id])
         # update python library info
         try:
             with transaction.atomic():
-                for operation, operation_list in result['operation_libraries'].items():
+                for operation, operation_list in operation_libraries.items():
                     if operation == 'delete' and operation_list:
                         for instance in operation_list:
                             instance.delete()
@@ -136,8 +169,10 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
                     if operation == 'create' and operation_list:
                         PythonLib.objects.bulk_create(operation_list)
         except (Exception,) as e:
-            logger.warning(f'parse group library failed: {e}')
-        return JsonResponse(data=result['ready_keywords'])
+            logger.warning(f'update group library failed: {e}')
+            return JsonResponse(code=10501, msg='scan library failed')
+        ready_keywords = scan_keyword([grou_id], True)
+        return JsonResponse(data=ready_keywords)
 
 
 class AdminKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,

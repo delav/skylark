@@ -22,7 +22,7 @@ from application.buildhistory.models import BuildHistory
 from application.builder.serializers import DebugBuildSerializers
 from application.builder.serializers import TestQuickBuildSerializers, TestInstantBuildSerializers
 from application.builder.handler import generate_test_task_id, generate_debug_task_id
-from application.common.parser.jsonparser import JsonParser
+from application.common.parser.structureparser import StructureParser
 from skylark.celeryapp import app
 
 # Create your views here.
@@ -138,12 +138,11 @@ class BuilderViewSets(viewsets.GenericViewSet):
         project_name = serializer.validated_data.get('project_name')
         parameters = serializer.validated_data.get('parameters', '')
         run_data = serializer.validated_data.get('run_data')
-        common_struct, structure_list = JsonParser(
+        structure = StructureParser(
             project_id, project_name, env_id, region_id
         ).parse(run_data)
-        engine = DcsEngine(distributed=False, limit=settings.WORKER_MAX_CASE_LIMIT)
-        engine.init_common_data(common_struct)
-        engine.visit(structure_list)
+        engine = DcsEngine(distributed=True, limit=50)
+        engine.visit(structure)
         batch_data = engine.get_batch_data()
         task_id = generate_debug_task_id()
         # debug mode save batch to redis
