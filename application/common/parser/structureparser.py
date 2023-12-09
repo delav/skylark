@@ -63,8 +63,9 @@ class StructureParser(CommonParser):
         variable_file_list = []
         # handle project help file
         project_file_map = common_data.get(VERSION_PROJECT_FILE_KEY, {})
-        # need download file in slaver
         user_keyword_list = list(user_keyword_map.keys())
+        if not user_keyword_list:
+            user_keyword_list = list(base_resource_map.keys())
         init_file_paths = []
         for dir_id, dir_data in format_build_data.get('dirs', {}).items():
             dir_path = dir_data['path']

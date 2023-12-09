@@ -13,7 +13,7 @@ class Webhook(models.Model):
     secret = models.CharField(max_length=255, help_text='webhook secret')
     hook_type = models.IntegerField(default=1, help_text='webhook type')
     create_at = models.DateTimeField(auto_now_add=True, help_text='create time')
-    update_at = models.DateTimeField(auto_now=True, help_text='end time')
+    update_at = models.DateTimeField(auto_now=True, help_text='update time')
     create_by = models.CharField(max_length=255, help_text='create user')
     update_by = models.CharField(max_length=255, help_text='last update user')
     status = models.IntegerField(default=0, help_text='module status')

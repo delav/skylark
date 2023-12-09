@@ -11,7 +11,7 @@ class SuiteDir(models.Model):
     document = models.TextField(default=None, blank=True, null=True, help_text='dir desc')
     category = models.IntegerField(default=0, help_text='model category')
     create_at = models.DateTimeField(auto_now_add=True, help_text='create time')
-    update_at = models.DateTimeField(auto_now=True, help_text='end time')
+    update_at = models.DateTimeField(auto_now=True, help_text='update time')
     create_by = models.CharField(max_length=255, help_text='create user')
     update_by = models.CharField(max_length=255, help_text='last update user')
     project = models.ForeignKey(Project, related_name='dirs', on_delete=models.CASCADE, help_text='associated project')

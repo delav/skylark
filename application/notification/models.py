@@ -6,8 +6,8 @@ from django.db import models
 class Notification(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
     project_id = models.IntegerField(help_text='associated project')
-    create_at = models.DateTimeField(auto_now_add=True, help_text='build time')
-    update_at = models.DateTimeField(auto_now=True, help_text='last update time')
+    create_at = models.DateTimeField(auto_now_add=True, help_text='create time')
+    update_at = models.DateTimeField(auto_now=True, help_text='update time')
     create_by = models.CharField(max_length=255, help_text='create user')
     update_by = models.CharField(max_length=255, help_text='last update user')
     ding_token = models.TextField(default=None, blank=True, null=True, help_text='ding talk token')

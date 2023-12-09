@@ -4,6 +4,8 @@ from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from infra.client.gitclient import GitClient
+from application.workermanager.models import WorkerManager
+from skylark.celeryapp import app
 
 
 class ExternalGitViewSets(viewsets.GenericViewSet):
@@ -31,6 +33,16 @@ class ExternalGitViewSets(viewsets.GenericViewSet):
                 logger.error('git pull failed')
         # TODO
         # notify slave git pull
+        git_cmd = 'git pull'
+        worker_queryset = WorkerManager.objects.filter(
+            alive=True
+        )
+        for item in worker_queryset.iterator():
+            app.send_task(
+                settings.COMMAND_TASK,
+                queue=item.queue,
+                args=(git_cmd,)
+            )
         return HttpResponse('OK', status=200)
 
     @classmethod

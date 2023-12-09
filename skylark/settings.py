@@ -76,7 +76,8 @@ INSTALLED_APPS = [
     'application.projectversion.apps.ProjectVersionConfig',
     'application.notification.apps.NotificationConfig',
     'application.webhook.apps.WebhookConfig',
-    'application.executeparam.apps.ExecuteParamConfig'
+    'application.executeparam.apps.ExecuteParamConfig',
+    'application.workermanager.apps.WorkerManagerConfig',
 ]
 
 MIDDLEWARE = [
@@ -283,12 +284,14 @@ CELERY_TASKS_IMPORTS = (
     'task.robot.tasks',
     'task.version.tasks',
     'task.reporter.tasks',
+    'task.exchange.tasks'
 )
 # Celery queues
 DEFAULT_QUEUE = 'default'
 RUNNER_QUEUE = 'runner'
 NOTIFIER_QUEUE = 'notifier'
 BUILDER_QUEUE = 'builder'
+EXCHANGE_QUEUE = 'exchanger'
 # Celery tasks
 NOTIFIER_TASK = 'task.robot.tasks.robot_notifier'
 RUNNER_TASK = 'task.robot.tasks.robot_runner'
@@ -296,6 +299,9 @@ INSTANT_TASK = 'task.builder.tasks.instant_builder'
 PERIODIC_TASK = 'task.builder.tasks.periodic_builder'
 REPORT_TASK = 'task.reporter.tasks.send_report'
 VERSION_TASK = 'task.version.tasks.generate_version'
+HEARTBEAT_TASK = 'task.exchange.tasks.heartbeat'
+COLLECTOR_TASK = 'task.exchange.tasks.worker_collector'
+COMMAND_TASK = 'task.exchange.tasks.command_executor'
 # Celery periodic tasks
 CELERY_PERIOD_TASKS = {
     'clear_expired_file': {
@@ -327,6 +333,13 @@ CELERY_TASK_CONF = [
         'tasks': [
             INSTANT_TASK,
             PERIODIC_TASK
+        ]
+    },
+    {
+        'queue': EXCHANGE_QUEUE,
+        'tasks': [
+            HEARTBEAT_TASK,
+            COLLECTOR_TASK
         ]
     }
 ]

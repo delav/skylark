@@ -7,7 +7,7 @@ from application.environment.models import Environment
 
 class Builder(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
-    create_at = models.DateTimeField(auto_now_add=True, help_text='build time')
+    create_at = models.DateTimeField(auto_now_add=True, help_text='create time')
     create_by = models.CharField(max_length=255, help_text='create user')
 
     class Meta:

@@ -5,8 +5,8 @@ from django.db import models
 
 class ExecuteParam(models.Model):
     id = models.BigAutoField(primary_key=True, help_text='primary key id')
-    create_at = models.DateTimeField(auto_now_add=True, help_text='build time')
-    update_at = models.DateTimeField(auto_now=True, help_text='last update time')
+    create_at = models.DateTimeField(auto_now_add=True, help_text='create time')
+    update_at = models.DateTimeField(auto_now=True, help_text='update time')
     create_by = models.CharField(max_length=255, help_text='create user')
     update_by = models.CharField(max_length=255, help_text='last update user')
     parameters = models.TextField(default='', help_text='parameters')

@@ -15,6 +15,8 @@ from application.department.models import Department
 from application.department.serializers import DepartmentSerializers
 from application.pythonlib.models import PythonLib
 from application.pythonlib.serializers import PythonLibSerializers
+from application.workermanager.models import WorkerManager
+from application.workermanager.serializers import WorkerManagerSerializers
 
 
 def get_env_list():
@@ -103,3 +105,12 @@ def get_group_library_list(group_id):
         Q(user_group_id=group_id) | Q(user_group_id=None)
     )
     return PythonLibSerializers(library_queryset, many=True).data
+
+
+def get_worker_by_ip(ip_addr):
+    worker_query = WorkerManager.objects.filter(
+        ip=ip_addr
+    )
+    if not worker_query.exists():
+        return {}
+    return WorkerManagerSerializers(worker_query.first()).data
