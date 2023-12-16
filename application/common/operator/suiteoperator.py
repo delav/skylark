@@ -9,7 +9,7 @@ from application.setupteardown.models import SetupTeardown
 from application.variable.models import Variable
 from application.tag.models import Tag
 from application.virtualfile.models import VirtualFile
-from application.virtualfile.handler import PATH_SEPARATOR, get_full_dir_path
+from application.virtualfile.handler import PATH_SEPARATOR, get_full_dir_path, update_file
 from application.common.operator.caseoperator import CaseCopyOperator
 
 
@@ -140,4 +140,17 @@ class SuiteDeleteOperator(object):
     def delete_by_obj(self, suite_obj):
         suite_obj.name = suite_obj.name + f'-{get_timestamp(6)}'
         suite_obj.update_by = self.update_by
+        suite_obj.status = ModuleStatus.DELETED
         suite_obj.save()
+        if suite_obj.category in (ModuleCategory.TESTCASE, ModuleCategory.KEYWORD):
+            suite_cases = TestCase.objects.filter(
+                test_suite_id=suite_obj.id
+            )
+            suite_cases.update(
+                status=ModuleStatus.DELETED,
+                update_by=self.update_by
+            )
+        if suite_obj.category in (ModuleCategory.VARIABLE, ModuleCategory.FILE):
+            update_file(suite_obj.id, status=ModuleStatus.DELETED)
+
+

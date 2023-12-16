@@ -4,7 +4,7 @@ from application.setupteardown.models import SetupTeardown
 from application.suitedir.models import SuiteDir
 from application.testsuite.models import TestSuite
 from application.variable.models import Variable
-from application.common.operator.suiteoperator import SuiteCopyOperator
+from application.common.operator.suiteoperator import SuiteCopyOperator, SuiteDeleteOperator
 
 
 class DirCopyOperator(object):
@@ -143,6 +143,11 @@ class DirDeleteOperator(object):
         dir_obj.name = dir_obj.name + f'-{get_timestamp(6)}'
         dir_obj.update_by = self.update_by
         dir_obj.save()
+        dir_suites = TestSuite.objects.filter(
+            suite_dir_id=dir_obj.id
+        )
+        for suite_obj in dir_suites.iterator():
+            SuiteDeleteOperator(self.update_by).delete_by_obj(suite_obj)
         child_dirs = SuiteDir.objects.filter(
             parent_dir_id=dir_obj.id
         )

@@ -119,8 +119,6 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         with transaction.atomic():
             delete_operator = SuiteDeleteOperator(request.user.email)
             delete_operator.delete_by_obj(instance)
-            if instance.category in (ModuleCategory.VARIABLE, ModuleCategory.FILE):
-                update_file(instance.id, status=ModuleStatus.DELETED)
         return JsonResponse(instance.id)
 
     @action(methods=['post'], detail=False)
