@@ -66,13 +66,13 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
         project_id = serializer.validated_data.get('project_id')
         if not has_project_permission(project_id, request.user):
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
-        suite_query = SuiteDir.objects.filter(
+        dir_query = SuiteDir.objects.filter(
             id=serializer.validated_data.get('suite_dir_id'),
             status=ModuleStatus.NORMAL
         )
-        if not suite_query.exists():
+        if not dir_query.exists():
             return JsonResponse(code=40308, msg='dir not exist')
-        suite_dir = suite_query.first()
+        suite_dir = dir_query.first()
         if project_id != suite_dir.project_id:
             return JsonResponse(code=40309, msg='create data error')
         try:
@@ -81,7 +81,7 @@ class TestSuiteViewSets(mixins.CreateModelMixin, mixins.ListModelMixin,
                 category=suite_dir.category,
             )
         except IntegrityError:
-            return JsonResponse(code=10061, msg='create test suite failed')
+            return JsonResponse(code=10061, msg='suite name already exist')
         suite_data = self.get_serializer(instance).data
         if suite_data['category'] != ModuleCategory.TESTCASE:
             suite_data['extra_data'] = {}

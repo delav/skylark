@@ -138,18 +138,22 @@ class SuiteDeleteOperator(object):
         self.update_by = delete_user
 
     def delete_by_obj(self, suite_obj):
-        suite_obj.name = suite_obj.name + f'-{get_timestamp(6)}'
+        delete_timestamp = get_timestamp(6)
+        suite_obj.name = suite_obj.name + f'-{delete_timestamp}'
         suite_obj.update_by = self.update_by
         suite_obj.status = ModuleStatus.DELETED
         suite_obj.save()
         if suite_obj.category in (ModuleCategory.TESTCASE, ModuleCategory.KEYWORD):
+            update_case_list = []
             suite_cases = TestCase.objects.filter(
                 test_suite_id=suite_obj.id
             )
-            suite_cases.update(
-                status=ModuleStatus.DELETED,
-                update_by=self.update_by
-            )
+            for item in suite_cases.iterator():
+                item.name = item.name + f'-{delete_timestamp}'
+                item.update_by = self.update_by
+                item.status = ModuleStatus.DELETED
+                update_case_list.append(item)
+            TestCase.objects.bulk_update(update_case_list, ['name', 'update_by', 'status'])
         if suite_obj.category in (ModuleCategory.VARIABLE, ModuleCategory.FILE):
             update_file(suite_obj.id, status=ModuleStatus.DELETED)
 
