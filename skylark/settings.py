@@ -251,8 +251,8 @@ VARIABLE_FILE_TYPE = ('.py', '.yaml')
 SAVE_TO_DB_FILE_TYPE = ()
 
 # distributed execute
-DISTRIBUTED_BUILD = False
-DISTRIBUTED_BY_SUITE = False
+DISTRIBUTED_BUILD = True
+DISTRIBUTED_BY_SUITE = True
 WORKER_MAX_CASE_LIMIT = 200
 
 # keyword icon path

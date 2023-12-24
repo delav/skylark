@@ -141,7 +141,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
         structure = StructureParser(
             project_id, project_name, env_id, region_id
         ).parse(run_data)
-        engine = DcsEngine(distributed=True, limit=50)
+        engine = DcsEngine(distributed=True, limit=50, suite_mode=True)
         engine.visit(structure)
         batch_data = engine.get_batch_data()
         task_id = generate_debug_task_id()

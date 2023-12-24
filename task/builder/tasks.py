@@ -127,7 +127,8 @@ def _execute(record_id, project_id, project_name, env_id, env_name,
     ).parse(copy_data, env_region_common, True)
     engine = DcsEngine(
         distributed=settings.DISTRIBUTED_BUILD,
-        limit=settings.WORKER_MAX_CASE_LIMIT
+        limit=settings.WORKER_MAX_CASE_LIMIT,
+        suite_mode=settings.DISTRIBUTED_BY_SUITE
     )
     engine.visit(structure)
     batch_data = engine.get_batch_data()
