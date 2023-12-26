@@ -146,7 +146,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
         batch_data = engine.get_batch_data()
         task_id = generate_debug_task_id()
         # debug mode save batch to redis
-        conn = RedisClient(settings.ROBOT_REDIS_URL).connector
+        conn = RedisClient(settings.REDIS_URL).connector
         task_redis_key = REDIS_TASK_RESULT_KEY_PREFIX + task_id
         conn.hset(task_redis_key, 'batch', len(batch_data))
         # waiting django-redis add feature to support hash
@@ -176,7 +176,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
     @action(methods=['post'], detail=False)
     def progress(self, request, *args, **kwargs):
         mode = request.data.get('mode')
-        conn = RedisClient(settings.ROBOT_REDIS_URL).connector
+        conn = RedisClient(settings.REDIS_URL).connector
         if mode == 'debug':
             task_id = request.data.get('task_id')
             redis_key = REDIS_CASE_RESULT_KEY_PREFIX + task_id
@@ -198,7 +198,7 @@ class BuilderViewSets(viewsets.GenericViewSet):
     @action(methods=['get'], detail=False)
     def log(self, request, *args, **kwargs):
         build_id = request.query_params.get('id')
-        conn = RedisClient(settings.ROBOT_REDIS_URL).connector
+        conn = RedisClient(settings.REDIS_URL).connector
         log_redis_key = REDIS_DEBUG_RESULT_KEY_PREFIX + build_id
         log_info = conn.hgetall(log_redis_key)
         log_file_name = 'log.html'

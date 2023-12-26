@@ -31,6 +31,7 @@ VARIABLE_NAME_KEY = 'name'
 VARIABLE_VALUE_KEY = 'value'
 
 # redis key
+REDIS_USER_INFO_KEY_PREFIX = 'user:'
 REDIS_CASE_RESULT_KEY_PREFIX = 'robot:case:'
 REDIS_TASK_RESULT_KEY_PREFIX = 'robot:task:'
 REDIS_DEBUG_RESULT_KEY_PREFIX = 'robot:debug:'

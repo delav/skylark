@@ -1,15 +1,22 @@
+import random
 from loguru import logger
 from datetime import datetime
 from django.db import transaction
+from django.conf import settings
+from django.core.mail import send_mail
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 from infra.django.response import JsonResponse
 from infra.django.pagination.paginator import PagePagination
+from infra.client.redisclient import RedisClient
+from application.constant import REDIS_USER_INFO_KEY_PREFIX
 from application.manager import get_user_list
 from application.user.models import User
-from application.user.serializers import LoginSerializer, RegisterSerializer, UserSerializer, UserAdminSerializer
+from application.user.serializers import (
+    LoginSerializer, RegisterSerializer, ResetPasswordSerializer, UserSerializer, UserAdminSerializer
+)
 from application.usergroup.models import UserGroup
 
 # Create your views here.
@@ -40,9 +47,38 @@ class NoAuthUserViewSets(viewsets.GenericViewSet):
         return JsonResponse(data=data)
 
     @action(methods=['post'], detail=False)
-    def reset(self):
-        logger.info('retrieve password')
+    def reset_confirm(self, request, *args, **kwargs):
+        logger.info('reset password confirm')
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user_email = serializer.validated_data.get('email')
+        user_query = User.objects.filter(email=user_email)
+        user_query.update(password=serializer.validated_data.get('password'))
         return JsonResponse()
+
+    @action(methods=['post'], detail=False)
+    def reset_precheck(self, request, *args, **kwargs):
+        logger.info('reset password send email')
+        user_email = request.data.get('email')
+        user_query = User.objects.filter(email=user_email)
+        if not user_query.exists():
+            return JsonResponse(code='10001', msg='user not exist')
+        captcha = random.randint(111111, 999999)
+        conn = RedisClient(settings.REDIS_URL).connector
+        redis_key = REDIS_USER_INFO_KEY_PREFIX + f'captcha:{user_query.first().id}'
+        had_send = conn.get(redis_key)
+        if had_send:
+            return JsonResponse(code='10002', msg='please try again later')
+        conn.set(redis_key, captcha)
+        conn.expire(redis_key, 60*5)
+        send_mail(
+            subject='Skylark重置密码验证码',
+            message=f'验证码: {captcha}, 5分钟内有效',
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[user_email],
+            fail_silently=False
+        )
+        return JsonResponse(data='success')
 
 
 class NormalUserViewSets(mixins.ListModelMixin, mixins.RetrieveModelMixin,

@@ -41,7 +41,7 @@ def robot_notifier(task_id, project, env, region, notify_type):
 
 
 def debug_notify(task_id, project, env, region):
-    conn = RedisClient(settings.ROBOT_REDIS_URL).connector
+    conn = RedisClient(settings.REDIS_URL).connector
     task_redis_key = REDIS_TASK_RESULT_KEY_PREFIX + task_id
     current_result = conn.hgetall(task_redis_key)
     batch = current_result.pop('batch')
@@ -80,7 +80,7 @@ def task_start_notify(task_id):
 
 
 def task_end_notify(task_id, project, env, region):
-    conn = RedisClient(settings.ROBOT_REDIS_URL).connector
+    conn = RedisClient(settings.REDIS_URL).connector
     task_redis_key = REDIS_TASK_RESULT_KEY_PREFIX + task_id
     current_result = conn.hgetall(task_redis_key)
     history_id = convert_test_task_id(task_id)

@@ -1,11 +1,13 @@
 from django.conf import settings
 from django.db.models import Q
 from django.contrib.auth.hashers import make_password, check_password
-from infra.crypto import ecb_decrypt
-from application.user.models import User
-from infra.django.exception import ValidationException
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from infra.crypto import ecb_decrypt
+from infra.client.redisclient import RedisClient
+from infra.django.exception import ValidationException
+from application.user.models import User
+from application.constant import REDIS_USER_INFO_KEY_PREFIX
 
 
 class LoginSerializer(TokenObtainPairSerializer, serializers.ModelSerializer):
@@ -83,7 +85,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         user = User.objects.filter(username=value)
         if user.exists():
-            raise ValidationException(detail='Username already exists', code=10033)
+            raise ValidationException(detail='Username already exist', code=10033)
         return value
 
     def validate(self, attrs):
@@ -94,6 +96,37 @@ class RegisterSerializer(serializers.ModelSerializer):
             attrs['password'] = make_password(raw_password)
         except (Exception,):
             raise ValidationException(detail='Please check your password', code=10035)
+        del attrs['confirm_password']
+        return attrs
+
+
+class ResetPasswordSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(help_text='user email')
+    confirm_password = serializers.CharField(help_text='confirm password')
+    captcha = serializers.CharField(help_text='email captcha')
+
+    class Meta:
+        model = User
+        fields = ('email', 'password', 'confirm_password', 'captcha')
+
+    def validate(self, attrs):
+        user_query = User.objects.filter(email=attrs.get('email'))
+        if not user_query.exists():
+            raise ValidationException(detail='User not exist', code=10036)
+        conn = RedisClient(settings.REDIS_URL).connector
+        redis_key = REDIS_USER_INFO_KEY_PREFIX + f'captcha:{user_query.first().id}'
+        captcha = conn.get(redis_key)
+        if not captcha:
+            raise ValidationException(detail='Captcha expired, please send again', code=10037)
+        if captcha != attrs.get('captcha'):
+            raise ValidationException(detail='Captcha error', code=10037)
+        if attrs.get('password') != attrs.get('confirm_password'):
+            raise ValidationException(detail='Confirm password error', code=10038)
+        try:
+            raw_password = ecb_decrypt(settings.AES_KEY, attrs['password'])
+            attrs['password'] = make_password(raw_password)
+        except (Exception,):
+            raise ValidationException(detail='Please check your password', code=10039)
         del attrs['confirm_password']
         return attrs
 

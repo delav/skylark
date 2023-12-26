@@ -26,7 +26,7 @@ class SystemExtViewSets(viewsets.GenericViewSet):
     @action(methods=['get'], detail=False)
     def get_system_message(self, request, *args, **kwargs):
         logger.info('get system message')
-        conn = RedisClient(settings.ROBOT_REDIS_URL).connector
+        conn = RedisClient(settings.REDIS_URL).connector
         user_id = request.user.id
         info_type = SystemInfoType.NOTICE
         message_queryset = SystemExt.objects.filter(
@@ -48,7 +48,7 @@ class SystemExtViewSets(viewsets.GenericViewSet):
         message_id = request.data.get('message_id')
         if not message_id:
             return JsonResponse()
-        conn = RedisClient(settings.ROBOT_REDIS_URL).connector
+        conn = RedisClient(settings.REDIS_URL).connector
         user_id = request.user.id
         info_type = SystemInfoType.NOTICE
         redis_key = f'{REDIS_SYSTEM_KEY_PREFIX}{user_id}:{info_type}:{message_id}'
@@ -65,7 +65,7 @@ class SystemExtViewSets(viewsets.GenericViewSet):
         message_id = request.data.get('message_id')
         if not message_id:
             return JsonResponse()
-        conn = RedisClient(settings.ROBOT_REDIS_URL).connector
+        conn = RedisClient(settings.REDIS_URL).connector
         user_id = request.user.id
         info_type = SystemInfoType.NOTICE
         redis_key = f'{REDIS_SYSTEM_KEY_PREFIX}{user_id}:{info_type}:{message_id}'
@@ -134,7 +134,7 @@ class AdminSystemExtViewSets(viewsets.GenericViewSet):
         notify_dict['read'] = False
         user_list = get_user_list()
         expired_seconds = int((expire_at - datetime.now()).total_seconds())
-        conn = RedisClient(settings.ROBOT_REDIS_URL).connector
+        conn = RedisClient(settings.REDIS_URL).connector
         for user in user_list:
             user_id = user.get('id')
             redis_key = f'{REDIS_SYSTEM_KEY_PREFIX}{user_id}:{info_type}:{message_id}'

@@ -86,7 +86,8 @@ urlpatterns = [
     url(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     path(r'api/user/login', NoAuthUserViewSets.as_view({'post': 'login'})),
     path(r'api/user/register', NoAuthUserViewSets.as_view({'post': 'register'})),
-    path(r'api/user/reset', NoAuthUserViewSets.as_view({'post': 'reset'})),
+    path(r'api/user/reset_precheck', NoAuthUserViewSets.as_view({'post': 'reset_precheck'})),
+    path(r'api/user/reset_confirm', NoAuthUserViewSets.as_view({'post': 'reset_confirm'})),
     path(r'api/external/download_file', ExternalFileViewSets.as_view({'post': 'download_file'})),
     path(r'api/external/webhook', ExternalTriggerViewSets.as_view({'post': 'webhook_trigger'}))
 ]

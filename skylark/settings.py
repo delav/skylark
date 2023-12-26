@@ -273,9 +273,9 @@ REPORT_PATH = BASE_DIR / 'report'
 # Default copy project
 PROJECT_MODULE = 'SKYLARK'
 
-# Robot result redis
+# result redis
+REDIS_URL = f'redis://{REDIS.get("HOST")}:{REDIS.get("PORT")}/1'
 REDIS_EXPIRE_TIME = 60*60*24*2
-ROBOT_REDIS_URL = f'redis://{REDIS.get("HOST")}:{REDIS.get("PORT")}/1'
 
 
 # Celery task imports
