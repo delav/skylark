@@ -157,8 +157,10 @@ class StatisticsViewSets(viewsets.GenericViewSet):
         if not region_map:
             percent_list, duration_list = [], []
             for item in histories.iterator():
-                percent = round(item.pass_case / item.total_case, 3) * 100
-                duration = (item.end_time - item.start_time).total_seconds()
+                percent = round(item.passed_case / item.total_case, 3) * 100
+                duration = 0
+                if item.end_time:
+                    duration = (item.end_time - item.start_time).total_seconds()
                 percent_list.append(percent)
                 duration_list.append(duration)
             pass_rate['Percent'] = percent_list
@@ -167,7 +169,9 @@ class StatisticsViewSets(viewsets.GenericViewSet):
             for item in histories.iterator():
                 r_name = region_map.get(item.region_id)
                 percent = round(item.passed_case / item.total_case, 3) * 100
-                duration = item.end_time - item.start_time
+                duration = 0
+                if item.end_time:
+                    duration = (item.end_time - item.start_time).total_seconds()
                 if r_name in pass_rate:
                     pass_rate[r_name].append(percent)
                 else:

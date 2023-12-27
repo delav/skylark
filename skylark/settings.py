@@ -97,8 +97,7 @@ ROOT_URLCONF = 'skylark.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': []
-        ,
+        'DIRS': [BASE_DIR / 'static/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -231,8 +230,8 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_HOST = 'smtp.163.com'
 EMAIL_PORT = 25
-EMAIL_HOST_USER = 'admin@skylark.com'
-EMAIL_HOST_PASSWORD = 'xxxxxx'
+EMAIL_HOST_USER = 'delavpeng@163.com'
+EMAIL_HOST_PASSWORD = 'RCSVSNHYRJNCJZSX'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -242,9 +241,9 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
-SYSTEM_FILES = BASE_DIR / 'static/systemfiles'
+SYSTEM_FILES = BASE_DIR / 'files/systemfiles'
 
-PROJECT_FILES = BASE_DIR / 'static/projectfiles'
+PROJECT_FILES = BASE_DIR / 'files/projectfiles'
 FILE_SIZE_LIMIT = 10 * 1024 * 1024
 SAVE_TO_DB_SIZE_LIMIT = 1 * 1024 * 1024
 VARIABLE_FILE_TYPE = ('.py', '.yaml')

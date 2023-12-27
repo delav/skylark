@@ -17,7 +17,8 @@ class DirCopyOperator(object):
     def create_first_level_dir(self):
         first_level_dir_queryset = SuiteDir.objects.filter(
             project_id=self.old_project_id,
-            parent_dir_id=None
+            parent_dir_id=None,
+            status=ModuleStatus.NORMAL
         )
         new_dir_objects = []
         for dir_obj in first_level_dir_queryset.iterator():
@@ -32,35 +33,24 @@ class DirCopyOperator(object):
         SuiteDir.objects.bulk_create(new_dir_objects)
 
     def deep_copy_all_dir(self):
-        dir_queryset = SuiteDir.objects.filter(
+        first_level_dir_queryset = SuiteDir.objects.filter(
             project_id=self.old_project_id,
+            parent_dir_id=None,
             status=ModuleStatus.NORMAL
         )
-        for dir_obj in dir_queryset.iterator():
-            new_dir = SuiteDir.objects.create(
-                name=dir_obj.name,
-                category=dir_obj.category,
-                document=dir_obj.document,
-                project_id=self.new_project_id,
-                parent_dir_id=dir_obj.parent_dir_id,
-                create_by=self.create_by
-            )
-            if dir_obj.category == ModuleCategory.TESTCASE:
-                self._copy_fixture(dir_obj.id, new_dir.id)
-                # not use
-                # self._copy_variable(old_dir.id, new_dir.id)
-            self._copy_all_suite(dir_obj, new_dir)
+        for dir_obj in first_level_dir_queryset.iterator():
+            self._copy_dir(dir_obj, None, dir_obj.name)
 
-    def copy_dir_by_id(self, old_dir_id, new_dir_id):
+    def copy_dir_by_id(self, old_dir_id, new_parent_dir_id):
         dir_obj = SuiteDir.objects.get(id=old_dir_id)
         if dir_obj.status == ModuleStatus.DELETED:
             return None
         # not allowed copy root dir
         if dir_obj.parent_dir_id is None:
             return None
-        return self._copy_dir(dir_obj, new_dir_id)
+        return self._copy_dir(dir_obj, new_parent_dir_id)
 
-    def _copy_dir(self, dir_obj, new_dir_id, new_dir_name=None):
+    def _copy_dir(self, dir_obj, new_paranet_dir_id, new_dir_name=None):
         if not new_dir_name:
             new_dir_name = self.generate_new_name(dir_obj.name)
         new_dir = SuiteDir.objects.create(
@@ -69,7 +59,7 @@ class DirCopyOperator(object):
             category=dir_obj.category,
             create_by=self.create_by,
             project_id=self.new_project_id,
-            parent_dir_id=new_dir_id,
+            parent_dir_id=new_paranet_dir_id,
             status=dir_obj.status
         )
         if dir_obj.category == ModuleCategory.TESTCASE:
@@ -99,10 +89,13 @@ class DirCopyOperator(object):
             ).copy_suite_by_obj(old_suite)
 
     def _copy_fixture(self, old_dir_id, new_dir_id):
-        fixture_obj = SetupTeardown.objects.get(
+        fixture_obj_query = SetupTeardown.objects.filter(
             module_id=old_dir_id,
             module_type=ModuleType.DIR
         )
+        if not fixture_obj_query.exists():
+            return
+        fixture_obj = fixture_obj_query.first()
         fixture_obj.id = None
         fixture_obj.module_id = new_dir_id
         fixture_obj.save()

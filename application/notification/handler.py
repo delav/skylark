@@ -2,6 +2,7 @@ import json
 import requests
 from loguru import logger
 from django.core.mail import send_mail
+from django.template.loader import get_template
 
 
 class ReportNotifier(object):
@@ -15,13 +16,13 @@ class ReportNotifier(object):
         self.result = result
     
     def send_email(self, from_email, to_emails):
-        send_info = self._generate_email_info()
+        email_body = self._generate_email_body()
         send_mail(
-            subject=send_info.get('title'),
-            message=send_info.get('content'),
+            subject='Skylark自动化测试报告',
+            message=None,
+            html_message=email_body,
             from_email=from_email,
             recipient_list=to_emails,
-            fail_silently=False
         )
         logger.info(f'email send finish')
     
@@ -66,29 +67,17 @@ class ReportNotifier(object):
         r = requests.post(url, data=json_data, headers=headers)
         logger.info(f'notice send finish|{r.status_code}|{r.text}')
 
-    def _generate_email_info(self):
-        report_url = self.result['report_url']
-        title = '接口自动化测试报告【{}】'.format(self.result['project_name'])
-        body = {
-            'title': title,
-            'content': ''
-        }
-        pgs = round(self.result['success_number']/self.result['total_number'], 3)
-        self.result['progress'] = round(float(pgs*1000))/10
-        self.result['times'] = str(self.result['end_time'] - self.result['start_time']).split('.')[0]
-        part1 = '## 接口自动化测试报告【{}】\n'.format(self.result['project_name'])
-        part2 = '总用例个数：{}\n\n'.format(self.result['total_number'])
-        part3 = '通过用例数：{}\n\n'.format(self.result['success_number'])
-        part4 = '失败用例数：{}\n\n'.format(self.result['failed_number'])
-        part5 = '测试通过率：{}\n\n'.format(self.result['progress'])
-        part6 = '耗用的时间：{}\n\n'.format(self.result['times'])
-        part7 = '&nbsp;\n\n[点击查看报告]({})\n'.format(report_url)
-        content = part1 + part2 + part3 + part4 + part5 + part6 + part7
-        body['content'] = content
-        return body
+    def _generate_email_body(self):
+        template = get_template('report.html')
+        html_content = template.render({
+            'tester': self.result.get('tester'),
+            'project_name': self.result.get('project_name'),
+            'record_id': self.result.get('record_id'),
+            'data_list': self.result['data_list']
+        })
+        return html_content
 
     def _generate_ding_body(self, keywords):
-        report_url = self.result['report_url']
         body = {
             'msgtype': 'markdown',
             'markdown': {
@@ -97,48 +86,52 @@ class ReportNotifier(object):
             },
             'isAtAll': True
         }
-        pgs = round(self.result['success_number']/self.result['total_number'], 3)
-        self.result['progress'] = round(float(pgs*1000))/10
-        self.result['times'] = str(self.result['end_time'] - self.result['start_time']).split('.')[0]
-        part1 = '## 接口自动化测试报告【{}】\n'.format(self.result['project_name'])
-        part2 = '<font color=#000000 size=3 face="黑体">总用例个数：{}</font>\n\n'.format(self.result['total_number'])
-        part3 = '<font color=#228B22 size=3 face="黑体">通过用例数：{}</font>\n\n'.format(self.result['success_number'])
-        part4 = '<font color=#fb0525 size=3 face="黑体">失败用例数：{}</font>\n\n'.format(self.result['failed_number'])
-        part5 = '<font color=#0033CC size=3 face="黑体">测试通过率：{}%</font>\n\n'.format(self.result['progress'])
-        part6 = '<font color=#9400D3 size=3 face="黑体">耗用的时间：{}</font>\n\n'.format(self.result['times'])
-        part7 = '&nbsp;\n\n[点击查看报告]({})\n'.format(report_url)
-        content = part1 + part2 + part3 + part4 + part5 + part6 + part7
+        part1 = f'## 【{self.result["project_name"]}】【{self.result["env_name"]}】' \
+                f'【{self.result["region_name"]}】自动化测试报告\n'
+        part2 = f'<font color=#02992c size=3 face="黑体">执行编号：{self.result["history_id"]}</font>\n\n'
+        part3 = f'<font color=#02992c size=3 face="黑体">开始时间：{self.result["start_time"]}</font>\n\n'
+        part4 = f'<font color=#02992c size=3 face="黑体">结束时间：{self.result["end_time"]}</font>\n\n'
+        part5 = f'<font color=#02992c size=3 face="黑体">执行耗时：{self.result["duration"]}</font>\n\n'
+        part6 = f'<font color=#02992c size=3 face="黑体">通过率：{self.result["passed_rate"]}</font>\n\n'
+        part7 = f'<font color=#02992c size=3 face="黑体">总用例数：{self.result["total_number"]}</font>\n\n'
+        part8 = f'<font color=#02992c size=3 face="黑体">成功用例：{self.result["success_number"]}</font>\n\n'
+        part9 = f'<font color=#cc0109 size=3 face="黑体">失败用例：{self.result["failed_number"]}</font>\n\n'
+        part10 = f'<font color=#575a5c size=3 face="黑体">跳过用例：{self.result["skipped_number"]}</font>\n\n'
+        part11 = f'&nbsp;\n\n[点击查看报告]({self.report_url})\n'
+        content = part1 + part2 + part3 + part4 + part5 + part6 + part7 + part8 + part9 + part10 + part11
         body['markdown']["text"] = content
         return body
 
     def _generate_wecom_body(self):
-        report_url = self.result['report_url']
         body = {
             'msgtype': 'markdown',
             'markdown': {
                 'content': ''
             },
         }
-        pgs = round(self.result['success_number']/self.result['total_number'], 3)
-        self.result['progress'] = round(float(pgs*1000))/10
-        self.result['times'] = str(self.result['end_time'] - self.result['start_time']).split('.')[0]
-        part1 = '### <font size=21>接口自动化测试报告【{}】</font>\n'.format(self.result['project_name'])
-        part2 = '#### <font color=#000000 size=16 face="黑体">总用例个数：{}</font>\n\n'.format(self.result['total_number'])
-        part3 = '#### <font color=#228B22 size=16 face="黑体">通过用例数：{}</font>\n\n'.format(self.result['success_number'])
-        part4 = '#### <font color=#fb0525 size=16 face="黑体">失败用例数：{}</font>\n\n'.format(self.result['failed_number'])
-        part5 = '#### <font color=#0033CC size=16 face="黑体">测试通过率：{}%</font>\n\n'.format(self.result['progress'])
-        part6 = '#### <font color=#9400D3 size=16 face="黑体">耗用的时间：{}</font>\n\n'.format(self.result['times'])
-        part7 = '\n\n<font size=13>[点击查看报告]({})</font>\n'.format(report_url)
-        content = part1 + part2 + part3 + part4 + part5 + part6 + part7
+        part1 = f'### <font size=21>【{self.result["project_name"]}】【{self.result["env_name"]}】' \
+                f'【{self.result["region_name"]}】自动化测试报告</font>\n'
+        part2 = f'#### <font color=#02992c size=16 face="黑体">执行编号：{self.result["history_id"]}</font>\n\n'
+        part3 = f'#### <font color=#02992c size=16 face="黑体">开始时间：{self.result["start_time"]}</font>\n\n'
+        part4 = f'#### <font color=#02992c size=16 face="黑体">结束时间：{self.result["end_time"]}</font>\n\n'
+        part5 = f'#### <font color=#02992c size=16 face="黑体">执行耗时：{self.result["duration"]}%</font>\n\n'
+        part6 = f'#### <font color=#02992c size=16 face="黑体">通过率：{self.result["passed_rate"]}</font>\n\n'
+        part7 = f'#### <font color=#02992c size=16 face="黑体">总用例数：{self.result["total_number"]}</font>\n\n'
+        part8 = f'#### <font color=#02992c size=16 face="黑体">成功用例：{self.result["success_number"]}</font>\n\n'
+        part9 = f'#### <font color=#cc0109 size=16 face="黑体">失败用例：{self.result["failed_number"]}</font>\n\n'
+        part10 = f'#### <font color=#575a5c size=16 face="黑体">跳过用例：{self.result["skipped_number"]}</font>\n\n'
+        part11 = f'\n\n<font size=13>[点击查看报告]({self.report_url})</font>\n'
+        content = part1 + part2 + part3 + part4 + part5 + part6 + part7 + part8 + part9 + part10 + part11
         body['markdown']["content"] = content
         return body
 
     def _generate_lark_body(self, keywords):
-        report_url = self.result['report_url']
         if keywords is not None and keywords != '':
-            title = '{}-接口自动化测试报告【{}】'.format(keywords, self.result['project_name'])
+            title = f'{keywords}-【{self.result["project_name"]}】【{self.result["env_name"]}】' \
+                    f'【{self.result["region_name"]}】自动化测试报告'
         else:
-            title = '接口自动化测试报告【{}】'.format(self.result["project_name"])
+            title = f'【{self.result["project_name"]}】【{self.result["env_name"]}】' \
+                    f'【{self.result["region_name"]}】自动化测试报告'
         body = {
             'msg_type': 'post',
             'content': {
@@ -151,15 +144,17 @@ class ReportNotifier(object):
             }
         }
         content_list = []
-        self.result['progress'] = round(self.result['success_number']/self.result['total_number'], 2)*100
-        self.result['times'] = str(self.result['end_time'] - self.result['start_time']).split('.')[0]
-        part1 = [{'tag': 'text', 'text': '总用例个数：{}'.format(self.result['total_number'])}]
-        part2 = [{'tag': 'text', 'text': '通过用例数：{}'.format(self.result['success_number'])}]
-        part3 = [{'tag': 'text', 'text': '失败用例数：{}'.format(self.result['failed_number'])}]
-        part4 = [{'tag': 'text', 'text': '测试通过率：{}'.format(self.result['progress'])}]
-        part5 = [{'tag': 'text', 'text': '耗用的时间：{}'.format(self.result['times'])}]
-        part6 = [{'tag': 'a', 'text': '\n点击查看报告', 'href': report_url}]
-        content_list.extend([part1, part2, part3, part4, part5, part6])
+        part1 = [{'tag': 'text', 'text': '执行编号：{}'.format(self.result['history_id'])}]
+        part2 = [{'tag': 'text', 'text': '开始时间：{}'.format(self.result['start_time'])}]
+        part3 = [{'tag': 'text', 'text': '结束时间：{}'.format(self.result['end_time'])}]
+        part4 = [{'tag': 'text', 'text': '执行耗时：{}'.format(self.result['duration'])}]
+        part5 = [{'tag': 'text', 'text': '通过率：{}'.format(self.result['passed_rate'])}]
+        part6 = [{'tag': 'text', 'text': '总用例数：{}'.format(self.result['total_number'])}]
+        part7 = [{'tag': 'text', 'text': '成功用例：{}'.format(self.result['success_number'])}]
+        part8 = [{'tag': 'text', 'text': '失败用例：{}'.format(self.result['failed_number'])}]
+        part9 = [{'tag': 'text', 'text': '跳过用例：{}'.format(self.result['skipped_number'])}]
+        part10 = [{'tag': 'a', 'text': '\n点击查看报告', 'href': self.report_url}]
+        content_list.extend([part1, part2, part3, part4, part5, part6, part7, part8, part9, part10])
         body['content']['post']['zh_cn']['content'] = content_list
         return body
 

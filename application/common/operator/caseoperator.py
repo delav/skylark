@@ -35,6 +35,7 @@ class CaseCopyOperator(object):
         self.generate_new_name(case_obj.name)
         new_case = TestCase.objects.create(
             name=self.case_name,
+            project_id=self.project_id,
             document=case_obj.document,
             category=case_obj.category,
             create_by=self.create_by,

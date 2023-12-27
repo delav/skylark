@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Skylark测试报告</title>
+</head>
+<body>
+<div class="main">
+    <!--汇总信息-->
+    <div class="summary">
+        <div class="text-left">由【{{ tester }}】执行，项目【{{ project_name }}】(测试编号{{ record_id }})的测试执行汇总信息如下：</div>
+        {% for data in data_list %}
+        <table width=80% border="1" cellpadding="0" cellspacing="0" bordercolor="#FF0000"
+               style="border-collapse:collapse;margin-top:20px">
+            <tr>
+                <th>执行环境</th>
+                <td>{{ data.env_name }}</td>
+                <th>执行地区</th>
+                <td>{{ data.region_name }}</td>
+                <th>执行编号</th>
+                <td>{{ data.history_id }}</td>
+            </tr>
+            <tr>
+                <th>开始时间</th>
+                <td>{{ data.start_time }}</td>
+                <th>结束时间</th>
+                <td>{{ data.end_time }}</td>
+                <th>执行耗时</th>
+                <td>{{ data.duration }}</td>
+            </tr>
+            <tr>
+                <th>通过率</th>
+                <td>{{ data.passed_rate }}</td>
+                <th>用例总数</th>
+                <td>{{ data.total_number }}</td>
+                <th>成功用例</th>
+                <td><span>{{ data.success_number }}</span></td>
+            </tr>
+            <tr>
+                <th style="color: #cc0109">失败用例</th>
+                <td><span style="color: #cc0109">{{ data.failed_number }}</span></td>
+                <th style="color: #575a5c">跳过用例</th>
+                <td><span style="color: #575a5c">{{ data.skipped_number }}</span></td>
+            </tr>
+        </table>
+        {% endfor %}
+    </div>
+</div>
+</body>
+<style>
+    .main {
+    }
+
+    .summary {
+        position: absolute;
+        margin-left: 5%;
+    }
+
+    .title {
+        width: auto;
+        height: 60px;
+        text-align: center;
+        font: bolder 38px/60px "Microsoft YaHei UI";
+        color: #02992c;
+        margin-bottom: 50px;
+    }
+
+    .text-left {
+        text-align: left;
+        font: bolder 20px/30px "Microsoft YaHei UI";
+        color: #02992c;
+        margin-bottom: 20px;
+    }
+
+    td, th {
+        border: solid 1px rgba(133, 137, 140, 0.76);
+        height: 40px;
+    }
+
+    td {
+        color: #02992c;
+        padding-left: 20px;
+        width: 300px;
+    }
+    th {
+        color: #00a10a;
+        width: 200px;
+    }
+</style>
+</html>

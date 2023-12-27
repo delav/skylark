@@ -3,7 +3,6 @@ from loguru import logger
 from datetime import datetime
 from django.db import transaction
 from django.conf import settings
-from django.core.mail import send_mail
 from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -18,6 +17,7 @@ from application.user.serializers import (
     LoginSerializer, RegisterSerializer, ResetPasswordSerializer, UserSerializer, UserAdminSerializer
 )
 from application.usergroup.models import UserGroup
+from application.user.handler import send_email_captcha
 
 # Create your views here.
 
@@ -65,19 +65,17 @@ class NoAuthUserViewSets(viewsets.GenericViewSet):
             return JsonResponse(code='10001', msg='user not exist')
         captcha = random.randint(111111, 999999)
         conn = RedisClient(settings.REDIS_URL).connector
-        redis_key = REDIS_USER_INFO_KEY_PREFIX + f'captcha:{user_query.first().id}'
+        user = user_query.first()
+        redis_key = REDIS_USER_INFO_KEY_PREFIX + f'captcha:{user.id}'
         had_send = conn.get(redis_key)
         if had_send:
-            return JsonResponse(code='10002', msg='please try again later')
+            return JsonResponse(code=10002, msg='please try again later')
+        from_email = settings.EMAIL_HOST_USER
+        suc = send_email_captcha(user.username, from_email, [user_email], captcha)
+        if not suc:
+            return JsonResponse(code=10003, msg='send email failed')
         conn.set(redis_key, captcha)
         conn.expire(redis_key, 60*5)
-        send_mail(
-            subject='Skylark重置密码验证码',
-            message=f'验证码: {captcha}, 5分钟内有效',
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[user_email],
-            fail_silently=False
-        )
         return JsonResponse(data='success')
 
 

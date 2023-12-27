@@ -36,8 +36,6 @@ class SuiteCopyOperator(object):
             return None
         if suite_dir.category != suite_obj.category:
             return None
-        if suite_obj.category not in [ModuleCategory.TESTCASE, ModuleCategory.KEYWORD]:
-            return None
         self.generate_new_name(suite_obj.name)
         new_suite = TestSuite.objects.create(
             name=self.suite_name,
@@ -124,7 +122,7 @@ class SuiteCopyOperator(object):
             return
         old_file_full_path = Path(settings.PROJECT_FILES, file_obj.file_path)
         new_file_full_path = Path(settings.PROJECT_FILES, new_file_path)
-        old_file = old_file_full_path / file_obj.name
+        old_file = old_file_full_path / file_obj.file_name
         if not old_file.exists():
             return
         Path(new_file_full_path).mkdir(parents=True, exist_ok=True)

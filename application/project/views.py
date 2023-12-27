@@ -69,7 +69,7 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
         is_personal = serializer.validated_data.get('personal')
         operator = ProjectCopyOperator(
             project_name,
-            copied_project,
+            copied_project.id,
             create_by=current_user.email,
             group_id=user_group_id,
             personal=is_personal
