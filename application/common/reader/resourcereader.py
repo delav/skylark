@@ -41,7 +41,6 @@ class ResourceKeywordReader(object):
 
 
 class ResourceCommonReader(object):
-    library_base_path = settings.LIBRARY_FILE_DIR
 
     def __init__(self, env_id, region_id, project_id, module_type):
         self.env_id = env_id
@@ -62,15 +61,11 @@ class ResourceCommonReader(object):
         lib_list = get_group_library_list(group_id)
         for item in lib_list:
             if item['lib_type'] == LibraryType.DEPENDENCE:
-                # builtin library
+                # dependence library
                 library = item['lib_name']
             elif item['lib_type'] == LibraryType.CUSTOMIZED:
-                # customize python file
-                library = PurePath.joinpath(
-                    self.library_base_path,
-                    item['lib_path'],
-                    item['lib_name'] + '.py'
-                ).as_posix()
+                # customize library
+                library = f'{item["lib_path"]}.{item["lib_name"]}'
             else:
                 continue
             library_list.append(library)

@@ -61,6 +61,8 @@ class BuildRecordViewSets(mixins.RetrieveModelMixin, mixins.ListModelMixin, view
     def retrieve(self, request, *args, **kwargs):
         logger.info(f'get record detail')
         instance = self.get_object()
+        if not has_project_permission(instance.project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         record = self.get_serializer(instance).data
         record['history'] = []
         history_queryset = BuildHistory.objects.filter(

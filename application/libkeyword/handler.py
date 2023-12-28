@@ -1,10 +1,10 @@
 from django.conf import settings
 from infra.client.gitclient import GitClient
-from infra.utils.pythonscanner import scan_directory, get_functions_info
+from infra.utils.pythonscanner import CodeScanner
 from infra.robot.utils.modulemathcher import check_python_module
 from application.constant import KEYWORD_PARAMS_SEP
-from application.status import KeywordCategory, KeywordParamMode, LibraryType, ModuleStatus
-from application.mapping import module_status_map
+from application.status import KeywordCategory, KeywordParamMode, LibraryType
+from application.pythonlib.handler import update_library_repository
 from application.usergroup.models import UserGroup
 from application.libkeyword.models import LibKeyword
 from application.libkeyword.serializers import LibKeywordSerializers
@@ -12,21 +12,7 @@ from application.pythonlib.models import PythonLib
 
 
 def scan_keyword(group_id_list, force_update=False):
-    git = GitClient()
-    library_path = settings.LIBRARY_BASE_DIR / settings.LIBRARY_PROJECT_NAME
-    # if not library_path.exists():
-    #     need_update = True
-    #     try:
-    #         git.clone(settings.LIBRARY_GIT, settings.LIBRARY_BASE_DIR)
-    #     except (Exception,):
-    #         return False, 'git clone failed'
-    # else:
-    #     try:
-    #         need_update = git.pull(library_path)
-    #     except (Exception,):
-    #         return False, 'git pull failed'
-    # if not need_update and not force_update:
-    #     return
+    # flag = update_library_repository()
     user_group_queryset = UserGroup.objects.filter(
         group_id__in=group_id_list
     ).select_related('group')
@@ -48,7 +34,7 @@ def get_last_library_info(group_id_list):
         group_id__in=group_id_list
     ).select_related('group')
     for group in user_groups:
-        absolute_path = settings.LIBRARY_FILE_DIR / group.library_path
+        absolute_path = settings.LIBRARY_PATH / group.library_path
         group_modules = {}
         for f in absolute_path.iterdir():
             if check_python_module(f):
@@ -86,19 +72,14 @@ def get_last_library_info(group_id_list):
 def get_group_func_list(user_groups):
     group_func_list = []
     for group in user_groups:
-        absolute_path = settings.LIBRARY_FILE_DIR / group.library_path
-        function_list = scan_directory(absolute_path)
+        absolute_path = settings.LIBRARY_PATH / group.library_path
+        function_list = CodeScanner.scan_directory(absolute_path)
         group_func_list.extend(function_list)
     return group_func_list
 
 
 def admin_scan_keyword(scan_files=None):
-    git = GitClient()
-    library_path = settings.LIBRARY_BASE_DIR / settings.LIBRARY_PROJECT_NAME
-    if not library_path.exists():
-        git.clone(settings.LIBRARY_GIT, settings.LIBRARY_BASE_DIR)
-    else:
-        git.pull(library_path)
+    flag = update_library_repository()
     library_queryset = PythonLib.objects.filter(
         lib_type=LibraryType.CUSTOMIZED
     )
@@ -106,14 +87,14 @@ def admin_scan_keyword(scan_files=None):
     func_list = []
     if scan_files:
         for f in scan_files:
-            full_path = settings.LIBRARY_FILE_DIR / f
-            file_func_list = get_functions_info(full_path)
+            full_path = settings.LIBRARY_PATH / f
+            file_func_list = CodeScanner.get_functions_info(full_path)
             func_list.extend(file_func_list)
     else:
-        library_file_dir = settings.LIBRARY_FILE_DIR
+        library_file_dir = settings.LIBRARY_PATH
         group_dir_list = [p for p in library_file_dir.glob('*') if p.is_dir()]
         for group_dir in group_dir_list:
-            group_func_list = scan_directory(group_dir)
+            group_func_list = CodeScanner.scan_directory(group_dir)
             func_list.extend(group_func_list)
     return serializer_to_keyword(func_list, library_map)
 
@@ -121,6 +102,8 @@ def admin_scan_keyword(scan_files=None):
 def serializer_to_keyword(func_list, library_map, allowed_update=False):
     serializer_func_list = []
     for func in func_list:
+        if not func.get('keyword'):
+            continue
         func_name = func.get('name')
         keyword_query = LibKeyword.objects.filter(name=func_name)
         if keyword_query.exists() and not allowed_update:

@@ -124,6 +124,8 @@ class BuildPlanViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixi
     def retrieve(self, request, *args, **kwargs):
         logger.info(f'get plan detail: {kwargs.get("pk")}')
         instance = self.get_object()
+        if not has_project_permission(instance.project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         result = self.get_serializer(instance).data
         result['periodic'] = get_periodic_task(id=instance.periodic_task_id)
         result['record'] = []

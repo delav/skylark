@@ -230,8 +230,8 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_HOST = 'smtp.163.com'
 EMAIL_PORT = 25
-EMAIL_HOST_USER = 'delavpeng@163.com'
-EMAIL_HOST_PASSWORD = 'RCSVSNHYRJNCJZSX'
+EMAIL_HOST_USER = 'admin@skylark.com'
+EMAIL_HOST_PASSWORD = 'xxxxxx'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -258,10 +258,9 @@ WORKER_MAX_CASE_LIMIT = 200
 KEYWORD_ICON_PATH = MEDIA_ROOT / 'icons' / 'keyword'
 
 # Customized python lib keyword path
-LIBRARY_GIT = 'https://github.com/delav/skylarklibrary.git'
 LIBRARY_BASE_DIR = BASE_DIR.parent
-LIBRARY_PROJECT_NAME = 'skylarklibrary'
-LIBRARY_FILE_DIR = LIBRARY_BASE_DIR / LIBRARY_PROJECT_NAME / 'libraries'
+LIBRARY_GIT = 'https://github.com/delav/skylarklibrary.git'
+LIBRARY_PATH = BASE_DIR.parent / 'skylarklibrary'
 
 # Robot report path
 REPORT_PATH = BASE_DIR / 'report'

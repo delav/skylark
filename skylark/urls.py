@@ -20,8 +20,8 @@ from django.conf.urls import include, url
 from django.views.static import serve
 from rest_framework import routers
 from application.views import BaseViewSets
-from application.external.views.fileviews import ExternalFileViewSets
-from application.external.views.triggerviews import ExternalTriggerViewSets
+from application.external.views.download import ExternalDownloadViewSets
+from application.external.views.webhook import ExternalWebhookViewSets
 from application.user.views import NoAuthUserViewSets, NormalUserViewSets
 from application.usergroup.views import UserGroupViewSets
 from application.libkeyword.views import LibKeywordViewSets
@@ -88,6 +88,6 @@ urlpatterns = [
     path(r'api/user/register', NoAuthUserViewSets.as_view({'post': 'register'})),
     path(r'api/user/reset_precheck', NoAuthUserViewSets.as_view({'post': 'reset_precheck'})),
     path(r'api/user/reset_confirm', NoAuthUserViewSets.as_view({'post': 'reset_confirm'})),
-    path(r'api/external/download_file', ExternalFileViewSets.as_view({'post': 'download_file'})),
-    path(r'api/external/webhook', ExternalTriggerViewSets.as_view({'post': 'webhook_trigger'}))
+    path(r'api/external/download', ExternalDownloadViewSets.as_view({'post': 'download_file'})),
+    path(r'api/external/webhook', ExternalWebhookViewSets.as_view({'post': 'webhook_trigger'})),
 ]

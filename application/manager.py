@@ -45,13 +45,17 @@ def get_project_by_id(project_id):
 
 def get_projects_by_uid(user_id):
     user_info = get_user_info_by_uid(user_id)
-    user_project_ids = get_permission_project_by_uid(user_id)
-
-    common_project_queryset = Project.objects.filter(
-        status=ModuleStatus.NORMAL,
-        personal=False,
-        id__in=user_project_ids
-    )
+    if user_info.get('is_superuser'):
+        common_project_queryset = Project.objects.filter(
+            status=ModuleStatus.NORMAL
+        )
+    else:
+        user_project_ids = get_permission_project_by_uid(user_id)
+        common_project_queryset = Project.objects.filter(
+            status=ModuleStatus.NORMAL,
+            personal=False,
+            id__in=user_project_ids
+        )
     personal_project_queryset = Project.objects.filter(
         status=ModuleStatus.NORMAL,
         personal=True,

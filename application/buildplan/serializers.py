@@ -24,7 +24,7 @@ class BuildPlanSerializers(serializers.ModelSerializer):
         if attrs.get('periodic_switch') and not attrs.get('periodic_expr'):
             raise ValidationException(detail='Params error', code=10110)
         # validate build case
-        if not any([attrs.get('case_list'), attrs.get('auto_latest')]):
+        if not any([attrs.get('total_case'), attrs.get('auto_latest')]):
             raise ValidationException(detail='Params error', code=10111)
         return attrs
 

@@ -1,3 +1,4 @@
+import json
 from loguru import logger
 from rest_framework import viewsets
 from rest_framework import mixins
@@ -20,8 +21,10 @@ class WebhookViewSets(mixins.CreateModelMixin,
         logger.info(f'create webhook: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        if serializer.validated_data.get('hook_type') == WebhookType.BuildHook:
-            plan_list = serializer.validated_data.get('extra_data').get('plan_list', '')
+        hook_type = serializer.validated_data.get('hook_type')
+        if hook_type == WebhookType.BuildHook:
+            extra_data_str = serializer.validated_data.get('extra_data')
+            plan_list = json.loads(extra_data_str).get('plan_list', '')
             plan_id_list = plan_list.split(',')
             for plan_id_str in plan_id_list:
                 plan_query = BuildPlan.objects.filter(
@@ -32,6 +35,10 @@ class WebhookViewSets(mixins.CreateModelMixin,
                     return JsonResponse(code=12901, msg=f'plan not exists: {plan_id_str}')
                 if not has_project_permission(plan_query.first().project_id, request.user):
                     return JsonResponse(code=12902, msg=f'not permission for plan: {plan_id_str}')
+        elif hook_type == WebhookType.GitHook:
+            pass
+        else:
+            return JsonResponse(code=12905, msg='Hook type error')
         instance = Webhook.objects.create(
             **serializer.validated_data,
             secret=generate_secret()
@@ -41,17 +48,22 @@ class WebhookViewSets(mixins.CreateModelMixin,
 
     def list(self, request, *args, **kwargs):
         logger.info('get webhook list by user')
-        groups_queryset = Group.objects.filter(
-            user=request.user
-        )
-        if not groups_queryset.exists():
-            return
-        users = groups_queryset.first().user_set.all()
-        user_email_list = [u.email for u in users]
-        webhook_queryset = Webhook.objects.filter(
-            status=ModuleStatus.NORMAL,
-            create_by__in=user_email_list
-        )
+        if request.user.is_superuser:
+            webhook_queryset = Webhook.objects.filter(
+                status=ModuleStatus.NORMAL
+            )
+        else:
+            groups_queryset = Group.objects.filter(
+                user=request.user
+            )
+            if not groups_queryset.exists():
+                return
+            users = groups_queryset.first().user_set.all()
+            user_email_list = [u.email for u in users]
+            webhook_queryset = Webhook.objects.filter(
+                status=ModuleStatus.NORMAL,
+                create_by__in=user_email_list
+            )
         webhook_list = self.get_serializer(webhook_queryset, many=True).data
         result = {
             'webhook_list': webhook_list,
@@ -64,16 +76,17 @@ class WebhookViewSets(mixins.CreateModelMixin,
 
     def destroy(self, request, *args, **kwargs):
         logger.info(f'delete webhook: {kwargs.get("pk")}')
+        if not request.user.is_superuser:
+            groups_queryset = Group.objects.filter(
+                user=request.user
+            )
+            if not groups_queryset.exists():
+                return
+            users = groups_queryset.first().user_set.all()
+            user_email_list = [u.email for u in users]
+            if request.user.email not in user_email_list:
+                return JsonResponse(code=40300, msg='403_FORBIDDEN')
         instance = self.get_object()
-        groups_queryset = Group.objects.filter(
-            user=request.user
-        )
-        if not groups_queryset.exists():
-            return
-        users = groups_queryset.first().user_set.all()
-        user_email_list = [u.email for u in users]
-        if request.user.email not in user_email_list:
-            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         instance.status = ModuleStatus.DELETED
         instance.save()
         return JsonResponse(data=instance.id)
