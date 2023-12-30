@@ -6,22 +6,39 @@
     <title>Skylark验证码</title>
 </head>
 <body>
-<div class="panel">
-	<div style="text-indent: 2em;padding-top: 5%;">尊敬的&nbsp;<span style="color: #0066FF;">{{username}}：</span> &nbsp;
-		<div style="padding-top: 5%;">您好，欢迎使用Skylark平台，您的验证码为：</div>
-		<div style="padding-bottom: 2%;">
-			<div style="font-size: 40px;font-weight: bold; color: #00acc1;">{{captcha}}</div>
-		</div>
-		<div><span style="color: red;">验证码有效期为5分钟，</span>请妥善保管，请勿泄露。</div>
-	</div>
+<div style="margin:auto;max-width:600px;padding-top:50px" class="m_-4678453991396033402email-container">
+    <table role="presentation" cellspacing="0" cellpadding="0" width="100%" align="center" id="m_-4678453991396033402logoContainer" style="background:#252f3d;border-radius:3px 3px 0 0;max-width:600px">
+        <tbody><tr>
+            <td style="background:#00acc1;border-radius:3px 3px 0 0;padding:20px 0 10px 0;text-align:center">
+{#                <span style="font-size: 20px">Skylark</span>#}
+            </td>
+        </tr>
+    </tbody></table>
+    <table role="presentation" cellspacing="0" cellpadding="0" width="100%" align="center" id="m_-4678453991396033402emailBodyContainer" style="border:0px;border-bottom:1px solid #d6d6d6;max-width:600px">
+        <tbody><tr>
+            <td style="background-color:#fff;color:#444;font-family:'Amazon Ember','Helvetica Neue',Roboto,Arial,sans-serif;font-size:14px;line-height:140%;padding:25px 35px">
+                <h1 style="font-size:20px;font-weight:bold;line-height:1.3;margin:0 0 15px 0">验证您的电子邮件地址</h1>
+                <p style="margin:0;padding:0">{{username}}，您好，欢迎使用Skylark平台。我们想验证您的身份以重置您的密码。<wbr>请在对应输入框输入以下验证码。</p>
+                <p style="margin:0;padding:0"></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#fff;color:#444;font-family:'Amazon Ember','Helvetica Neue',Roboto,Arial,sans-serif;font-size:14px;line-height:140%;padding:25px 35px;padding-top:0;text-align:center">
+                <div style="font-weight:bold;padding-bottom:15px">验证码</div>
+                <div style="color:#000;font-size:36px;font-weight:bold;padding-bottom:15px">{{captcha}}</div>
+                <div>(此验证码的有效期为 5 分钟)</div>
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color:#fff;border-top:1px solid #e0e0e0;color:#777;font-family:'Amazon Ember','Helvetica Neue',Roboto,Arial,sans-serif;font-size:14px;line-height:140%;padding:25px 35px">
+                <p style="margin:0 0 15px 0;padding:0 0 0 0">验证码请妥善保管，请勿泄露给他人。</p>
+            </td>
+        </tr>
+    </tbody></table>
 </div>
 </body>
 <script >
 </script>
 <style>
-.panel{
-    width: 600px;
-    height: 300px;
-}
 </style>
 </html>

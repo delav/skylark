@@ -171,9 +171,9 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_HEADERS = (
     '*',
 )
-# ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*']
 CORS_ORIGIN_WHITELIST = (
-    'http://127.0.0.1:8091',
+    'http://127.0.0.1:8080',
 )
 CORS_ALLOW_METHODS = (
     'GET',
