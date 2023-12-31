@@ -1,4 +1,5 @@
 from loguru import logger
+from django.conf import settings
 from rest_framework import mixins
 from rest_framework import viewsets
 from infra.django.response import JsonResponse
@@ -29,7 +30,7 @@ class ProjectPermissionViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, 
             status=ModuleStatus.NORMAL,
             personal=False,
             group_id=group.id
-        )
+        ).exclude(name=settings.PROJECT_MODULE)
         personal_project_queryset = Project.objects.filter(
             status=ModuleStatus.NORMAL,
             personal=True,

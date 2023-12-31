@@ -114,7 +114,7 @@ def get_periodic_list(**kwargs):
                 item.crontab.month_of_year
             ])
             tz = pytz.timezone('Asia/Shanghai')
-            local_date = tz.localize(datetime(2017, 3, 26))
+            local_date = tz.localize(datetime.now())
             cron = croniter(periodic_expr, local_date)
             next_timestamp = cron.get_next()
             next_time = datetime.fromtimestamp(next_timestamp)

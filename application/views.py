@@ -1,4 +1,5 @@
 from loguru import logger
+from django.conf import settings
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from infra.django.response import JsonResponse
@@ -48,7 +49,7 @@ class BaseViewSets(viewsets.GenericViewSet):
         common_project_queryset = Project.objects.filter(
             status=ModuleStatus.NORMAL,
             personal=False
-        )
+        ).exclude(name=settings.PROJECT_MODULE)
         personal_project_queryset = Project.objects.filter(
             status=ModuleStatus.NORMAL,
             personal=True,
