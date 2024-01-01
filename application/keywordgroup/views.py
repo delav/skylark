@@ -25,9 +25,14 @@ class KeywordGroupViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
             return JsonResponse(code=10801, msg='Not found user group')
         user_group = user_group_query.first()
         department = Department.objects.get(id=user_group.department_id)
-        queryset = KeywordGroup.objects.filter(
-            user_group_id=user_group.group.id
-        )
+        if request.user.is_superuser:
+            queryset = KeywordGroup.objects.filter(
+                group_type=KeywordGroupType.TEAM
+            )
+        else:
+            queryset = KeywordGroup.objects.filter(
+                user_group_id=user_group.group.id
+            )
         serializer = self.get_serializer(queryset, many=True)
         result = {
             'department': department.name,

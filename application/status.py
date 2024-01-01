@@ -93,3 +93,9 @@ class WebhookType:
 class SystemInfoType:
     NOTICE = 1
     FEEDBACK = 2
+
+
+class CaseResult:
+    PASSED = 'PASS'
+    FAILED = 'FAIL'
+    SKIPPED = 'SKIP'

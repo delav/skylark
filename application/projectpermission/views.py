@@ -20,25 +20,29 @@ class ProjectPermissionViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, 
 
     def list(self, request, *args, **kwargs):
         logger.info('get current user edit permission project')
-        group_query = Group.objects.filter(
-            user=request.user
-        )
-        if not group_query.exists():
-            return JsonResponse(code=10089, msg='Not found user group')
-        group = group_query.first()
-        common_project_queryset = Project.objects.filter(
-            status=ModuleStatus.NORMAL,
-            personal=False,
-            group_id=group.id
-        ).exclude(name=settings.PROJECT_MODULE)
-        personal_project_queryset = Project.objects.filter(
-            status=ModuleStatus.NORMAL,
-            personal=True,
-            create_by=request.user.email
-        )
-        common_project_list = ProjectSerializers(common_project_queryset, many=True).data
-        personal_project_list = ProjectSerializers(personal_project_queryset, many=True).data
-        project_list = common_project_list + personal_project_list
+        if request.user.is_superuser:
+            project_queryset = Project.objects.filter(
+                status=ModuleStatus.NORMAL,
+            )
+        else:
+            group_query = Group.objects.filter(
+                user=request.user
+            )
+            if not group_query.exists():
+                return JsonResponse(code=10089, msg='Not found user group')
+            group = group_query.first()
+            common_project_queryset = Project.objects.filter(
+                status=ModuleStatus.NORMAL,
+                personal=False,
+                group_id=group.id
+            ).exclude(name=settings.PROJECT_MODULE)
+            personal_project_queryset = Project.objects.filter(
+                status=ModuleStatus.NORMAL,
+                personal=True,
+                create_by=request.user.email
+            )
+            project_queryset = common_project_queryset | personal_project_queryset
+        project_list = ProjectSerializers(project_queryset, many=True).data
         department_map = {}
         for item in get_department_list():
             department_map[item['id']] = item

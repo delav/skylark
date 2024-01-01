@@ -87,7 +87,7 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
             user=request.user
         ).values_list('id')
         user_group_id = keyword_group_query.first().user_group_id
-        if (user_group_id,) not in user_group_ids:
+        if not request.user.is_superuser and (user_group_id,) not in user_group_ids:
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         self.perform_create(serializer)
         instance = serializer.save()
@@ -112,7 +112,7 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
             user=request.user
         ).values_list('id')
         user_group_id = keyword_group_query.first().user_group_id
-        if (user_group_id,) not in user_group_ids:
+        if not request.user.is_superuser and (user_group_id,) not in user_group_ids:
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         self.perform_update(serializer)
         update_lib_keyword_storage(LibKeyword, instance.id)
@@ -131,7 +131,7 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
             user=request.user
         ).values_list('id')
         user_group_id = keyword_group_query.first().user_group_id
-        if (user_group_id,) not in user_group_ids:
+        if not request.user.is_superuser and (user_group_id,) not in user_group_ids:
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         queryset = LibKeyword.objects.filter(
             group_id=keyword_group_id
@@ -151,12 +151,16 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
     @action(methods=['get'], detail=False)
     def scan_keyword(self, request, *args, **kwargs):
         logger.info('scan keyword file by team')
-        user_group_query = Group.objects.filter(
-            user=request.user
-        )
-        user_group = user_group_query.first()
-        grou_id = user_group.id
-        operation_libraries = get_last_library_info([grou_id])
+        if request.user.is_superuser:
+            user_group_queryset = Group.objects.all()
+            group_id_list = [g.id for g in user_group_queryset]
+        else:
+            user_group_query = Group.objects.filter(
+                user=request.user
+            )
+            user_group = user_group_query.first()
+            group_id_list = [user_group.id]
+        operation_libraries = get_last_library_info(group_id_list)
         # update python library info
         try:
             with transaction.atomic():
@@ -171,7 +175,7 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         except (Exception,) as e:
             logger.warning(f'update group library failed: {e}')
             return JsonResponse(code=10501, msg='scan library failed')
-        ready_keywords = scan_keyword([grou_id], True)
+        ready_keywords = scan_keyword(group_id_list, True)
         return JsonResponse(data=ready_keywords)
 
 

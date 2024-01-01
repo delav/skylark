@@ -44,9 +44,9 @@ def get_project_by_id(project_id):
 
 
 def get_projects_by_uid(user_id):
-    user_info = get_user_info_by_uid(user_id)
-    if user_info.get('is_superuser'):
-        common_project_queryset = Project.objects.filter(
+    user = User.objects.get(id=user_id)
+    if user.is_superuser:
+        project_queryset = Project.objects.filter(
             status=ModuleStatus.NORMAL
         )
     else:
@@ -56,12 +56,12 @@ def get_projects_by_uid(user_id):
             personal=False,
             id__in=user_project_ids
         )
-    personal_project_queryset = Project.objects.filter(
-        status=ModuleStatus.NORMAL,
-        personal=True,
-        create_by=user_info.get('email')
-    )
-    project_queryset = common_project_queryset | personal_project_queryset
+        personal_project_queryset = Project.objects.filter(
+            status=ModuleStatus.NORMAL,
+            personal=True,
+            create_by=user.email
+        )
+        project_queryset = common_project_queryset | personal_project_queryset
     return ProjectSerializers(project_queryset, many=True).data
 
 

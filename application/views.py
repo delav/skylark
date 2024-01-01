@@ -21,20 +21,25 @@ class BaseViewSets(viewsets.GenericViewSet):
             'region_list': get_region_list(),
             'project_list': []
         }
-        user_project_ids = ProjectPermission.objects.filter(
-            user_id=request.user.id
-        ).values_list('project_id').all()
-        common_project_queryset = Project.objects.filter(
-            status=ModuleStatus.NORMAL,
-            personal=False,
-            id__in=user_project_ids
-        )
-        personal_project_queryset = Project.objects.filter(
-            status=ModuleStatus.NORMAL,
-            personal=True,
-            create_by=request.user.email
-        )
-        project_queryset = common_project_queryset | personal_project_queryset
+        if request.user.is_superuser:
+            project_queryset = Project.objects.filter(
+                status=ModuleStatus.NORMAL,
+            )
+        else:
+            user_project_ids = ProjectPermission.objects.filter(
+                user_id=request.user.id
+            ).values_list('project_id').all()
+            common_project_queryset = Project.objects.filter(
+                status=ModuleStatus.NORMAL,
+                personal=False,
+                id__in=user_project_ids
+            )
+            personal_project_queryset = Project.objects.filter(
+                status=ModuleStatus.NORMAL,
+                personal=True,
+                create_by=request.user.email
+            )
+            project_queryset = common_project_queryset | personal_project_queryset
         base_info['project_list'] = ProjectSerializers(project_queryset, many=True).data
         return JsonResponse(data=base_info)
 
@@ -46,15 +51,20 @@ class BaseViewSets(viewsets.GenericViewSet):
             'group_list': get_user_group_list(),
             'project_list': []
         }
-        common_project_queryset = Project.objects.filter(
-            status=ModuleStatus.NORMAL,
-            personal=False
-        ).exclude(name=settings.PROJECT_MODULE)
-        personal_project_queryset = Project.objects.filter(
-            status=ModuleStatus.NORMAL,
-            personal=True,
-            create_by=request.user.email
-        )
-        project_queryset = common_project_queryset | personal_project_queryset
+        if request.user.is_superuser:
+            project_queryset = Project.objects.filter(
+                status=ModuleStatus.NORMAL,
+            )
+        else:
+            common_project_queryset = Project.objects.filter(
+                status=ModuleStatus.NORMAL,
+                personal=False
+            ).exclude(name=settings.PROJECT_MODULE)
+            personal_project_queryset = Project.objects.filter(
+                status=ModuleStatus.NORMAL,
+                personal=True,
+                create_by=request.user.email
+            )
+            project_queryset = common_project_queryset | personal_project_queryset
         project_info['project_list'] = ProjectSerializers(project_queryset, many=True).data
         return JsonResponse(data=project_info)

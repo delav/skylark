@@ -6,12 +6,12 @@ from rest_framework.decorators import action
 from infra.django.response import JsonResponse
 from infra.utils.typetransform import id_str_to_set
 from application.manager import get_projects_by_uid, get_env_list, get_region_list
-from application.status import ModuleStatus
+from application.status import ModuleStatus, CaseResult
 from application.project.models import Project
 from application.testcase.models import TestCase
 from application.buildrecord.models import BuildRecord
 from application.buildplan.models import BuildPlan
-from application.buildhistory.models import BuildHistory
+from application.buildhistory.models import BuildHistory, HistoryDetail
 
 
 class StatisticsViewSets(viewsets.GenericViewSet):
@@ -154,9 +154,11 @@ class StatisticsViewSets(viewsets.GenericViewSet):
         record_list = [record.id for record in build_records]
         histories = BuildHistory.objects.filter(record_id__in=record_list).order_by('create_at')
         pass_rate, duration_rate = {}, {}
+        history_id_list = []
         if not region_map:
             percent_list, duration_list = [], []
             for item in histories.iterator():
+                history_id_list.append(item.id)
                 percent = round(item.passed_case / item.total_case, 3) * 100
                 duration = 0
                 if item.end_time:
@@ -167,6 +169,7 @@ class StatisticsViewSets(viewsets.GenericViewSet):
             duration_rate['Duration'] = duration_list
         else:
             for item in histories.iterator():
+                history_id_list.append(item.id)
                 r_name = region_map.get(item.region_id)
                 percent = round(item.passed_case / item.total_case, 3) * 100
                 duration = 0
@@ -180,8 +183,55 @@ class StatisticsViewSets(viewsets.GenericViewSet):
                     duration_rate[r_name].append(duration)
                 else:
                     duration_rate[r_name] = [duration]
+        case_ratio_map, case_duration_map = {}, {}
+        case_detail_queryset = HistoryDetail.objects.filter(
+            history_id__in=history_id_list
+        )
+        for obj in case_detail_queryset.iterator():
+            # passed/failed/skipped case number
+            values = case_ratio_map.get(obj.case_id, [0, 0, 0])
+            if obj.result == CaseResult.PASSED:
+                values[0] += 1
+            elif obj.result == CaseResult.FAILED:
+                values[1] += 1
+            elif obj.result == CaseResult.SKIPPED:
+                values[2] += 1
+            case_ratio_map[obj.case_id] = values
+            case_delta = 0
+            if obj.end_time:
+                case_delta = (obj.end_time - obj.start_time).total_seconds()
+            duration_set = case_duration_map.get(obj.case_id, [])
+            duration_set.append(case_delta)
+            case_duration_map[obj.case_id] = duration_set
+        # case_ratio = {'fields': [], 'pass': [], 'fail': [], 'skip': []}
+        case_ratio, case_duration = [], []
+        case_ratio_max = {k: round(v[0] / (v[0]+v[1]+v[2]), 2) for k, v in case_ratio_map.items()}
+        sort_ratio_list = sorted(case_ratio_max.items(), key=lambda x: x[1])
+        ratio_list_top10 = sort_ratio_list[:10] if len(sort_ratio_list) >= 10 else sort_ratio_list
+        case_id_list1 = [k for k, _ in ratio_list_top10]
+        case_queryset1 = TestCase.objects.filter(
+            id__in=case_id_list1
+        ).values_list('id', 'name')
+        case_map1 = {cid: cname for cid, cname in case_queryset1.iterator()}
+        for cid, v in ratio_list_top10:
+            ratio_data = {'name': case_map1.get(cid), 'values': case_ratio_map.get(cid)}
+            case_ratio.append(ratio_data)
+
+        case_duration_avg = {k: round(sum(v) / len(v), 2) for k, v in case_duration_map.items()}
+        sort_duration_list = sorted(case_duration_avg.items(), key=lambda x: x[1], reverse=True)
+        duration_list_top10 = sort_duration_list[:10] if len(sort_duration_list) >= 10 else sort_duration_list
+        case_id_list2 = [k for k, _ in duration_list_top10]
+        case_queryset2 = TestCase.objects.filter(
+            id__in=case_id_list2
+        ).values_list('id', 'name')
+        case_map2 = {cid: cname for cid, cname in case_queryset2.iterator()}
+        for cid, v in duration_list_top10:
+            duration_data = {'name': case_map2.get(cid), 'values': v}
+            case_duration.append(duration_data)
         result_dict = {
             'pass_rate': pass_rate,
-            'duration_rate': duration_rate
+            'duration_rate': duration_rate,
+            'case_ratio': case_ratio,
+            'case_duration': case_duration
         }
         return JsonResponse(data=result_dict)

@@ -15,4 +15,4 @@ class VirtualFileSerializers(serializers.ModelSerializer):
 
 class UploadForm(forms.Form):
     file = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
-    dir_id = forms.IntegerField(help_text='associated suite')
+    dir_id = forms.IntegerField(help_text='associated dir')

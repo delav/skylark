@@ -95,6 +95,7 @@ class ProjectFileViewSets(viewsets.GenericViewSet):
         logger.info(f'upload files')
         form = UploadForm(request.POST, request.FILES)
         if not form.is_valid():
+            logger.error(form.errors)
             return JsonResponse(code=10302, msg='upload failed')
         files = request.FILES.getlist('file')
         node_list = []
