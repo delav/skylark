@@ -240,7 +240,7 @@ EMAIL_HOST_PASSWORD = 'xxxxxx'
 
 STATIC_URL = '/static/'
 
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = BASE_DIR / 'media/'
 MEDIA_URL = '/media/'
 
 SYSTEM_FILES = BASE_DIR / 'files/systemfiles'
@@ -256,8 +256,8 @@ DISTRIBUTED_BUILD = True
 DISTRIBUTED_BY_SUITE = True
 WORKER_MAX_CASE_LIMIT = 200
 
-# keyword icon path
-KEYWORD_ICON_PATH = MEDIA_ROOT / 'icons' / 'keyword'
+# keyword icon path(base media root path)
+KEYWORD_ICON_PATH = 'icons/keyword/'
 
 # Customized python lib keyword path
 LIBRARY_BASE_DIR = BASE_DIR.parent

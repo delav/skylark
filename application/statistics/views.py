@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from infra.django.response import JsonResponse
 from infra.utils.typetransform import id_str_to_set
 from application.manager import get_projects_by_uid, get_env_list, get_region_list
-from application.status import ModuleStatus, CaseResult
+from application.status import ModuleStatus, ModuleCategory, CaseResult
 from application.project.models import Project
 from application.testcase.models import TestCase
 from application.buildrecord.models import BuildRecord
@@ -48,7 +48,8 @@ class StatisticsViewSets(viewsets.GenericViewSet):
             project_id = project.get('id')
             case_number = TestCase.objects.filter(
                 project_id=project_id,
-                status=ModuleStatus.NORMAL
+                status=ModuleStatus.NORMAL,
+                category=ModuleCategory.TESTCASE,
             ).count()
             build_records = BuildRecord.objects.filter(
                 project_id=project_id,
@@ -60,7 +61,7 @@ class StatisticsViewSets(viewsets.GenericViewSet):
             for item in histories.iterator():
                 suc_cases += item.passed_case
                 all_cases += item.total_case
-            average = suc_cases / all_cases if all_cases != 0 else 0
+            average = round(suc_cases / all_cases, 2) if all_cases != 0 else 0
             project_data = {
                 'project_name': project.get('name'),
                 'total_case': case_number,
@@ -77,7 +78,8 @@ class StatisticsViewSets(viewsets.GenericViewSet):
         x_days_ago = datetime.now() - timedelta(days=recently_days)
         case_query_result = TestCase.objects.filter(
             status=ModuleStatus.NORMAL,
-            create_at__gte=x_days_ago
+            create_at__gte=x_days_ago,
+            category=ModuleCategory.TESTCASE,
         ).values('create_at__date').annotate(count=Count('id'))
         case_result = {item['create_at__date'].strftime('%Y-%m-%d'): item['count'] for item in case_query_result}
         build_query_result = BuildRecord.objects.filter(
@@ -127,7 +129,8 @@ class StatisticsViewSets(viewsets.GenericViewSet):
         case_query_result = TestCase.objects.filter(
             project_id=project_id,
             status=ModuleStatus.NORMAL,
-            create_at__gte=x_days_ago
+            create_at__gte=x_days_ago,
+            category=ModuleCategory.TESTCASE,
         ).values('create_at__date').annotate(count=Count('id'))
         case_result = {item['create_at__date'].strftime('%Y-%m-%d'): item['count'] for item in case_query_result}
         date_list = [datetime.now() - timedelta(days=x) for x in range(recently_days - 1, -1, -1)]

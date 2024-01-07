@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 
 # Create your models here.
-DEFAULT_ICON = settings.KEYWORD_ICON_PATH / 'default.png'
+DEFAULT_ICON = settings.KEYWORD_ICON_PATH + 'default.png'
 
 
 class LibKeyword(models.Model):
