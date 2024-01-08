@@ -7,7 +7,7 @@ from application.testsuite.models import TestSuite
 from application.testcase.models import TestCase
 from application.setupteardown.models import SetupTeardown
 from application.variable.models import Variable
-from application.tag.models import Tag
+from application.tag.models import ModuleTag
 from application.virtualfile.models import VirtualFile
 from application.virtualfile.handler import PATH_SEPARATOR, get_full_dir_path, update_file
 from application.common.operator.caseoperator import CaseCopyOperator
@@ -97,17 +97,16 @@ class SuiteCopyOperator(object):
         Variable.objects.bulk_create(new_variables)
 
     def _copy_tag(self, old_suite_id, new_suite_id):
-        old_tags = Tag.objects.filter(
+        old_tags = ModuleTag.objects.filter(
             module_id=old_suite_id,
             module_type=ModuleType.SUITE
         )
         new_tags = []
         for tag in old_tags.iterator():
             tag.id = None
-            tag.project_id = self.project_id
             tag.module_id = new_suite_id
             new_tags.append(tag)
-        Tag.objects.bulk_create(new_tags)
+        ModuleTag.objects.bulk_create(new_tags)
 
     def _copy_virtual_file(self, old_suite, new_suite, new_suite_dir):
         file_obj = VirtualFile.objects.get(suite_id=old_suite.id)

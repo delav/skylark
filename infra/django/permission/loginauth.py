@@ -7,8 +7,8 @@ class LoginAuth(BasePermission):
     whitelist = {
         '/api/user/login',
         '/api/user/register',
-        '/api/user/reset_precheck',
-        '/api/user/reset_confirm'
+        '/api/user/precheck',
+        '/api/user/reset_password'
     }
 
     def has_permission(self, request, view):

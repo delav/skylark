@@ -140,6 +140,40 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserAdminSerializer(serializers.ModelSerializer):
 
+    group_id = serializers.SerializerMethodField(help_text='group id')
+
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'is_superuser', 'is_staff', 'is_active', 'date_joined', 'group_id')
+
+    def get_group_id(self, obj):
+        return
+
+
+class UserAddSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(required=False, help_text='username')
+    password = serializers.CharField(required=False, help_text='password')
+    group_id = serializers.IntegerField(help_text='user group id')
+    is_staff = serializers.BooleanField(required=False, help_text='is staff(admin)')
+
+    class Meta:
+        model = User
+        fields = ('email', 'username', 'password', 'is_staff', 'group_id')
+
+    def validate(self, attrs):
+        default_password = '123456'
+        attrs['password'] = attrs.get('password', default_password)
+        attrs['password'] = make_password(attrs['password'])
+        return attrs
+
+    def validate_email(self, value):
+        user = User.objects.filter(email=value)
+        if user.exists():
+            raise ValidationException(detail='Email already registered', code=10032)
+        return value
+
+    def validate_username(self, value):
+        user = User.objects.filter(username=value)
+        if user.exists():
+            raise ValidationException(detail='Username already exist', code=10033)
+        return value

@@ -13,10 +13,11 @@ from infra.client.redisclient import RedisClient
 from application.constant import REDIS_USER_INFO_KEY_PREFIX
 from application.manager import get_user_list
 from application.user.models import User
+from application.usergroup.models import Group
 from application.user.serializers import (
-    LoginSerializer, RegisterSerializer, ResetPasswordSerializer, UserSerializer, UserAdminSerializer
+    LoginSerializer, RegisterSerializer, ResetPasswordSerializer, UserSerializer,
+    UserAdminSerializer, UserAddSerializer
 )
-from application.usergroup.models import UserGroup
 from application.user.handler import send_email_captcha
 
 # Create your views here.
@@ -41,13 +42,13 @@ class NoAuthUserViewSets(viewsets.GenericViewSet):
         with transaction.atomic():
             user = serializer.save()
             group_id = serializer.validated_data.get('group_id')
-            group = UserGroup.objects.get(id=group_id)
+            group = Group.objects.get(id=group_id)
             user.groups.add(group)
         data = self.get_serializer(user).data
         return JsonResponse(data=data)
 
     @action(methods=['post'], detail=False)
-    def reset_confirm(self, request, *args, **kwargs):
+    def reset_password(self, request, *args, **kwargs):
         logger.info('reset password confirm')
         serializer = ResetPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -57,8 +58,8 @@ class NoAuthUserViewSets(viewsets.GenericViewSet):
         return JsonResponse()
 
     @action(methods=['post'], detail=False)
-    def reset_precheck(self, request, *args, **kwargs):
-        logger.info('reset password send email')
+    def precheck(self, request, *args, **kwargs):
+        logger.info('send email captcha')
         user_email = request.data.get('email')
         user_query = User.objects.filter(email=user_email)
         if not user_query.exists():
@@ -96,8 +97,7 @@ class NormalUserViewSets(viewsets.GenericViewSet):
         return JsonResponse(data=serializer.data)
 
 
-class AdminUserViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
-                        mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class AdminUserViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
 
     queryset = User.objects.all()
     serializer_class = UserAdminSerializer
@@ -106,40 +106,32 @@ class AdminUserViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
 
     def create(self, request, *args, **kwargs):
         logger.info(f'add user: {request.data}')
-        serializer = self.get_serializer(data=request.data)
+        serializer = UserAddSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         with transaction.atomic():
             data = serializer.validated_data
             username = data.get('email').split('@')[0]
             user = User(
-                username=username,
+                username=data.get('username', username),
                 email=data.get('email'),
-                group_id=data.get('group_id'),
-                is_staff=data.get('is_staff')
+                password=data.get('password'),
+                is_staff=data.get('is_staff', False)
             )
             user.save()
-            group = UserGroup.objects.get(id=data.get('group_id'))
+            group = Group.objects.get(id=data.get('group_id'))
             user.groups.add(group)
-        data = self.get_serializer(user).data
-        return JsonResponse(data=data)
+        user_data = {
+            'email': user.email,
+            'username': user.username,
+            'password': request.data.get('password', '123456'),
+            'group': group.name
+        }
+        return JsonResponse(data=user_data)
 
     def list(self, request, *args, **kwargs):
-        logger.info('get all users')
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
+        logger.info('get users by group')
+        group_id = request.query_params.get('group')
+        group = Group.objects.get(id=group_id)
+        user_queryset = group.user_set.all()
+        serializer = self.get_serializer(user_queryset, many=True)
         return JsonResponse(data=serializer.data)
-
-    def update(self, request, *args, **kwargs):
-        logger.info(f'update user info: {request.data}')
-        update_data = request.data
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=update_data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return JsonResponse(data=serializer.data)
-
-    def destroy(self, request, *args, **kwargs):
-        logger.info(f'delete user: {kwargs.get("pk")}')
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return JsonResponse(msg=instance.id)

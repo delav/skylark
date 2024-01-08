@@ -1,7 +1,7 @@
 from django.conf import settings
 from application.variable.models import Variable
 from application.setupteardown.models import SetupTeardown
-from application.tag.models import Tag
+from application.tag.models import Tag, ModuleTag
 from application.common.reader.module.testcase import CaseReader
 from application.common.reader.module.fixture import FixtureManager
 from infra.robot.suitefile import SuiteFile
@@ -111,9 +111,12 @@ class DBSuiteReader(object):
 
     def _get_tag_list(self):
         return []
-        # tag_queryset = Tag.objects.filter(
+        # module_tags = ModuleTag.objects.filter(
         #     module_id=self.suite_id,
         #     module_type=self.module_type
+        # )
+        # tag_queryset = Tag.objects.filter(
+        #     id__in=[m.tag_id for m in module_tags]
         # )
         # return [t.name for t in tag_queryset.iterator()]
 

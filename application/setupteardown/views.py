@@ -16,11 +16,10 @@ class SetupTeardownViewSets(mixins.CreateModelMixin, viewsets.GenericViewSet):
         logger.info(f'create setup teardown: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
         instance, _ = SetupTeardown.objects.update_or_create(
-            defaults=data,
-            module_id=data['module_id'],
-            module_type=data['module_type']
+            defaults=serializer.validated_data,
+            module_id=serializer.validated_data['module_id'],
+            module_type=serializer.validated_data['module_type']
         )
         data = self.get_serializer(instance).data
         return JsonResponse(data=data)

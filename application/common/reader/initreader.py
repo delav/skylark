@@ -1,5 +1,5 @@
 from application.setupteardown.models import SetupTeardown
-from application.tag.models import Tag
+from application.tag.models import Tag, ModuleTag
 from application.variable.models import Variable
 from application.common.reader.module.fixture import FixtureManager
 from infra.robot.initfile import DirInitFile
@@ -93,12 +93,13 @@ class DBDirInitReader(object):
 
     def _get_tag_list(self):
         return []
-        # tag_queryset = Tag.objects.filter(
-        #     module_id=self.dir_id,
+        # module_tags = ModuleTag.objects.filter(
+        #     module_id=self.suite_id,
         #     module_type=self.module_type
         # )
-        # if not tag_queryset.exists():
-        #     return []
+        # tag_queryset = Tag.objects.filter(
+        #     id__in=[m.tag_id for m in module_tags]
+        # )
         # return [t.name for t in tag_queryset.iterator()]
 
     def _get_variable_list(self):

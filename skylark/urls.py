@@ -38,7 +38,7 @@ from application.buildplan.views import BuildPlanViewSets
 from application.buildrecord.views import BuildRecordViewSets
 from application.buildhistory.views import BuildHistoryViewSets
 from application.projectversion.views import ProjectVersionViewSets
-from application.tag.views import TagViewSets
+from application.tag.views import TagViewSets, ModuleTagViewSets
 from application.casepriority.views import CasePriorityViewSets
 from application.virtualfile.views import VirtualFileViewSets, ProjectFileViewSets
 from application.notification.views import NotificationViewSets
@@ -66,6 +66,7 @@ router.register('build/plan', BuildPlanViewSets, basename='build_plan')
 router.register('build/record', BuildRecordViewSets, basename='build_record')
 router.register('build/history', BuildHistoryViewSets, basename='build_history')
 router.register('tag', TagViewSets, basename='tag')
+router.register('module_tag', ModuleTagViewSets, basename='module_tag')
 router.register('case_priority', CasePriorityViewSets, basename='case_priority')
 router.register('builder', BuilderViewSets, basename='builder')
 router.register('file/virtual_file', VirtualFileViewSets, basename='virtual_file')
@@ -84,8 +85,8 @@ urlpatterns = [
     url(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     path(r'api/user/login', NoAuthUserViewSets.as_view({'post': 'login'})),
     # path(r'api/user/register', NoAuthUserViewSets.as_view({'post': 'register'})),
-    path(r'api/user/reset_precheck', NoAuthUserViewSets.as_view({'post': 'reset_precheck'})),
-    path(r'api/user/reset_confirm', NoAuthUserViewSets.as_view({'post': 'reset_confirm'})),
+    path(r'api/user/precheck', NoAuthUserViewSets.as_view({'post': 'precheck'})),
+    path(r'api/user/reset_password', NoAuthUserViewSets.as_view({'post': 'reset_password'})),
     path(r'api/external/download', ExternalDownloadViewSets.as_view({'post': 'download_file'})),
     path(r'api/external/webhook', ExternalWebhookViewSets.as_view({'post': 'webhook_trigger'})),
 ]

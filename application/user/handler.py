@@ -10,7 +10,7 @@ def send_email_captcha(username, from_email, recv_email, captcha):
             'captcha': captcha
         })
         send_mail(
-            subject='Skylark平台重置密码验证码',
+            subject='Skylark平台验证码',
             message=None,
             html_message=html_content,
             from_email=from_email,

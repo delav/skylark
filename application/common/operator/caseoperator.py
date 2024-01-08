@@ -2,7 +2,7 @@ from infra.utils.timehanldler import get_timestamp
 from application.status import ModuleStatus, ModuleCategory, ModuleType
 from application.testsuite.models import TestSuite
 from application.testcase.models import TestCase
-from application.tag.models import Tag
+from application.tag.models import ModuleTag
 from application.userkeyword.models import UserKeyword
 from application.caseentity.models import CaseEntity
 
@@ -65,17 +65,16 @@ class CaseCopyOperator(object):
         self.case_name = old_name + f'-{get_timestamp(4)}copy'
 
     def _copy_tag(self, old_case_id, new_case_id):
-        old_tags = Tag.objects.filter(
+        old_tags = ModuleTag.objects.filter(
             module_id=old_case_id,
             module_type=ModuleType.CASE
         )
         new_tags = []
         for tag in old_tags.iterator():
             tag.id = None
-            tag.project_id = self.project_id
             tag.module_id = new_case_id
             new_tags.append(tag)
-        Tag.objects.bulk_create(new_tags)
+        ModuleTag.objects.bulk_create(new_tags)
 
     def _copy_user_keyword(self, old_case_id, new_case_id):
         related_keyword = UserKeyword.objects.get(

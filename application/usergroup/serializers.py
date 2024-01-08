@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from application.usergroup.models import Group, UserGroup
+from infra.django.exception import ValidationException
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -11,8 +12,8 @@ class GroupSerializer(serializers.ModelSerializer):
 
 class UserGroupSerializers(serializers.ModelSerializer):
 
-    id = serializers.SerializerMethodField()
-    name = serializers.SerializerMethodField()
+    id = serializers.SerializerMethodField(help_text='group id')
+    name = serializers.SerializerMethodField(help_text='group name')
 
     class Meta:
         model = UserGroup
@@ -23,3 +24,18 @@ class UserGroupSerializers(serializers.ModelSerializer):
 
     def get_name(self, obj):
         return obj.group.name
+
+
+class UserGroupAddSerializers(serializers.ModelSerializer):
+
+    name = serializers.CharField(help_text='group name')
+
+    class Meta:
+        model = UserGroup
+        fields = ('name', 'department_id', 'library_path')
+
+    def validate(self, attrs):
+        group_query = Group.objects.filter(name=attrs.get('name'))
+        if group_query.exists():
+            raise ValidationException(detail='Group name already exist', code=10032)
+        return attrs

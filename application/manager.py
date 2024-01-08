@@ -14,6 +14,8 @@ from application.usergroup.serializers import UserGroupSerializers
 from application.department.models import Department
 from application.department.serializers import DepartmentSerializers
 from application.pythonlib.models import PythonLib
+from application.tag.models import Tag
+from application.tag.serializers import TagSerializers
 from application.pythonlib.serializers import PythonLibSerializers
 from application.workermanager.models import WorkerManager
 from application.workermanager.serializers import WorkerManagerSerializers
@@ -75,6 +77,11 @@ def get_permission_project_by_uid(user_id):
 def get_department_list():
     department_queryset = Department.objects.all()
     return DepartmentSerializers(department_queryset, many=True).data
+
+
+def get_tag_list_by_project(project_id):
+    tag_queryset = Tag.objects.filter(project_id=project_id)
+    return TagSerializers(tag_queryset, many=True).data
 
 
 def get_user_group_list():
