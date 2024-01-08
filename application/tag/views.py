@@ -17,13 +17,13 @@ class TagViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
     def list(self, request, *args, **kwargs):
         logger.info(f'get all tags by project: {request.query_params}')
         project_id = request.query_params.get('project')
-        result_list = []
-        if project_id and isinstance(project_id, str) and project_id.isdigit():
-            project_id = int(project_id)
-            # query_sql = f'select id,name from tag where project_id={project_id} group by name'
-            # queryset = Tag.objects.raw(query_sql)
-            queryset = Tag.objects.filter(project_id=project_id).values('name').distinct()
-            result_list = [{'name': item['name']} for item in queryset.iterator()]
+        if not project_id or not project_id.isdigit():
+            return JsonResponse(data=[])
+        project_id = int(project_id)
+        # query_sql = f'select id,name from tag where project_id={project_id} group by name'
+        # queryset = Tag.objects.raw(query_sql)
+        queryset = Tag.objects.filter(project_id=project_id).values('name').distinct()
+        result_list = [{'name': item['name']} for item in queryset.iterator()]
         return JsonResponse(data=result_list)
 
     def create(self, request, *args, **kwargs):

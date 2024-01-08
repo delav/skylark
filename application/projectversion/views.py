@@ -11,18 +11,18 @@ from skylark.celeryapp import app
 # Create your views here.
 
 
-class ProjectVersionViewSets(mixins.RetrieveModelMixin,
-                             mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
+class ProjectVersionViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = ProjectVersion.objects.all()
     serializer_class = ProjectVersionSerializers
-
-    def retrieve(self, request, *args, **kwargs):
-        pass
 
     def list(self, request, *args, **kwargs):
         logger.info(f'get project version: {request.query_params}')
         params = request.query_params
-        project_id = params.get('project')
+        project_id = request.query_params.get('project')
+        if not project_id or not project_id.isdigit():
+            return JsonResponse(code=70100, msg='Param error')
+        if not has_project_permission(project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         # content maybe huge, not need can filter
         flag = params.get('filter')
         if flag and flag.isdigit() and int(flag) != 0:

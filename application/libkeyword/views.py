@@ -87,7 +87,7 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
             user=request.user
         ).values_list('id')
         user_group_id = keyword_group_query.first().user_group_id
-        if not request.user.is_superuser and (user_group_id,) not in user_group_ids:
+        if not request.user.is_staff and (user_group_id,) not in user_group_ids:
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         self.perform_create(serializer)
         instance = serializer.save()
@@ -112,7 +112,7 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
             user=request.user
         ).values_list('id')
         user_group_id = keyword_group_query.first().user_group_id
-        if not request.user.is_superuser and (user_group_id,) not in user_group_ids:
+        if not request.user.is_staff and (user_group_id,) not in user_group_ids:
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         self.perform_update(serializer)
         update_lib_keyword_storage(LibKeyword, instance.id)
@@ -131,7 +131,7 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
             user=request.user
         ).values_list('id')
         user_group_id = keyword_group_query.first().user_group_id
-        if not request.user.is_superuser and (user_group_id,) not in user_group_ids:
+        if not request.user.is_staff and (user_group_id,) not in user_group_ids:
             return JsonResponse(code=40300, msg='403_FORBIDDEN')
         queryset = LibKeyword.objects.filter(
             group_id=keyword_group_id
@@ -151,7 +151,7 @@ class LibKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
     @action(methods=['get'], detail=False)
     def scan_keyword(self, request, *args, **kwargs):
         logger.info('scan keyword file by team')
-        if request.user.is_superuser:
+        if request.user.is_staff:
             user_group_queryset = Group.objects.all()
             group_id_list = [g.id for g in user_group_queryset]
         else:

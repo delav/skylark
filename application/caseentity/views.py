@@ -54,11 +54,11 @@ class CaseEntityViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, viewset
             old_entities = test_case.entities.all()
             old_entities.delete()
             # save new case entities
-            new_entities = self.get_new_entities(case_id, entity_list)
+            new_entities = self._get_new_entities(case_id, entity_list)
             CaseEntity.objects.bulk_create(new_entities)
         return JsonResponse(msg='update case entities successful')
 
-    def get_new_entities(self, case_id, entity_list):
+    def _get_new_entities(self, case_id, entity_list):
         lib_keyword_ids, user_keyword_ids = set(), set()
         entity_object_list = []
         for i in range(len(entity_list)):

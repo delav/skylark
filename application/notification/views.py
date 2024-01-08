@@ -30,10 +30,11 @@ class NotificationViewSets(mixins.CreateModelMixin, mixins.ListModelMixin, views
 
     def list(self, request, *args, **kwargs):
         logger.info("get notice by project")
-        params = self.request.query_params
-        if 'project' not in params:
-            return JsonResponse(code=10203, msg='project not found')
-        project_id = params.get('project')
+        project_id = request.query_params.get('project')
+        if not project_id or not project_id.isdigit():
+            return JsonResponse(code=80203, msg='Param error')
+        if not has_project_permission(project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         queryset = Notification.objects.filter(project_id=project_id)
         if not queryset.exists():
             return JsonResponse(data={})

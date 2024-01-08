@@ -23,7 +23,6 @@ from application.views import BaseViewSets
 from application.external.views.download import ExternalDownloadViewSets
 from application.external.views.webhook import ExternalWebhookViewSets
 from application.user.views import NoAuthUserViewSets, NormalUserViewSets
-from application.usergroup.views import UserGroupViewSets
 from application.libkeyword.views import LibKeywordViewSets
 from application.userkeyword.views import UserKeywordViewSets
 from application.caseentity.views import CaseEntityViewSets
@@ -50,8 +49,7 @@ from application.webhook.views import WebhookViewSets
 from application.executeparam.views import ExecuteParamViewSets
 
 router = routers.SimpleRouter(trailing_slash=False)
-router.register('user/info', NormalUserViewSets, basename='user_info')
-router.register('user/group', UserGroupViewSets, basename='user_group')
+router.register('user', NormalUserViewSets, basename='user')
 router.register('base', BaseViewSets, basename='base')
 router.register('keyword/lib_keyword', LibKeywordViewSets, basename='lib_keyword')
 router.register('keyword/user_keyword', UserKeywordViewSets, basename='user_keyword')

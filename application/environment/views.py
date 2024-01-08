@@ -1,6 +1,7 @@
 from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
+from rest_framework.permissions import IsAdminUser
 from infra.django.response import JsonResponse
 from application.environment.models import Environment
 from application.environment.serializers import EnvironmentSerializers
@@ -12,6 +13,7 @@ class AdminEnvironmentViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
                                mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Environment.objects.all()
     serializer_class = EnvironmentSerializers
+    permission_classes = (IsAdminUser,)
 
     def list(self, request, *args, **kwargs):
         logger.info(f'get all environments')

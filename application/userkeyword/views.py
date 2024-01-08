@@ -4,6 +4,7 @@ from rest_framework import viewsets
 from infra.django.response import JsonResponse
 from application.status import KeywordGroupType, KeywordCategory
 from application.status import KeywordType, ModuleStatus
+from application.common.access.projectaccess import has_project_permission
 from application.userkeyword.models import UserKeyword
 from application.userkeyword.serializers import UserKeywordSerializers
 from application.keywordgroup.models import KeywordGroup
@@ -19,13 +20,17 @@ class UserKeywordViewSets(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     def list(self, request, *args, **kwargs):
         logger.info(f'get project platform keyword: {request.query_params}')
+        project_id = request.query_params.get('project')
+        if not project_id or not project_id.isdigit():
+            return JsonResponse(code=70100, msg='Param error')
+        if not has_project_permission(project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         user_group_query = KeywordGroup.objects.filter(
             group_type=KeywordGroupType.PLATFORM
         )
         if not user_group_query.exists():
             return JsonResponse(data=[])
         group = KeywordGroupSerializers(user_group_query.first()).data
-        project_id = request.query_params.get('project')
         queryset = UserKeyword.objects.filter(
             project_id=project_id,
             status=ModuleStatus.NORMAL

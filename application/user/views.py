@@ -79,27 +79,20 @@ class NoAuthUserViewSets(viewsets.GenericViewSet):
         return JsonResponse(data='success')
 
 
-class NormalUserViewSets(mixins.ListModelMixin, mixins.RetrieveModelMixin,
-                         mixins.UpdateModelMixin, viewsets.GenericViewSet):
+class NormalUserViewSets(viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    def list(self, request, *args, **kwargs):
-        logger.info('get all user')
+    @action(methods=['get'], detail=False)
+    def get_user_list(self, request, *args, **kwargs):
+        logger.info('get all user list')
         user_list = get_user_list()
         return JsonResponse(user_list)
 
-    def retrieve(self, request, *args, **kwargs):
+    @action(methods=['get'], detail=False)
+    def get_info(self, request, *args, **kwargs):
         logger.info('get current user info')
         serializer = self.get_serializer(request.user)
-        return JsonResponse(data=serializer.data)
-
-    def update(self, request, *args, **kwargs):
-        logger.info(f'update current user info: {request.data}')
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
         return JsonResponse(data=serializer.data)
 
 
@@ -121,8 +114,8 @@ class AdminUserViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
             user = User(
                 username=username,
                 email=data.get('email'),
-                group_id=data.get('email'),
-                is_superuser=data.get('is_superuser')
+                group_id=data.get('group_id'),
+                is_staff=data.get('is_staff')
             )
             user.save()
             group = UserGroup.objects.get(id=data.get('group_id'))

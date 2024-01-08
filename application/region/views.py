@@ -1,6 +1,7 @@
 from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
+from rest_framework.permissions import IsAdminUser
 from infra.django.response import JsonResponse
 from application.region.models import Region
 from application.region.serializers import RegionSerializers
@@ -8,10 +9,11 @@ from application.region.serializers import RegionSerializers
 # Create your views here.
 
 
-class AdminRegionViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.ListModelMixin,
+class AdminRegionViewSets(mixins.UpdateModelMixin, mixins.ListModelMixin,
                           mixins.CreateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Region.objects.all()
     serializer_class = RegionSerializers
+    permission_classes = (IsAdminUser,)
 
     def list(self, request, *args, **kwargs):
         logger.info(f'get all regions')
@@ -20,7 +22,7 @@ class AdminRegionViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mi
         return JsonResponse(data=serializer.data)
 
     def create(self, request, *args, **kwargs):
-        logger.info(f'create environment: {request.data}')
+        logger.info(f'create region: {request.data}')
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)

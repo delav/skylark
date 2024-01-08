@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db import transaction
 from rest_framework import mixins
 from rest_framework import viewsets
+from rest_framework.permissions import IsAdminUser
 from infra.django.pagination.paginator import PagePagination
 from infra.django.response import JsonResponse
 from application.status import ModuleStatus
@@ -109,11 +110,13 @@ class ProjectViewSets(mixins.ListModelMixin, mixins.CreateModelMixin,
     def destroy(self, request, *args, **kwargs):
         logger.info(f'delete project: {kwargs.get("pk")}')
         instance = self.get_object()
-        if not has_project_permission(instance.id, request.user):
-            return JsonResponse(code=40300, msg='403_FORBIDDEN')
-        delete_operator = ProjectDeleteOperator(instance.id, request.user.email)
-        delete_operator.delete_project()
-        return JsonResponse(data=instance.id)
+        # if not has_project_permission(instance.id, request.user):
+        #     return JsonResponse(code=40300, msg='403_FORBIDDEN')
+        if instance.personal and request.user.email == instance.create_by:
+            delete_operator = ProjectDeleteOperator(instance.id, request.user.email)
+            delete_operator.delete_project()
+            return JsonResponse(data=instance.id)
+        return JsonResponse(code=40300, msg='403_FORBIDDEN')
 
 
 class AdminProjectViewSets(mixins.ListModelMixin, mixins.RetrieveModelMixin,
@@ -121,6 +124,7 @@ class AdminProjectViewSets(mixins.ListModelMixin, mixins.RetrieveModelMixin,
     queryset = Project.objects.all()
     serializer_class = ProjectSerializers
     pagination_class = PagePagination
+    permission_classes = (IsAdminUser,)
 
     def list(self, request, *args, **kwargs):
         logger.info('get project list by admin')

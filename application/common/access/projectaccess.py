@@ -4,13 +4,12 @@ from application.projectpermission.models import ProjectPermission
 
 
 def has_project_permission(project_id, user):
-    project_id = int(project_id)
     if not project_id:
         return False
-    if user.is_superuser:
+    if user.is_staff:
         return True
     permission_project_list = get_permission_project_by_uid(user.id)
-    return project_id in permission_project_list
+    return int(project_id) in permission_project_list
 
 
 def add_self_project_permission(project_id, user):

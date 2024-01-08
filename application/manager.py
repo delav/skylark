@@ -45,7 +45,7 @@ def get_project_by_id(project_id):
 
 def get_projects_by_uid(user_id):
     user = User.objects.get(id=user_id)
-    if user.is_superuser:
+    if user.is_staff:
         project_queryset = Project.objects.filter(
             status=ModuleStatus.NORMAL
         )

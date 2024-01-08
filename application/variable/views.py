@@ -28,8 +28,8 @@ class VariableViewSets(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixin
         variable_queryset = Variable.objects.filter(
             **filter_params
         ).order_by('name')
-        ser = self.get_serializer(variable_queryset, many=True)
-        return JsonResponse(data=ser.data)
+        serializer = self.get_serializer(variable_queryset, many=True)
+        return JsonResponse(data=serializer.data)
 
     def create(self, request, *args, **kwargs):
         logger.info(f'create variable: {request.data}')

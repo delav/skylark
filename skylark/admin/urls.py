@@ -16,12 +16,17 @@ Including another URLconf
 from rest_framework import routers
 from application.libkeyword.views import AdminKeywordViewSets
 from application.user.views import AdminUserViewSets
+from application.usergroup.views import AdminUserGroupViewSets
 from application.project.views import AdminProjectViewSets
+from application.casepriority.views import AdminCasePriorityViewSets
+from application.department.views import AdminDepartmentViewSets
 from application.systemext.views import AdminSystemExtViewSets
 
 admin_router = routers.SimpleRouter(trailing_slash=False)
 admin_router.register('keyword', AdminKeywordViewSets, basename='admin_keyword')
 admin_router.register('user/info', AdminUserViewSets, basename='admin_user_info')
-admin_router.register('user/group', AdminUserViewSets, basename='admin_user_group')
+admin_router.register('user/group', AdminUserGroupViewSets, basename='admin_user_group')
 admin_router.register('project', AdminProjectViewSets, basename='admin_project')
+admin_router.register('priority', AdminCasePriorityViewSets, basename='admin_priority')
+admin_router.register('department', AdminDepartmentViewSets, basename='admin_department')
 admin_router.register('system', AdminSystemExtViewSets, basename='admin_system')

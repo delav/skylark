@@ -48,7 +48,7 @@ class WebhookViewSets(mixins.CreateModelMixin,
 
     def list(self, request, *args, **kwargs):
         logger.info('get webhook list by user')
-        if request.user.is_superuser:
+        if request.user.is_staff:
             webhook_queryset = Webhook.objects.filter(
                 status=ModuleStatus.NORMAL
             )
@@ -76,7 +76,7 @@ class WebhookViewSets(mixins.CreateModelMixin,
 
     def destroy(self, request, *args, **kwargs):
         logger.info(f'delete webhook: {kwargs.get("pk")}')
-        if not request.user.is_superuser:
+        if not request.user.is_staff:
             groups_queryset = Group.objects.filter(
                 user=request.user
             )

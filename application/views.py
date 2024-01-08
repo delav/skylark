@@ -21,7 +21,7 @@ class BaseViewSets(viewsets.GenericViewSet):
             'region_list': get_region_list(),
             'project_list': []
         }
-        if request.user.is_superuser:
+        if request.user.is_staff:
             project_queryset = Project.objects.filter(
                 status=ModuleStatus.NORMAL,
             )
@@ -51,7 +51,7 @@ class BaseViewSets(viewsets.GenericViewSet):
             'group_list': get_user_group_list(),
             'project_list': []
         }
-        if request.user.is_superuser:
+        if request.user.is_staff:
             project_queryset = Project.objects.filter(
                 status=ModuleStatus.NORMAL,
             )

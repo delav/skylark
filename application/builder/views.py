@@ -175,14 +175,14 @@ class BuilderViewSets(viewsets.GenericViewSet):
 
     @action(methods=['post'], detail=False)
     def progress(self, request, *args, **kwargs):
-        mode = request.data.get('mode')
+        build_mode = request.data.get('mode')
         conn = RedisClient(settings.REDIS_URL).connector
-        if mode == 'debug':
+        if build_mode == 'debug':
             task_id = request.data.get('task_id')
             redis_key = REDIS_CASE_RESULT_KEY_PREFIX + task_id
             current_build_result = conn.hgetall(redis_key)
             # current_build_result = cache.hgetall(redis_key)
-            logger.debug("build progress: {}".format(current_build_result))
+            logger.debug('build progress: {}'.format(current_build_result))
             return JsonResponse(data=current_build_result or {})
         record_id_list = request.data.get('records', [])
         redis_keys = []

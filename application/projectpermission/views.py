@@ -20,7 +20,7 @@ class ProjectPermissionViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, 
 
     def list(self, request, *args, **kwargs):
         logger.info('get current user edit permission project')
-        if request.user.is_superuser:
+        if request.user.is_staff:
             project_queryset = Project.objects.filter(
                 status=ModuleStatus.NORMAL,
             )

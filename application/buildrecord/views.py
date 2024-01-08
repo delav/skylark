@@ -86,6 +86,9 @@ class BuildRecordViewSets(mixins.RetrieveModelMixin, mixins.ListModelMixin, view
         )
         if not record_query.exists():
             return JsonResponse(code=50101, msg='record not found')
-        data = BuildRecordSerializers(record_query.first()).data
+        record = record_query.first()
+        if not has_project_permission(record.project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
+        data = BuildRecordSerializers(record).data
         data['status_desc'] = build_status_map.get(data['status'])
         return JsonResponse(data=data)

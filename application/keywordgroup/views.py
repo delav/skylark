@@ -2,6 +2,7 @@ from loguru import logger
 from rest_framework import mixins
 from rest_framework import viewsets
 from infra.django.response import JsonResponse
+from application.common.access.projectaccess import has_project_permission
 from application.status import KeywordGroupType
 from application.usergroup.models import Group, UserGroup
 from application.department.models import Department
@@ -25,7 +26,7 @@ class KeywordGroupViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
             return JsonResponse(code=10801, msg='Not found user group')
         user_group = user_group_query.first()
         department = Department.objects.get(id=user_group.department_id)
-        if request.user.is_superuser:
+        if request.user.is_staff:
             queryset = KeywordGroup.objects.filter(
                 group_type=KeywordGroupType.TEAM
             )
@@ -51,9 +52,12 @@ class KeywordGroupViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         if not group_queryset.exists():
             return JsonResponse(code=10803, msg='create keyword group failed')
         group_id = group_queryset.first().id
+        project_id = serializer.validated_data.get('project_id')
+        if project_id and not has_project_permission(project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         instance = KeywordGroup.objects.create(
             name=serializer.validated_data.get('name'),
-            project_id=serializer.validated_data.get('project_id'),
+            project_id=project_id,
             group_type=KeywordGroupType.TEAM,
             user_group_id=group_id
         )
@@ -64,6 +68,9 @@ class KeywordGroupViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         logger.info(f'update keyword group: {request.data}')
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)
+        project_id = serializer.validated_data.get('project_id')
+        if project_id and not has_project_permission(project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return JsonResponse(serializer.data)
@@ -71,5 +78,8 @@ class KeywordGroupViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
     def destroy(self, request, *args, **kwargs):
         logger.info(f'delete keyword group: {kwargs.get("pk")}')
         instance = self.get_object()
+        project_id = instance.project_id
+        if project_id and not has_project_permission(project_id, request.user):
+            return JsonResponse(code=40300, msg='403_FORBIDDEN')
         self.perform_destroy(instance)
         return JsonResponse(data=instance.id)

@@ -23,17 +23,17 @@ mysql -u(username) -p(password)
 source /path/skylark.sql
 ```
 
-#### 2.启动django服务
+#### 3.启动django服务
 ```sh
 python manage.py runserver 8080
 ```
 
-#### 2.启动celery服务
+#### 4.启动celery服务
 ```sh
 celery -A skylark worker -n master.%h -l info
 ```
 
-#### 3.启动celery beat
+#### 5.启动celery beat
 ```sh
 celery -A skylark beat -l info
 ```
