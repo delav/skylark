@@ -46,5 +46,5 @@ def worker_collector(info_type, worker_info):
 
 
 @app.task
-def command_executor(cmd):
+def command_executor(cmd, *args):
     pass

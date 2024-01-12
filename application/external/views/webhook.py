@@ -9,6 +9,7 @@ from application.status import WebhookType
 from application.webhook.models import Webhook
 from application.builder.handler import execute_plan_by_id
 from application.workermanager.models import WorkerManager
+from application.workermanager.handler import notify_worker_update_library
 from application.pythonlib.handler import update_library_repository
 from skylark.celeryapp import app
 
@@ -62,14 +63,5 @@ class ExternalWebhookViewSets(viewsets.GenericViewSet):
             return HttpResponse('OK', status=200)
         flag = update_library_repository()
         # notify slave git pull
-        git_cmd = 'git'
-        worker_queryset = WorkerManager.objects.filter(
-            alive=True
-        )
-        for item in worker_queryset.iterator():
-            app.send_task(
-                settings.COMMAND_TASK,
-                queue=item.queue,
-                args=(git_cmd,)
-            )
+        notify_worker_update_library()
 

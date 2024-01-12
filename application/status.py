@@ -39,6 +39,7 @@ class BuildStatus:
     FINISH = 1
     SUCCESS = 2
     FAILED = 3
+    INTERRUPT = 4
 
 
 class LibraryType:

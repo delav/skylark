@@ -5,6 +5,15 @@
 
 想了解更多请查看项目文档：[skylark docs](https://delav.github.io/skylark-doc/)
 
+**关联项目：**
+
+| 名称             |       描述       | 地址                                      |
+|----------------|:--------------:|-----------------------------------------|
+| skylark-web    | 基于Vue开发的用户交互界面 | https://github.com/delav/skylark-web    |
+| skylarkworker  |    执行异步测试任务    | https://github.com/delav/skylarkworker  |
+| skylarklibrary |  开发和迭代平台功能组件   | https://github.com/delav/skylarklibrary |
+
+
 ### 部署启动
 
 #### 1.安装依赖

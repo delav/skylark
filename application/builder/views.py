@@ -10,6 +10,7 @@ from infra.client.redisclient import RedisClient
 from infra.engine.dcsengine import DcsEngine
 from infra.utils.typetransform import join_id_to_str
 from application.common.access.projectaccess import has_project_permission
+from application.status import BuildStatus
 from application.manager import get_project_by_id
 from application.constant import (
     REDIS_CASE_RESULT_KEY_PREFIX, REDIS_TASK_RESULT_KEY_PREFIX, REDIS_DEBUG_RESULT_KEY_PREFIX
@@ -22,6 +23,7 @@ from application.buildhistory.models import BuildHistory
 from application.builder.serializers import DebugBuildSerializers
 from application.builder.serializers import TestQuickBuildSerializers, TestInstantBuildSerializers
 from application.builder.handler import generate_test_task_id, generate_debug_task_id
+from application.workermanager.handler import notify_worker_stop_task
 from application.common.parser.structureparser import StructureParser
 from skylark.celeryapp import app
 
@@ -151,9 +153,10 @@ class BuilderViewSets(viewsets.GenericViewSet):
         conn.hset(task_redis_key, 'batch', len(batch_data))
         # waiting django-redis add feature to support hash
         # cache.hset(task_redis_key, 'batch', len(batch_data))
+        celery_task_list = []
         for batch_no, data in batch_data.items():
             suites, sources, resources, files = data[0], data[1], data[2], data[3]
-            app.send_task(
+            celery_task = app.send_task(
                 settings.RUNNER_TASK,
                 queue=settings.RUNNER_QUEUE,
                 priority=0,
@@ -162,15 +165,16 @@ class BuilderViewSets(viewsets.GenericViewSet):
                     task_id, str(batch_no), suites, sources, resources, files
                 )
             )
+            celery_task_list.append(celery_task.id)
         child_dir = date.today().strftime('%Y/%m/%d')
         report_path = settings.REPORT_PATH.as_posix() + f'/{project_name}/{child_dir}/' + task_id
         build_result = {
             'build_id': task_id,
             'total_case': engine.get_case_count(),
         }
-        log_redis_key = REDIS_DEBUG_RESULT_KEY_PREFIX + task_id
-        conn.hmset(log_redis_key, {'report_path': report_path})
-        conn.expire(log_redis_key, 3600)
+        debug_redis_key = REDIS_DEBUG_RESULT_KEY_PREFIX + task_id
+        conn.hmset(debug_redis_key, {'report_path': report_path, 'celery_task': ','.join(celery_task_list)})
+        conn.expire(debug_redis_key, 3600)
         return JsonResponse(data=build_result)
 
     @action(methods=['post'], detail=False)
@@ -199,10 +203,10 @@ class BuilderViewSets(viewsets.GenericViewSet):
     def log(self, request, *args, **kwargs):
         build_id = request.query_params.get('id')
         conn = RedisClient(settings.REDIS_URL).connector
-        log_redis_key = REDIS_DEBUG_RESULT_KEY_PREFIX + build_id
-        log_info = conn.hgetall(log_redis_key)
+        debug_redis_key = REDIS_DEBUG_RESULT_KEY_PREFIX + build_id
+        debug_info = conn.hgetall(debug_redis_key)
         log_file_name = 'log.html'
-        file = Path(log_info.get('report_path', ''), log_file_name)
+        file = Path(debug_info.get('report_path', ''), log_file_name)
         if not file.is_file():
             return JsonResponse(code=40302, msg='report not found')
         stream = open(file, 'rb')
@@ -211,3 +215,25 @@ class BuilderViewSets(viewsets.GenericViewSet):
         response['Content-Disposition'] = f'attachment;filename={log_file_name}'
         response['Access-Control-Expose-Headers'] = "Content-Disposition"
         return response
+
+    @action(methods=['post'], detail=False)
+    def stop(self, request, *args, **kwargs):
+        logger.info('stop build')
+        build_mode = request.data.get('mode')
+        if build_mode == 'debug':
+            conn = RedisClient(settings.REDIS_URL).connector
+            task_id = request.data.get('task_id')
+            debug_redis_key = REDIS_DEBUG_RESULT_KEY_PREFIX + task_id
+            debug_info = conn.hgetall(debug_redis_key)
+            celery_tasks = debug_info.get('celery_task', '')
+        else:
+            record_id = request.data.get('record')
+            record = BuildRecord.objects.filter(id=record_id)
+            if not record.exists():
+                return JsonResponse(code=10002, msg='record not found')
+            record.update(status=BuildStatus.INTERRUPT)
+            history_queryset = BuildHistory.objects.filter(id=record_id)
+            celery_task_list = [item.celery_task for item in history_queryset]
+            celery_tasks = ','.join(celery_task_list)
+        notify_worker_stop_task(celery_tasks)
+        return JsonResponse(data='success')

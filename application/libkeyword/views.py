@@ -13,7 +13,7 @@ from application.status import KeywordType, ModuleStatus, KeywordGroupType
 from application.common.keyword.formatter import format_keyword_data
 from application.manager import get_project_by_id
 from application.mapping import module_status_map
-from application.storage import update_lib_keyword_storage
+from application.storage import update_lib_keyword_storage, load_lib_keyword_to_storage
 from application.keywordgroup.models import KeywordGroup
 from application.keywordgroup.serializers import KeywordGroupSerializers
 from application.libkeyword.models import LibKeyword
@@ -204,6 +204,7 @@ class AdminKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         image_file = ContentFile(BytesIO(img).getvalue(), image_name)
         save_data['image'] = image_file
         instance = LibKeyword.objects.create(**save_data)
+        update_lib_keyword_storage(LibKeyword, instance.id)
         data = self.get_serializer(instance).data
         return JsonResponse(data=data)
 
@@ -214,6 +215,7 @@ class AdminKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         serializer = self.get_serializer(instance, data=update_data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+        update_lib_keyword_storage(LibKeyword, instance.id)
         return JsonResponse(data=serializer.data)
 
     def destroy(self, request, *args, **kwargs):
@@ -221,3 +223,9 @@ class AdminKeywordViewSets(mixins.ListModelMixin, mixins.UpdateModelMixin,
         instance = self.get_object()
         self.perform_destroy(instance)
         return JsonResponse(data=instance.id)
+
+    @action(methods=['post'], detail=False)
+    def refresh_keyword(self, request, *args, **kwargs):
+        logger.info('refresh keyword in memory storage')
+        load_lib_keyword_to_storage(LibKeyword)
+        return JsonResponse(data='success')
