@@ -23,7 +23,8 @@ class StatisticsViewSets(viewsets.GenericViewSet):
             status=ModuleStatus.NORMAL
         ).count()
         case_count = TestCase.objects.filter(
-            status=ModuleStatus.NORMAL
+            status=ModuleStatus.NORMAL,
+            category=ModuleCategory.TESTCASE,
         ).count()
         build_count = BuildRecord.objects.all().count()
         periodic_count = BuildPlan.objects.filter(
