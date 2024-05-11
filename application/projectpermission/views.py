@@ -53,6 +53,9 @@ class ProjectPermissionViewSets(mixins.ListModelMixin, mixins.CreateModelMixin, 
             permission_project_queryset = ProjectPermission.objects.filter(
                 project_id=project['id']
             )
+            if not permission_project_queryset.exists():
+                project['user_list'] = []
+                continue
             permission_user_list = [get_user_info_by_uid(item.user_id) for item in permission_project_queryset]
             project['user_list'] = permission_user_list
         return JsonResponse(data=project_list)

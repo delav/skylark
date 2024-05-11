@@ -13,4 +13,5 @@ build_status_map = {
     BuildStatus.FINISH: 'Finish',
     BuildStatus.FAILED: 'Failed',
     BuildStatus.SUCCESS: 'Success',
+    BuildStatus.INTERRUPT: 'Interrupt',
 }
